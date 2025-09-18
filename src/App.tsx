@@ -6,6 +6,9 @@ import './index.css';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 
+// Components
+import AdminRoute from './components/AdminRoute';
+
 // Pages
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
@@ -62,9 +65,33 @@ function App() {
           <Route path="storage-debug" element={<StorageDebugPage />} />
           <Route path="members/pending" element={<MembersPendingPage />} />
           <Route path="members" element={<MembersPage />} />
-          <Route path="members/admin" element={<AdminPage />} />
-          <Route path="members/cms" element={<CMSAdminPage />} />
-          <Route path="members/cms/blog" element={<BlogAdminPage />} />
+
+          {/* 🔐 Admin-only routes */}
+          <Route
+            path="members/admin"
+            element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="members/cms"
+            element={
+              <AdminRoute>
+                <CMSAdminPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="members/cms/blog"
+            element={
+              <AdminRoute>
+                <BlogAdminPage />
+              </AdminRoute>
+            }
+          />
+
           <Route path="members/profile" element={<ProfilePage />} />
           <Route path="members/directory" element={<DirectoryPage />} />
           <Route path="connection-test" element={<ConnectionTestPage />} />

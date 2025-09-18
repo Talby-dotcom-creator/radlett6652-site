@@ -29,8 +29,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  return context;
+  return useContext(AuthContext);
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,19 +44,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfileLoading(true);
       setError(null);
       console.log('🔄 AuthContext: Loading profile for user:', currentUser.email);
+
       const startTime = Date.now();
-      
       const userProfile = await api.getMemberProfile(currentUser.id);
       const loadTime = Date.now() - startTime;
+
       console.log(`👤 AuthContext: Profile loaded in ${loadTime}ms:`, userProfile ? {
         id: userProfile.id,
         full_name: userProfile.full_name,
         role: userProfile.role,
         status: userProfile.status
       } : null);
+
       setProfile(userProfile);
-      
-      // Log admin status for debugging
+
       if (userProfile) {
         console.log('🔐 AuthContext: User role:', userProfile.role);
         console.log('🔐 AuthContext: User status:', userProfile.status);
@@ -83,20 +83,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forceRefresh = async () => {
     if (user) {
       console.log('🔄 AuthContext: Force refreshing profile and clearing cache...');
-      // Clear any cached profile data
       setProfile(null);
       await loadProfile(user);
     }
   };
+
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
     const getInitialSession = async () => {
       try {
         console.log('🚀 AuthContext: Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error('Error getting session:', error);
           setError('Authentication error');
@@ -117,17 +116,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    // Start the initial session check
     getInitialSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      
+
       try {
         console.log('🔄 AuthContext: Auth state change:', event, session?.user?.email);
         setError(null);
-        
+
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('✅ AuthContext: User signed in:', session.user.email);
           setUser(session.user);
@@ -139,7 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           console.log('🔄 AuthContext: Token refreshed for:', session.user.email);
           setUser(session.user);
-          // Reload profile on token refresh to ensure we have latest data
           await loadProfile(session.user);
         }
       } catch (err) {
@@ -154,32 +150,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // ✅ Fixed signOut with session check
   const signOut = async () => {
     try {
       console.log('👋 AuthContext: Starting sign out...');
       setError(null);
+
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        console.warn('⚠️ AuthContext: No active session, skipping sign out');
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+
       console.log('✅ AuthContext: Sign out successful');
       setUser(null);
       setProfile(null);
     } catch (error) {
       console.error('Error signing out:', error);
       setError('Failed to sign out');
-      throw error;
     }
   };
 
   const isAdmin = profile?.role === 'admin' && profile?.status === 'active';
-
   const needsPasswordReset = profile?.needs_password_reset === true;
 
-  const contextValue = { 
-    user, 
-    profile, 
-    loading: loading || profileLoading, 
-    signOut, 
-    isAdmin, 
+  const contextValue = {
+    user,
+    profile,
+    loading: loading || profileLoading,
+    signOut,
+    isAdmin,
     error,
     refreshProfile,
     needsPasswordReset,

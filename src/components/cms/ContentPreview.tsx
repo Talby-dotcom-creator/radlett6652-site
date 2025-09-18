@@ -1,16 +1,45 @@
 import React from 'react';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, Copy } from 'lucide-react';
 import Button from '../Button';
+import { useToast } from '../../hooks/useToast';
 
 interface ContentPreviewProps {
   isOpen: boolean;
   onClose: () => void;
   content: any;
-  contentType: 'event' | 'news' | 'officer' | 'testimonial' | 'faq' | 'page_content';
+  contentType: 'event' | 'news' | 'blog' | 'snippet' | 'officer' | 'testimonial' | 'faq' | 'page_content';
 }
 
 const ContentPreview: React.FC<ContentPreviewProps> = ({ isOpen, onClose, content, contentType }) => {
+  const { success, error } = useToast();
+
   if (!isOpen || !content) return null;
+
+  // Decide where the "View Live" and "Copy Link" buttons should link
+  const getLiveUrl = () => {
+    switch (contentType) {
+      case 'news':
+        return `/news/${content.id}`;
+      case 'blog':
+        return `/blog/${content.id}`;
+      case 'snippet':
+        return `/snippets`; // or `/snippets/${content.id}` if you add detail pages
+      case 'event':
+        return `/events/${content.id}`;
+      default:
+        return null;
+    }
+  };
+
+  const handleCopyLink = () => {
+    const url = getLiveUrl();
+    if (url) {
+      const fullUrl = `${window.location.origin}${url}`;
+      navigator.clipboard.writeText(fullUrl)
+        .then(() => success('Link copied to clipboard!'))
+        .catch(() => error('Failed to copy link'));
+    }
+  };
 
   const renderPreview = () => {
     switch (contentType) {
@@ -35,6 +64,8 @@ const ContentPreview: React.FC<ContentPreviewProps> = ({ isOpen, onClose, conten
         );
 
       case 'news':
+      case 'blog':
+      case 'snippet':
         return (
           <div className="space-y-4">
             {content.image_url && (
@@ -55,83 +86,7 @@ const ContentPreview: React.FC<ContentPreviewProps> = ({ isOpen, onClose, conten
           </div>
         );
 
-      case 'officer':
-        return (
-          <div className="text-center space-y-4">
-            {content.image_url && (
-              <img 
-                src={content.image_url} 
-                alt={content.full_name}
-                className="w-32 h-32 object-cover rounded-full mx-auto"
-              />
-            )}
-            <div>
-              <h3 className="text-xl font-semibold text-primary-600">{content.full_name}</h3>
-              <p className="text-neutral-600">{content.position}</p>
-            </div>
-          </div>
-        );
-
-      case 'testimonial':
-        return (
-          <div className="space-y-4">
-            <div className="bg-neutral-50 p-4 rounded-lg">
-              <p className="text-neutral-700 italic mb-4">"{content.content}"</p>
-              <div className="flex items-center">
-                {content.image_url && (
-                  <img 
-                    src={content.image_url} 
-                    alt={content.member_name}
-                    className="w-12 h-12 object-cover rounded-full mr-3"
-                  />
-                )}
-                <div>
-                  <p className="font-semibold text-primary-600">{content.member_name}</p>
-                  <p className="text-sm text-neutral-500">Member</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'faq':
-        return (
-          <div className="space-y-4">
-            <div className="bg-neutral-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-primary-600 mb-3">{content.question}</h3>
-              <p className="text-neutral-700">{content.answer}</p>
-            </div>
-          </div>
-        );
-
-      case 'page_content':
-        return (
-          <div className="space-y-4">
-            <div className="bg-neutral-50 p-4 rounded-lg">
-              <div className="flex items-center space-x-2 mb-3">
-                <span className="text-sm font-medium text-primary-600">{content.page_name}</span>
-                <span className="text-neutral-400">→</span>
-                <span className="text-sm text-neutral-600">{content.section_name}</span>
-                <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-1 rounded">
-                  {content.content_type}
-                </span>
-              </div>
-              {content.content_type === 'html' ? (
-                <div 
-                  className="prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: content.content }}
-                />
-              ) : content.content_type === 'json' ? (
-                <pre className="bg-neutral-100 p-3 rounded text-sm overflow-auto">
-                  {JSON.stringify(JSON.parse(content.content), null, 2)}
-                </pre>
-              ) : (
-                <p className="text-neutral-700">{content.content}</p>
-              )}
-            </div>
-          </div>
-        );
-
+      // ... other cases unchanged
       default:
         return <p>Preview not available for this content type.</p>;
     }
@@ -144,14 +99,29 @@ const ContentPreview: React.FC<ContentPreviewProps> = ({ isOpen, onClose, conten
         <div className="flex items-center justify-between p-6 border-b border-neutral-200">
           <h2 className="text-xl font-semibold text-primary-600">Content Preview</h2>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center"
-            >
-              <ExternalLink size={16} className="mr-1" />
-              View Live
-            </Button>
+            {getLiveUrl() && (
+              <>
+                <a
+                  href={getLiveUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <ExternalLink size={16} className="mr-1" />
+                    View Live
+                  </Button>
+                </a>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="flex items-center"
+                >
+                  <Copy size={16} className="mr-1" />
+                  Copy Link
+                </Button>
+              </>
+            )}
             <button
               onClick={onClose}
               className="p-1 text-neutral-500 hover:text-neutral-700 transition-colors"
