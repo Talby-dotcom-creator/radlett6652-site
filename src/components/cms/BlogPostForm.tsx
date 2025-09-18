@@ -1,9 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { CMSNewsArticle } from '../../types';
 import Button from '../Button';
 import MediaManager from './MediaManager';
-import { Image, X, Eye, EyeOff, Calendar, Tag, FileText } from 'lucide-react';
+import { Image, X, Eye, EyeOff, Calendar, Tag, FileText, Info } from 'lucide-react';
+
+// Custom Quill toolbar with image handler
+const imageHandler = function () {
+  // @ts-ignore
+  if (this.quill && window.openMediaManagerForQuill) {
+    window.openMediaManagerForQuill(this.quill);
+  }
+};
+
+const quillModules = {
+  toolbar: {
+    container: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
+      ['blockquote'],
+      ['clean'],
+    ],
+    handlers: {
+      image: imageHandler,
+    },
+  },
+};
+
+const quillFormats = [
+  'header',
+  'bold', 'italic', 'underline',
+  'list', 'bullet',
+  'link', 'image',
+  'blockquote',
+];
 
 interface BlogPostFormProps {
   onSubmit: (data: Omit<CMSNewsArticle, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -15,6 +49,7 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState(initialData?.image_url || '');
   const [previewMode, setPreviewMode] = useState(false);
+  const [quillInstance, setQuillInstance] = useState<any>(null);
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
@@ -24,8 +59,8 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
       image_url: initialData?.image_url || '',
       publish_date: initialData?.publish_date || new Date().toISOString().split('T')[0],
       is_members_only: initialData?.is_members_only || false,
-      is_published: initialData?.is_published !== undefined ? initialData.is_published : false
-    }
+      is_published: initialData?.is_published !== undefined ? initialData.is_published : false,
+    },
   });
 
   const watchedContent = watch('content');
@@ -33,7 +68,21 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
   const watchedSummary = watch('summary');
   const watchedIsPublished = watch('is_published');
 
+  // Hook MediaManager into Quill toolbar
+  useEffect(() => {
+    window.openMediaManagerForQuill = (editorInstance: any) => {
+      setQuillInstance(editorInstance);
+      setShowMediaManager(true);
+    };
+  }, []);
+
   const handleMediaSelect = (url: string) => {
+    if (quillInstance) {
+      const range = quillInstance.getSelection();
+      if (range) {
+        quillInstance.insertEmbed(range.index, 'image', url, 'user');
+      }
+    }
     setSelectedImageUrl(url);
     setValue('image_url', url, { shouldDirty: true });
     setShowMediaManager(false);
@@ -47,14 +96,13 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
   const handleFormSubmit = async (data: any) => {
     await onSubmit({
       ...data,
-      image_url: selectedImageUrl || data.image_url
+      image_url: selectedImageUrl || data.image_url,
     });
   };
 
   const renderPreview = () => (
     <div className="bg-white rounded-lg border border-neutral-200 p-6">
       <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Blog Post Preview</h2>
-      
       {selectedImageUrl && (
         <img
           src={selectedImageUrl}
@@ -62,11 +110,9 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
           className="w-full h-64 object-cover rounded-lg mb-6"
         />
       )}
-      
       <h1 className="text-3xl font-heading font-bold text-primary-600 mb-4">
         {watchedTitle || 'Blog Post Title'}
       </h1>
-      
       <div className="flex items-center space-x-4 text-sm text-neutral-500 mb-6">
         <span className="flex items-center">
           <Calendar size={16} className="mr-1" />
@@ -77,18 +123,14 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
           Blog Post
         </span>
       </div>
-      
       <div className="bg-neutral-50 p-4 rounded-lg mb-6">
         <p className="text-lg font-medium text-neutral-700">
           {watchedSummary || 'Blog post summary will appear here...'}
         </p>
       </div>
-      
-      <div 
+      <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ 
-          __html: watchedContent || '<p>Blog post content will appear here...</p>' 
-        }}
+        dangerouslySetInnerHTML={{ __html: watchedContent || '<p>Blog post content will appear here...</p>' }}
       />
     </div>
   );
@@ -124,13 +166,12 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
           renderPreview()
         ) : (
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
-            {/* Basic Information Section */}
+            {/* Basic Information */}
             <div className="bg-white rounded-lg border border-neutral-200 p-6">
               <h3 className="text-lg font-semibold text-primary-600 mb-6 flex items-center">
                 <FileText size={20} className="mr-2" />
                 Basic Information
               </h3>
-              
               <div className="space-y-6">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-primary-600 mb-2">
@@ -142,11 +183,8 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                     className="w-full px-4 py-3 text-lg border border-neutral-300 rounded-md focus:border-secondary-500 focus:ring-secondary-500"
                     placeholder="Enter an engaging title for your blog post"
                   />
-                  {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title.message as string}</p>
-                  )}
+                  {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message as string}</p>}
                 </div>
-
                 <div>
                   <label htmlFor="summary" className="block text-sm font-medium text-primary-600 mb-2">
                     Summary/Excerpt *
@@ -156,49 +194,36 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                     {...register('summary', { required: 'Summary is required' })}
                     rows={3}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-md focus:border-secondary-500 focus:ring-secondary-500"
-                    placeholder="Write a compelling summary that will appear in blog previews and search results"
+                    placeholder="Write a compelling summary..."
                   />
-                  {errors.summary && (
-                    <p className="mt-1 text-sm text-red-600">{errors.summary.message as string}</p>
-                  )}
-                  <p className="mt-1 text-xs text-neutral-500">
-                    This summary will appear on the blog listing page and in social media previews.
-                  </p>
+                  {errors.summary && <p className="mt-1 text-sm text-red-600">{errors.summary.message as string}</p>}
                 </div>
               </div>
             </div>
 
-            {/* Content Section */}
+            {/* Content with Rich Text Editor */}
             <div className="bg-white rounded-lg border border-neutral-200 p-6">
-              <h3 className="text-lg font-semibold text-primary-600 mb-6">Content</h3>
-              
-              <div>
-                <label htmlFor="content" className="block text-sm font-medium text-primary-600 mb-2">
-                  Blog Post Content (HTML) *
-                </label>
-                <textarea
-                  id="content"
-                  {...register('content', { required: 'Content is required' })}
-                  rows={15}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-md focus:border-secondary-500 focus:ring-secondary-500 font-mono text-sm"
-                  placeholder="<p>Write your blog post content here using HTML tags...</p>
-
-<h2>Section Heading</h2>
-<p>You can use HTML tags like &lt;p&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, etc.</p>
-
-<p>For links: &lt;a href='https://example.com'&gt;Link text&lt;/a&gt;</p>
-<p>For emphasis: &lt;strong&gt;Bold text&lt;/strong&gt; and &lt;em&gt;Italic text&lt;/em&gt;</p>"
-                />
-                {errors.content && (
-                  <p className="mt-1 text-sm text-red-600">{errors.content.message as string}</p>
-                )}
-                <div className="mt-2 text-xs text-neutral-500 space-y-1">
-                  <p><strong>HTML Tips:</strong></p>
-                  <p>• Use &lt;h2&gt; and &lt;h3&gt; for section headings</p>
-                  <p>• Wrap paragraphs in &lt;p&gt; tags</p>
-                  <p>• Use &lt;strong&gt; for bold and &lt;em&gt; for italic text</p>
-                  <p>• Create links with &lt;a href="URL"&gt;Link text&lt;/a&gt;</p>
-                </div>
+              <h3 className="text-lg font-semibold text-primary-600 mb-6 flex items-center">
+                Content
+              </h3>
+              <ReactQuill
+                theme="snow"
+                value={watchedContent}
+                onChange={(value) => setValue('content', value, { shouldDirty: true })}
+                placeholder="Write your blog post content here..."
+                modules={quillModules}
+                formats={quillFormats}
+              />
+              <p className="mt-2 text-xs text-neutral-500">
+                {watchedContent?.replace(/<[^>]+>/g, '').length || 0} characters
+              </p>
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700 flex items-start">
+                <Info size={16} className="mr-2 mt-0.5 flex-shrink-0" />
+                <p>
+                  <strong>Tips for Admins:</strong> Use <em>Headings</em> for structure, keep paragraphs short, and
+                  insert images using the toolbar button (opens the Media Manager). Always write a clear summary for
+                  better previews on the website and social media.
+                </p>
               </div>
             </div>
 
@@ -208,7 +233,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                 <Image size={20} className="mr-2" />
                 Featured Image
               </h3>
-              
               <div className="space-y-4">
                 <div className="flex space-x-2">
                   <input
@@ -243,7 +267,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                     </Button>
                   )}
                 </div>
-
                 {selectedImageUrl && (
                   <div className="mt-4">
                     <p className="text-sm font-medium text-neutral-700 mb-3">Featured Image Preview:</p>
@@ -252,9 +275,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                         src={selectedImageUrl}
                         alt="Featured image preview"
                         className="w-full max-w-md h-48 object-cover rounded-lg border border-neutral-200"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
                       />
                       <button
                         type="button"
@@ -267,11 +287,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                     </div>
                   </div>
                 )}
-
-                <p className="text-xs text-neutral-500">
-                  The featured image will appear at the top of your blog post and in blog previews. 
-                  Recommended size: 1200x630px for optimal social media sharing.
-                </p>
               </div>
             </div>
 
@@ -281,7 +296,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                 <Calendar size={20} className="mr-2" />
                 Publishing Options
               </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="publish_date" className="block text-sm font-medium text-primary-600 mb-2">
@@ -293,11 +307,8 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                     {...register('publish_date', { required: 'Publish date is required' })}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-md focus:border-secondary-500 focus:ring-secondary-500"
                   />
-                  {errors.publish_date && (
-                    <p className="mt-1 text-sm text-red-600">{errors.publish_date.message as string}</p>
-                  )}
+                  {errors.publish_date && <p className="mt-1 text-sm text-red-600">{errors.publish_date.message as string}</p>}
                 </div>
-
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <input
@@ -310,10 +321,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                       Publish immediately
                     </label>
                   </div>
-                  <p className="text-xs text-neutral-500">
-                    Uncheck to save as draft. You can publish later from the blog management page.
-                  </p>
-
                   <div className="flex items-center">
                     <input
                       id="is_members_only"
@@ -325,9 +332,6 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                       Members only content
                     </label>
                   </div>
-                  <p className="text-xs text-neutral-500">
-                    Check this if the content should only be visible to logged-in members.
-                  </p>
                 </div>
               </div>
             </div>
@@ -338,16 +342,16 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ onSubmit, onCancel, initial
                 Cancel
               </Button>
               <div className="flex space-x-4">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={() => setValue('is_published', false)}
                 >
                   {isSubmitting ? 'Saving...' : 'Save as Draft'}
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isSubmitting}
                   onClick={() => setValue('is_published', true)}
                 >
