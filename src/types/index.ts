@@ -1,129 +1,103 @@
-export interface Event {
-  id: string;
-  title: string;
-  date: Date;
-  description: string;
-  location: string;
-  isMembers?: boolean;
-}
+// src/types/index.ts
 
-export interface BlogItem {
-  id: string;
-  title: string;
-  date: Date;
-  summary: string;
-  content: string;
-  image?: string;
-  isMembers?: boolean;
-}
-
-export interface Officer {
-  position: string;
-  name: string;
-  image?: string;
-}
-
-export interface Testimonial {
-  id: string;
-  name: string;
-  content: string;
-  image?: string;
-}
-
-export interface FAQ {
-  question: string;
-  answer: string;
-}
-
+// -----------------------------
+// MEMBER PROFILES
+// -----------------------------
 export interface MemberProfile {
   id: string;
   user_id: string;
   full_name: string;
-  position?: string;
-  role: 'member' | 'admin';
-  join_date: string;
-  created_at: string;
-  updated_at: string;
-  status?: 'active' | 'pending' | 'inactive';
-  email_verified?: boolean;
-  registration_date?: string;
-  last_login?: string;
-  notes?: string;
-  // New contact and rank fields
-  contact_email?: string;
-  contact_phone?: string;
-  masonic_provincial_rank?: string;
-  grand_lodge_rank?: string;
-  needs_password_reset?: boolean;
+  email?: string;
+  phone?: string;
+  role?: string;         // e.g. "admin", "member"
+  /** Supabase may return null, we coerce to undefined */
+  status?: string;       // e.g. "active", "inactive"
+  bio?: string;
+  image_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// -----------------------------
+// DOCUMENTS
+// -----------------------------
 export interface LodgeDocument {
   id: string;
   title: string;
-  description?: string;
-  url: string;
   category: string;
+  /** Maps from Supabase `url` column */
+  file_url: string;
+  /** Raw field direct from Supabase, optional */
+  url?: string;
+  description?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
+// -----------------------------
+// MEETING MINUTES
+// -----------------------------
 export interface MeetingMinutes {
   id: string;
-  meeting_date: string;
   title: string;
-  content: string;
+  meeting_date: string;
+  /** Maps from Supabase `url` column */
+  file_url: string;
   created_at: string;
-  updated_at: string;
-  document_url?: string; // Optional URL to the full document
+  updated_at?: string;
 }
 
-// New CMS types
+// -----------------------------
+// EVENTS
+// -----------------------------
 export interface CMSEvent {
   id: string;
   title: string;
   description: string;
-  image_url?: string;
   event_date: string;
-  location: string;
-  is_members_only: boolean;
-  is_past_event: boolean;
-  created_at: string;
-  updated_at: string;
+  location?: string;
+  /** Supabase may return null, we coerce to boolean */
+  is_members_only?: boolean;
+  is_past_event?: boolean;
+  image_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export interface CMSNewsArticle {
+// -----------------------------
+// BLOG / NEWS / SNIPPETS
+// -----------------------------
+export interface CMSBlogPost {
   id: string;
   title: string;
-  summary: string;
+  summary?: string;
   content: string;
-  image_url?: string;
   publish_date: string;
-  is_members_only: boolean;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-  category?: string;
+  /** Union narrowed with fallback in API */
+  category: 'news' | 'blog' | 'snippet';
   tags?: string[];
-  author?: string;
-  featured?: boolean;
-  view_count?: number;
-  slug?: string;
+  is_published: boolean;
+  is_members_only?: boolean;
+  image_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-// Alias for backward compatibility
-export type CMSBlogPost = CMSNewsArticle;
-
+// -----------------------------
+// OFFICERS
+// -----------------------------
 export interface CMSOfficer {
   id: string;
-  position: string;
   full_name: string;
+  position: string;
   image_url?: string;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// -----------------------------
+// TESTIMONIALS
+// -----------------------------
 export interface CMSTestimonial {
   id: string;
   member_name: string;
@@ -131,34 +105,43 @@ export interface CMSTestimonial {
   image_url?: string;
   is_published: boolean;
   sort_order: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// -----------------------------
+// FAQ
+// -----------------------------
 export interface CMSFAQItem {
   id: string;
   question: string;
   answer: string;
-  sort_order: number;
   is_published: boolean;
-  created_at: string;
-  updated_at: string;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// -----------------------------
+// SITE SETTINGS
+// -----------------------------
 export interface CMSSiteSetting {
   id: string;
-  setting_key: string;
-  setting_value: string;
-  setting_type: 'text' | 'number' | 'boolean' | 'json';
-  description?: string;
-  updated_at: string;
+  key: string;
+  value: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// -----------------------------
+// PAGE CONTENT
+// -----------------------------
 export interface CMSPageContent {
   id: string;
   page_name: string;
   section_name: string;
-  content_type: 'text' | 'html' | 'json';
+  content_type: 'html' | 'json' | 'text';
   content: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
