@@ -158,20 +158,7 @@ export async function getMeetingMinutes(): Promise<MeetingMinutes[]> {
 // -------------------
 // EXPORTS
 // -------------------
-export {
-  // named exports so existing imports like `import { getLodgeDocuments } from ...` keep working
-  getMemberProfile,
-  getAllMembers,
-  getLodgeDocuments,
-  getLodgeDocumentsPaginated,
-  getBlogPosts,
-  getBlogPost,
-  createBlogPost,
-  updateBlogPost,
-  deleteBlogPost,
-  getEvents,
-  getMeetingMinutes,
-}
+
 
 export const optimizedApi = {
   getMemberProfile,
