@@ -1,57 +1,100 @@
-import React from "react";
+// src/pages/BlogAdminPage.tsx
+import React, { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase"; // ✅ corrected path
+import LoadingSpinner from "../components/LoadingSpinner";
+import Button from "../components/Button";
 
-interface ButtonProps {
-  children: React.ReactNode;
-  variant?: "primary" | "secondary" | "outline";
-  size?: "sm" | "md" | "lg";
-  className?: string;
-  onClick?: () => void;
-  type?: "button" | "submit" | "reset";
-  disabled?: boolean;
-  fullWidth?: boolean;
+interface BlogPost {
+  id: string;
+  title: string;
+  summary: string | null;
+  content: string | null;
+  category: string | null;
+  tags: string[] | null;
+  image_url: string | null;
+  is_published: boolean;
+  created_at: string | null;
 }
 
-const Button: React.FC<ButtonProps> = ({
-  children,
-  variant = "primary",
-  size = "md",
-  className = "",
-  onClick,
-  type = "button",
-  disabled = false,
-  fullWidth = false,
-}) => {
-  const baseStyles =
-    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+const BlogAdminPage: React.FC = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const variantStyles = {
-    primary:
-      "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-    secondary:
-      "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
-    outline:
-      "border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white focus:ring-blue-500",
-  };
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  const sizeStyles = {
-    sm: "py-1.5 px-3 text-sm",
-    md: "py-2 px-4 text-base",
-    lg: "py-3 px-6 text-lg",
-  };
+      if (error) {
+        console.error(error);
+        setError("Failed to load blog posts.");
+      } else {
+        // ✅ normalize is_published
+        const normalized: BlogPost[] = (data || []).map((post: any) => ({
+          ...post,
+          is_published: post.is_published ?? false,
+        }));
+        setPosts(normalized);
+      }
+      setLoading(false);
+    };
 
-  const disabledStyles = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
-  const widthStyles = fullWidth ? "w-full" : "";
+    fetchPosts();
+  }, []);
+
+  if (loading) return <LoadingSpinner subtle={true} className="py-10" />;
+  if (error) return <p className="text-red-600">{error}</p>;
 
   return (
-    <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${className}`}
-      onClick={onClick}
-      type={type}
-      disabled={disabled}
-    >
-      {children}
-    </button>
+    <div className="container mx-auto px-4 md:px-6 py-10">
+      <h1 className="text-3xl font-bold mb-6">Blog Admin</h1>
+
+      {posts.length === 0 ? (
+        <p>No blog posts found.</p>
+      ) : (
+        <table className="min-w-full bg-white border border-neutral-200 rounded-lg shadow">
+          <thead>
+            <tr className="bg-neutral-100 text-left">
+              <th className="px-4 py-2">Title</th>
+              <th className="px-4 py-2">Category</th>
+              <th className="px-4 py-2">Published</th>
+              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.map((post: BlogPost) => (
+              <tr key={post.id} className="border-t border-neutral-200">
+                <td className="px-4 py-2">{post.title}</td>
+                <td className="px-4 py-2">{post.category ?? "—"}</td>
+                <td className="px-4 py-2">
+                  {post.is_published ? "✅ Yes" : "❌ No"}
+                </td>
+                <td className="px-4 py-2">
+                  {post.created_at
+                    ? new Date(post.created_at).toLocaleDateString("en-GB")
+                    : "—"}
+                </td>
+                <td className="px-4 py-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => console.log("Edit", post.id)}
+                  >
+                    Edit
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 };
 
-export default Button;
+export default BlogAdminPage;

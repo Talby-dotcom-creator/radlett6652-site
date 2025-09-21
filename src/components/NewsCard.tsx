@@ -1,43 +1,62 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { BlogItem } from '../types';
-import { Link } from 'react-router-dom';
+// src/components/NewsCard.tsx
+import React from 'react'
+import { Link } from 'react-router-dom'
 
 interface NewsCardProps {
-  news: BlogItem;
+  news: {
+    id: string
+    title: string
+    date: Date
+    summary: string
+    content: string
+    image?: string
+    isMembers?: boolean
+  }
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({ news }) => {
-  const { id, title, date, summary, image } = news;
-  
   return (
-    <Link 
-      to={`/news/${id}`}
-      className="group block bg-white shadow-soft rounded-lg overflow-hidden transition-all duration-300 hover:shadow-medium border border-neutral-100 h-full"
-    >
-      {image && (
-        <div className="aspect-video overflow-hidden">
-          <img 
-            src={image} 
-            alt={title} 
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+      {/* Image */}
+      {news.image && (
+        <div className="h-48 w-full overflow-hidden">
+          <img
+            src={news.image}
+            alt={news.title}
+            className="h-full w-full object-cover"
           />
         </div>
       )}
-      <div className="p-6">
-        <div className="flex items-center mb-3 text-sm text-neutral-500">
-          <Calendar size={16} className="mr-1.5 text-secondary-500" />
-          <span>{format(date, 'dd/MM/yyyy')}</span>
-        </div>
-        <h3 className="text-xl font-heading font-semibold text-primary-600 group-hover:text-secondary-500 transition-colors mb-3">{title}</h3>
-        <p className="text-neutral-600">{summary}</p>
-        <div className="mt-4 text-secondary-500 font-medium text-sm group-hover:text-secondary-600 transition-colors">
-          Read more
+
+      <div className="p-5 flex flex-col h-full">
+        {/* Title */}
+        <h3 className="text-xl font-semibold mb-2">{news.title}</h3>
+
+        {/* Date */}
+        <p className="text-sm text-gray-500 mb-3">
+          {news.date.toLocaleDateString()}
+          {news.isMembers && (
+            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-600">
+              Members Only
+            </span>
+          )}
+        </p>
+
+        {/* Summary */}
+        <p className="text-gray-700 flex-grow">{news.summary}</p>
+
+        {/* Read More */}
+        <div className="mt-4">
+          <Link
+            to={`/news/${news.id}`}
+            className="inline-block text-secondary-600 hover:text-secondary-800 font-medium"
+          >
+            Read more →
+          </Link>
         </div>
       </div>
-    </Link>
-  );
-};
+    </div>
+  )
+}
 
-export default NewsCard;
+export default NewsCard

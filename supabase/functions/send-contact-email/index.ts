@@ -1,149 +1,119 @@
-// Define CORS headers directly in this file
+// @ts-nocheck
+// supabase/functions/send-contact-email/index.ts
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-interface ContactFormData {
-  name: string;
-  email: string;
-  phone?: string;
-  subject: string;
-  message: string;
-  interested: boolean;
-}
+// Simple in-memory rate limit (per IP, per function instance)
+// Resets on redeploy – good enough for anti-spam throttling.
+const requestCounts: Record<string, { count: number; timestamp: number }> = {};
+const RATE_LIMIT = 5; // max 5 requests
+const WINDOW_MS = 60 * 1000; // per 60 seconds
 
-Deno.serve(async (req: Request) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log("Contact form function called!");
-    
-    // Only allow POST requests
-    if (req.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ error: 'Method not allowed' }),
-        { 
-          status: 405, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Parse the request body
-    const formData: ContactFormData = await req.json();
-    console.log('Form data received:', { name: formData.name, email: formData.email, subject: formData.subject });
+    // 🚨 Rate limiting by IP
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const now = Date.now();
+    const entry = requestCounts[ip] || { count: 0, timestamp: now };
 
-    // Validate required fields
-    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+    if (now - entry.timestamp < WINDOW_MS) {
+      if (entry.count >= RATE_LIMIT) {
+        return new Response(
+          JSON.stringify({ error: "Too many requests, slow down." }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      entry.count++;
+    } else {
+      entry.count = 1;
+      entry.timestamp = now;
     }
+    requestCounts[ip] = entry;
 
-    // Email configuration - try environment variables first, then fallback to hardcoded
-    const emailServiceApiKey = Deno.env.get('EMAIL_SERVICE_API_KEY') || 're_6DGfYf7Q_Cn2vVDJqdtLt3rep24GkMXxX';
-    const senderAddress = Deno.env.get('EMAIL_SENDER_ADDRESS') || 'onboarding@resend.dev';
-    const recipientAddress = Deno.env.get('EMAIL_RECIPIENT_ADDRESS') || 'radlettlodge6652@gmail.com';
+    // Parse request body
+    const formData = await req.json();
 
-    console.log('Email config:', {
-      hasApiKey: !!emailServiceApiKey,
-      sender: senderAddress,
-      recipient: recipientAddress
-    });
+    const resendKey = Deno.env.get("EMAIL_SERVICE_API_KEY") || "";
+    const sender =
+      Deno.env.get("EMAIL_SENDER_ADDRESS") || "onboarding@resend.dev";
+    const recipient =
+      Deno.env.get("EMAIL_RECIPIENT_ADDRESS") || "ptalbot37@gmail.com";
 
-    // Construct email content
-    const emailSubject = `Contact Form: ${formData.subject}`;
-    const emailBody = `
-New contact form submission from Radlett Lodge website:
+    // Send email via Resend
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `Radlett Lodge Website <${sender}>`,
+        to: [recipient],
+        reply_to: formData.email,
+        subject: `Contact Form: ${formData.subject}`,
+        text: `
+New contact form submission:
 
 Name: ${formData.name}
 Email: ${formData.email}
-Phone: ${formData.phone || 'Not provided'}
-Subject: ${formData.subject}
+Phone: ${formData.phone || "Not provided"}
 
 Message:
 ${formData.message}
 
-${formData.interested ? '✓ Interested in becoming a Freemason' : '✗ Not interested in membership at this time'}
-
----
-This message was sent via the Radlett Lodge No. 6652 website contact form.
-    `.trim();
-
-    console.log('Sending email via Resend...');
-
-    // Send email using Resend API
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${emailServiceApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: `Radlett Lodge Website <${senderAddress}>`,
-        to: [recipientAddress],
-        reply_to: formData.email,
-        subject: emailSubject,
-        text: emailBody,
+${formData.interested ? "✓ Interested in Freemasonry" : ""}
+        `.trim(),
       }),
     });
 
-    console.log('Resend API response status:', emailResponse.status);
-
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
-      console.error('Resend API error:', {
-        status: emailResponse.status,
-        statusText: emailResponse.statusText,
-        body: errorText
-      });
-      
+      console.error("Resend API error:", errorText);
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to send email',
-          details: `Resend API returned ${emailResponse.status}: ${errorText}`
+        JSON.stringify({
+          error: "Failed to send email",
+          details: errorText,
         }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    const emailResult = await emailResponse.json();
-    console.log('Email sent successfully:', emailResult);
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Email sent successfully',
-        id: emailResult.id || 'unknown'
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
-
+    const result = await emailResponse.json();
+    return new Response(JSON.stringify({ success: true, id: result.id }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error'
+      JSON.stringify({
+        error: "Internal server error",
+        details: String(error),
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }

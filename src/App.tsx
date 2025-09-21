@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import './index.css';
 
@@ -37,6 +36,7 @@ import ConnectionTestPage from './pages/ConnectionTestPage';
 import SupabaseDebugPage from './pages/SupabaseDebugPage';
 import BlogPage from './pages/BlogPage';
 import BlogAdminPage from './pages/BlogAdminPage';
+import BlogDetailPage from './pages/BlogDetailPage';
 import SnippetsPage from './pages/SnippetsPage';
 
 function App() {
@@ -52,6 +52,7 @@ function App() {
           <Route path="news" element={<NewsPage />} />
           <Route path="news/:id" element={<NewsDetailPage />} />
           <Route path="blog" element={<BlogPage />} />
+          <Route path="blog/:id" element={<BlogDetailPage />} />
           <Route path="snippets" element={<SnippetsPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="faq" element={<FaqPage />} />

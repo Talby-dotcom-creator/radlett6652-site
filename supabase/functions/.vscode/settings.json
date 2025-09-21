@@ -1,0 +1,12 @@
+{
+  // Enable Deno only for Supabase functions
+  "deno.enable": true,
+  "deno.lint": true,
+  "deno.unstable": true,
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+
+  // Tell VS Code to keep using TypeScript/Node for the rest of the project
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

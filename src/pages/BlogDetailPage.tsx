@@ -1,11 +1,11 @@
-// src/pages/NewsDetailPage.tsx
+// src/pages/BlogDetailPage.tsx
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { optimizedApi, CMSBlogPost } from '../lib/optimizedApi'
 import LoadingSpinner from '../components/LoadingSpinner'
 
-const NewsDetailPage: React.FC = () => {
+const BlogDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [article, setArticle] = useState<CMSBlogPost | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,8 +21,8 @@ const NewsDetailPage: React.FC = () => {
           setArticle(data)
         }
       } catch (err) {
-        console.error('❌ Failed to load article:', err)
-        setError('Could not load this article.')
+        console.error('❌ Failed to load blog article:', err)
+        setError('Could not load this blog post.')
       } finally {
         setLoading(false)
       }
@@ -33,10 +33,10 @@ const NewsDetailPage: React.FC = () => {
 
   if (loading) return <LoadingSpinner subtle={true} className="py-10" />
   if (error) return <p className="text-red-600">{error}</p>
-  if (!article) return <p>Article not found.</p>
+  if (!article) return <p>Blog post not found.</p>
 
-  const publishDate = article.created_at
-    ? new Date(article.created_at).toLocaleDateString('en-GB')
+  const publishDate = article.publish_date
+    ? new Date(article.publish_date).toLocaleDateString('en-GB')
     : 'Unknown date'
 
   return (
@@ -44,11 +44,11 @@ const NewsDetailPage: React.FC = () => {
       {/* Back link */}
       <div className="mb-6">
         <Link
-          to="/news"
+          to="/blog"
           className="inline-flex items-center text-secondary-600 hover:text-secondary-800 font-medium"
         >
           <ArrowLeft size={18} className="mr-2" />
-          Back to News
+          Back to Blog
         </Link>
       </div>
 
@@ -65,7 +65,7 @@ const NewsDetailPage: React.FC = () => {
         )}
       </p>
 
-      {/* Image (optional) */}
+      {/* Image */}
       {(article as any).image_url && (
         <div className="mb-6">
           <img
@@ -82,4 +82,4 @@ const NewsDetailPage: React.FC = () => {
   )
 }
 
-export default NewsDetailPage
+export default BlogDetailPage

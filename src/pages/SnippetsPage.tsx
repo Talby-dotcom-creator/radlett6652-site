@@ -1,98 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { BookOpen, Clock, Calendar, ArrowRight, Lightbulb, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import HeroSection from '../components/HeroSection';
-import SectionHeading from '../components/SectionHeading';
-import LoadingSpinner from '../components/LoadingSpinner';
-import Button from '../components/Button';
-import { optimizedApi as api } from '../lib/optimizedApi';
-import { CMSBlogPost } from '../types';
+// src/pages/SnippetsPage.tsx
+import React, { useState, useEffect } from 'react'
+import {
+  Clock,
+  Calendar,
+  ArrowRight,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
+import HeroSection from '../components/HeroSection'
+import SectionHeading from '../components/SectionHeading'
+import LoadingSpinner from '../components/LoadingSpinner'
+import Button from '../components/Button'
+import { optimizedApi as api } from '../lib/optimizedApi'
+import { CMSBlogPost } from '../types'
 
 const SnippetsPage: React.FC = () => {
-  const [snippets, setSnippets] = useState<CMSBlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  const [snippets, setSnippets] = useState<CMSBlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   // Search and filter state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedYear, setSelectedYear] = useState<string>('all');
-  const [selectedTag, setSelectedTag] = useState<string>('all');
-  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedYear, setSelectedYear] = useState<string>('all')
+  const [selectedTag, setSelectedTag] = useState<string>('all')
+
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(15);
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(15)
 
   useEffect(() => {
     const loadSnippets = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const snippetsData = await api.getSnippets();
-        const publishedSnippets = snippetsData.filter(snippet => snippet.is_published);
-        // Sort by publish date (newest first)
-        publishedSnippets.sort((a, b) => new Date(b.publish_date).getTime() - new Date(a.publish_date).getTime());
-        setSnippets(publishedSnippets);
+        setLoading(true)
+        setError(null)
+        const snippetsData = await api.getSnippets()
+        const publishedSnippets = snippetsData.filter(
+          (snippet) => snippet.is_published
+        )
+        // ✅ Safe date handling
+        publishedSnippets.sort(
+          (a, b) =>
+            new Date(b.publish_date ?? '').getTime() -
+            new Date(a.publish_date ?? '').getTime()
+        )
+        setSnippets(publishedSnippets as CMSBlogPost[])
       } catch (err) {
-        console.error('Error loading snippets:', err);
-        setError('Failed to load snippets. Please try again later.');
-        setSnippets([]);
+        console.error('Error loading snippets:', err)
+        setError('Failed to load snippets. Please try again later.')
+        setSnippets([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadSnippets();
-  }, []);
+    loadSnippets()
+  }, [])
 
   // Get unique years and tags for filters
-  const availableYears = [...new Set(snippets.map(snippet => 
-    new Date(snippet.publish_date).getFullYear().toString()
-  ))].sort((a, b) => parseInt(b) - parseInt(a));
+  const availableYears = [
+    ...new Set(
+      snippets
+        .map((snippet) =>
+          snippet.publish_date
+            ? new Date(snippet.publish_date).getFullYear().toString()
+            : undefined
+        )
+        .filter((y): y is string => Boolean(y))
+    ),
+  ].sort((a, b) => parseInt(b) - parseInt(a))
 
-  const availableTags = [...new Set(
-    snippets.flatMap(snippet => 
-      Array.isArray(snippet.tags) ? snippet.tags : []
-    )
-  )].filter(tag => tag).sort();
+  const availableTags = [
+    ...new Set(
+      snippets.flatMap((snippet) =>
+        Array.isArray(snippet.tags) ? snippet.tags : []
+      )
+    ),
+  ]
+    .filter((tag): tag is string => Boolean(tag))
+    .sort()
 
   // Filter snippets based on search and filters
-  const filteredSnippets = snippets.filter(snippet => {
-    const matchesSearch = searchTerm === '' || 
+  const filteredSnippets = snippets.filter((snippet) => {
+    const matchesSearch =
+      searchTerm === '' ||
       snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      snippet.content.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesYear = selectedYear === 'all' || 
-      new Date(snippet.publish_date).getFullYear().toString() === selectedYear;
-    
-    const matchesTags = selectedTag === 'all' || 
-      (Array.isArray(snippet.tags) && snippet.tags.includes(selectedTag));
-    
-    return matchesSearch && matchesYear && matchesTags;
-  });
+      snippet.content.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesYear =
+      selectedYear === 'all' ||
+      (snippet.publish_date &&
+        new Date(snippet.publish_date).getFullYear().toString() ===
+          selectedYear)
+
+    const matchesTags =
+      selectedTag === 'all' ||
+      (Array.isArray(snippet.tags) && snippet.tags.includes(selectedTag))
+
+    return matchesSearch && matchesYear && matchesTags
+  })
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredSnippets.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentSnippets = filteredSnippets.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredSnippets.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentSnippets = filteredSnippets.slice(startIndex, endIndex)
 
   // Reset to first page when filters change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedYear, selectedTag]);
+    setCurrentPage(1)
+  }, [searchTerm, selectedYear, selectedTag])
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll to top of snippets section
-    document.getElementById('snippets-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
+    setCurrentPage(page)
+    document
+      .getElementById('snippets-section')
+      ?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedYear('all');
-    setSelectedTag('all');
-    setCurrentPage(1);
-  };
+    setSearchTerm('')
+    setSelectedYear('all')
+    setSelectedTag('all')
+    setCurrentPage(1)
+  }
 
   return (
     <>
@@ -104,25 +137,28 @@ const SnippetsPage: React.FC = () => {
 
       <section id="snippets-section" className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-6">
-          <SectionHeading 
-            title="Masonic Reflections" 
+          <SectionHeading
+            title="Masonic Reflections"
             subtitle={`${filteredSnippets.length} thought-provoking insights to guide your Masonic journey`}
             centered
           />
-          
+
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
               <p className="text-red-600">{error}</p>
             </div>
           )}
-          
+
           <div className="max-w-4xl mx-auto">
-            {/* Search and Filter Controls */}
+            {/* Filters */}
             <div className="bg-neutral-50 rounded-lg p-6 mb-8 shadow-soft">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Search Bar */}
                 <div className="md:col-span-2">
-                  <label htmlFor="search" className="block text-sm font-medium text-primary-600 mb-2">
+                  <label
+                    htmlFor="search"
+                    className="block text-sm font-medium text-primary-600 mb-2"
+                  >
                     Search Snippets
                   </label>
                   <div className="relative">
@@ -134,13 +170,19 @@ const SnippetsPage: React.FC = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full px-4 py-2 pr-10 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                     />
-                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
+                    <Search
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
+                      size={20}
+                    />
                   </div>
                 </div>
 
                 {/* Year Filter */}
                 <div>
-                  <label htmlFor="year-filter" className="block text-sm font-medium text-primary-600 mb-2">
+                  <label
+                    htmlFor="year-filter"
+                    className="block text-sm font-medium text-primary-600 mb-2"
+                  >
                     Year
                   </label>
                   <select
@@ -150,22 +192,29 @@ const SnippetsPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   >
                     <option value="all">All Years ({snippets.length})</option>
-                    {availableYears.map(year => {
-                      const yearCount = snippets.filter(s => 
-                        new Date(s.publish_date).getFullYear().toString() === year
-                      ).length;
+                    {availableYears.map((year) => {
+                      const yearCount = snippets.filter(
+                        (s) =>
+                          s.publish_date &&
+                          new Date(s.publish_date)
+                            .getFullYear()
+                            .toString() === year
+                      ).length
                       return (
                         <option key={year} value={year}>
                           {year} ({yearCount})
                         </option>
-                      );
+                      )
                     })}
                   </select>
                 </div>
 
                 {/* Tag Filter */}
                 <div>
-                  <label htmlFor="tag-filter" className="block text-sm font-medium text-primary-600 mb-2">
+                  <label
+                    htmlFor="tag-filter"
+                    className="block text-sm font-medium text-primary-600 mb-2"
+                  >
                     Topic
                   </label>
                   <select
@@ -175,21 +224,22 @@ const SnippetsPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   >
                     <option value="all">All Topics</option>
-                    {availableTags.map(tag => {
-                      const tagCount = snippets.filter(s => 
-                        Array.isArray(s.tags) && s.tags.includes(tag)
-                      ).length;
+                    {availableTags.map((tag) => {
+                      const tagCount = snippets.filter(
+                        (s) =>
+                          Array.isArray(s.tags) && s.tags.includes(tag)
+                      ).length
                       return (
                         <option key={tag} value={tag}>
                           {tag} ({tagCount})
                         </option>
-                      );
+                      )
                     })}
                   </select>
                 </div>
               </div>
 
-              {/* Active Filters Display */}
+              {/* Active Filters */}
               {(searchTerm || selectedYear !== 'all' || selectedTag !== 'all') && (
                 <div className="mt-4 pt-4 border-t border-neutral-200">
                   <div className="flex items-center justify-between">
@@ -212,12 +262,7 @@ const SnippetsPage: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={clearFilters}
-                      className="text-xs"
-                    >
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
                       Clear All
                     </Button>
                   </div>
@@ -225,6 +270,7 @@ const SnippetsPage: React.FC = () => {
               )}
             </div>
 
+            {/* Results */}
             {loading ? (
               <LoadingSpinner subtle={true} className="py-8" />
             ) : currentSnippets.length > 0 ? (
@@ -232,8 +278,11 @@ const SnippetsPage: React.FC = () => {
                 {/* Results Summary */}
                 <div className="flex items-center justify-between mb-6">
                   <p className="text-sm text-neutral-600">
-                    Showing {startIndex + 1}-{Math.min(endIndex, filteredSnippets.length)} of {filteredSnippets.length} snippets
-                    {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+                    Showing {startIndex + 1}-
+                    {Math.min(endIndex, filteredSnippets.length)} of{' '}
+                    {filteredSnippets.length} snippets
+                    {totalPages > 1 &&
+                      ` (Page ${currentPage} of ${totalPages})`}
                   </p>
                   <div className="text-xs text-neutral-500">
                     {itemsPerPage} per page
@@ -243,8 +292,8 @@ const SnippetsPage: React.FC = () => {
                 {/* Snippets List */}
                 <div className="space-y-4">
                   {currentSnippets.map((snippet) => (
-                    <div 
-                      key={snippet.id} 
+                    <div
+                      key={snippet.id}
                       className="bg-white rounded-lg p-6 shadow-soft border border-neutral-100 hover:shadow-medium transition-all duration-300"
                     >
                       <div className="flex items-start justify-between">
@@ -252,30 +301,39 @@ const SnippetsPage: React.FC = () => {
                           <h3 className="text-lg font-heading font-semibold text-primary-600 mb-2">
                             {snippet.title}
                           </h3>
-                          
+
                           <div className="flex items-center text-sm text-neutral-500 mb-3">
                             <Calendar size={16} className="mr-2" />
-                            <span>{new Date(snippet.publish_date).toLocaleDateString('en-GB')}</span>
+                            <span>
+                              {snippet.publish_date
+                                ? new Date(
+                                    snippet.publish_date
+                                  ).toLocaleDateString('en-GB')
+                                : '—'}
+                            </span>
                             <Clock size={16} className="ml-4 mr-2" />
                             <span>~20 second read</span>
                           </div>
 
-                          {/* Content Preview - First 150 characters */}
+                          {/* Content Preview */}
                           <div className="text-neutral-600 mb-4">
-                            <div 
+                            <div
                               className="line-clamp-2"
-                              dangerouslySetInnerHTML={{ 
-                                __html: snippet.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+                              dangerouslySetInnerHTML={{
+                                __html:
+                                  snippet.content
+                                    .replace(/<[^>]*>/g, '')
+                                    .substring(0, 150) + '...',
                               }}
                             />
                           </div>
 
                           {/* Tags */}
-                          {snippet.tags && Array.isArray(snippet.tags) && snippet.tags.length > 0 && (
+                          {snippet.tags && Array.isArray(snippet.tags) && (
                             <div className="flex flex-wrap gap-2 mb-3">
-                              {snippet.tags.slice(0, 3).map((tag, tagIndex) => (
-                                <span 
-                                  key={tagIndex}
+                              {snippet.tags.slice(0, 3).map((tag, i) => (
+                                <span
+                                  key={i}
                                   className="text-xs bg-primary-100 text-primary-600 px-2 py-1 rounded-full"
                                 >
                                   {tag}
@@ -296,7 +354,7 @@ const SnippetsPage: React.FC = () => {
                             alt="Radlett Lodge Logo"
                             className="w-10 h-10 object-contain opacity-60"
                             onError={(e) => {
-                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.style.display = 'none'
                             }}
                           />
                         </div>
@@ -306,13 +364,17 @@ const SnippetsPage: React.FC = () => {
                       <details className="group">
                         <summary className="cursor-pointer list-none">
                           <div className="flex items-center justify-center w-full py-3 mt-4 border-t border-neutral-200 text-secondary-600 hover:text-secondary-700 transition-colors">
-                            <span className="text-sm font-medium mr-2">Read Full Snippet</span>
-                            <ArrowRight size={16} className="group-open:rotate-90 transition-transform duration-200" />
+                            <span className="text-sm font-medium mr-2">
+                              Read Full Snippet
+                            </span>
+                            <ArrowRight
+                              size={16}
+                              className="group-open:rotate-90 transition-transform duration-200"
+                            />
                           </div>
                         </summary>
-                        
                         <div className="mt-4 pt-4 border-t border-neutral-100">
-                          <div 
+                          <div
                             className="prose prose-sm max-w-none text-neutral-700"
                             dangerouslySetInnerHTML={{ __html: snippet.content }}
                           />
@@ -328,7 +390,7 @@ const SnippetsPage: React.FC = () => {
                     <div className="text-sm text-neutral-600">
                       Page {currentPage} of {totalPages}
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
@@ -340,35 +402,39 @@ const SnippetsPage: React.FC = () => {
                         <ChevronLeft size={16} className="mr-1" />
                         Previous
                       </Button>
-                      
+
                       {/* Page Numbers */}
                       <div className="flex items-center space-x-1">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          let pageNum;
-                          if (totalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (currentPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (currentPage >= totalPages - 2) {
-                            pageNum = totalPages - 4 + i;
-                          } else {
-                            pageNum = currentPage - 2 + i;
+                        {Array.from(
+                          { length: Math.min(5, totalPages) },
+                          (_, i) => {
+                            let pageNum
+                            if (totalPages <= 5) {
+                              pageNum = i + 1
+                            } else if (currentPage <= 3) {
+                              pageNum = i + 1
+                            } else if (currentPage >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i
+                            } else {
+                              pageNum = currentPage - 2 + i
+                            }
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={
+                                  currentPage === pageNum ? 'primary' : 'outline'
+                                }
+                                size="sm"
+                                onClick={() => handlePageChange(pageNum)}
+                                className="w-8 h-8 p-0 text-xs"
+                              >
+                                {pageNum}
+                              </Button>
+                            )
                           }
-                          
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={currentPage === pageNum ? 'primary' : 'outline'}
-                              size="sm"
-                              onClick={() => handlePageChange(pageNum)}
-                              className="w-8 h-8 p-0 text-xs"
-                            >
-                              {pageNum}
-                            </Button>
-                          );
-                        })}
+                        )}
                       </div>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -388,7 +454,9 @@ const SnippetsPage: React.FC = () => {
                 {searchTerm || selectedYear !== 'all' || selectedTag !== 'all' ? (
                   <>
                     <Search className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Snippets Found</h3>
+                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">
+                      No Snippets Found
+                    </h3>
                     <p className="text-neutral-500 max-w-md mx-auto mb-4">
                       No snippets match your current search and filter criteria.
                     </p>
@@ -403,17 +471,15 @@ const SnippetsPage: React.FC = () => {
                       alt="Radlett Lodge Logo"
                       className="w-16 h-16 mx-auto mb-4 object-contain opacity-30"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'block';
+                        e.currentTarget.style.display = 'none'
                       }}
                     />
-                    <div className="w-16 h-16 mx-auto mb-4 bg-neutral-200 rounded-full items-center justify-center hidden">
-                      <BookOpen className="w-8 h-8 text-neutral-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Snippets Available</h3>
+                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">
+                      No Snippets Available
+                    </h3>
                     <p className="text-neutral-500 max-w-md mx-auto">
-                      Check back soon for new weekly snippets with thought-provoking insights into Freemasonry.
+                      Check back soon for new weekly snippets with
+                      thought-provoking insights into Freemasonry.
                     </p>
                   </>
                 )}
@@ -423,7 +489,7 @@ const SnippetsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+            {/* CTA Section */}
       <section className="py-16 bg-primary-600 text-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center">
@@ -432,19 +498,15 @@ const SnippetsPage: React.FC = () => {
               alt="Radlett Lodge Logo"
               className="w-16 h-16 mx-auto mb-6 object-contain"
               onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                if (fallback) fallback.style.display = 'flex';
+                e.currentTarget.style.display = 'none'
               }}
             />
-            <div className="w-16 h-16 bg-secondary-500 rounded-full items-center justify-center mx-auto mb-6 hidden">
-              <BookOpen className="w-8 h-8 text-primary-800" />
-            </div>
             <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">
               Explore More Content
             </h2>
             <p className="text-xl text-neutral-100 mb-8 max-w-2xl mx-auto">
-              Discover our full collection of articles, news, and insights about Lodge life and Freemasonry.
+              Discover our full collection of articles, news, and insights about
+              Lodge life and Freemasonry.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/blog">
@@ -453,7 +515,11 @@ const SnippetsPage: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/news">
-                <Button variant="outline" size="lg" className="min-w-[160px] border-white text-white hover:bg-white hover:text-primary-600">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="min-w-[160px] border-white text-white hover:bg-white hover:text-primary-600"
+                >
                   Latest News
                 </Button>
               </Link>
@@ -462,7 +528,7 @@ const SnippetsPage: React.FC = () => {
         </div>
       </section>
     </>
-  );
-};
+  )
+}
 
-export default SnippetsPage;
+export default SnippetsPage
