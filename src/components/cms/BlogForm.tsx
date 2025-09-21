@@ -1,230 +1,115 @@
-// src/components/cms/BlogForm.tsx
-import React, { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import RichTextEditor from '../RichTextEditor' // ✅ use your existing Tiptap editor
+import React, { useState } from "react"
+import RichTextEditor from "../RichTextEditor"
+import Button from "../Button"
 
-export type BlogFormValues = {
-  id?: string
+export interface BlogFormValues {
   title: string
-  slug: string
-  excerpt: string
   content: string
-  category?: string
-  tags: string[]
-  coverImageUrl?: string
-  published: boolean
+  summary?: string // keep strict, no nulls here
+  category: string
+  tags?: string[]
+  publish_date?: string
+  is_published?: boolean
 }
 
-type BlogFormProps = {
-  defaultValues?: Partial<BlogFormValues>
-  onSubmit: (values: BlogFormValues) => Promise<void> | void
-  onCancel?: () => void
-  submitLabel?: string
-  isSubmitting?: boolean
+export interface BlogFormProps {
+  initialValues?: Partial<BlogFormValues>
+  onSubmit: (values: BlogFormValues) => void
 }
 
-function slugify(input: string) {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
-
-export default function BlogForm({
-  defaultValues,
-  onSubmit,
-  onCancel,
-  submitLabel = 'Save',
-  isSubmitting = false,
-}: BlogFormProps) {
-  const initialValues: BlogFormValues = useMemo(
-    () => ({
-      title: '',
-      slug: '',
-      excerpt: '',
-      content: '',
-      category: '',
-      tags: [],
-      coverImageUrl: '',
-      published: false,
-      ...defaultValues,
-    }),
-    [defaultValues]
-  )
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    getValues,
-    formState: { errors, isDirty },
-  } = useForm<BlogFormValues>({
-    defaultValues: initialValues,
-    mode: 'onBlur',
+const BlogForm: React.FC<BlogFormProps> = ({ initialValues, onSubmit }) => {
+  const [formValues, setFormValues] = useState<BlogFormValues>({
+    title: initialValues?.title || "",
+    content: initialValues?.content || "",
+    summary: initialValues?.summary || "",
+    category: initialValues?.category || "news",
+    tags: initialValues?.tags || [],
+    publish_date: initialValues?.publish_date || new Date().toISOString(),
+    is_published: initialValues?.is_published ?? false,
   })
 
-  const title = watch('title')
-  const slug = watch('slug')
-
-  // auto-generate slug from title
-  useEffect(() => {
-    if (!title) return
-    const auto = slugify(title)
-    if (!slug || slugify(slug) === slugify(initialValues.title ?? '')) {
-      setValue('slug', auto, { shouldDirty: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title])
-
-  // tags as CSV input
-  const tagsCsv = (watch('tags') || []).join(', ')
-  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const arr = e.target.value
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean)
-    setValue('tags', arr, { shouldDirty: true })
+  const handleChange = (field: keyof BlogFormValues, value: any) => {
+    setFormValues((prev) => ({ ...prev, [field]: value }))
   }
 
-  const onFormSubmit = (values: BlogFormValues) => {
-    const payload: BlogFormValues = {
-      ...values,
-      slug: values.slug?.trim() ? slugify(values.slug) : slugify(values.title ?? ''),
-      content: values.content || '<p></p>',
-      tags: Array.isArray(values.tags) ? values.tags : [],
-    }
-    return onSubmit(payload)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit(formValues)
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="space-y-6 max-w-3xl mx-auto"
-    >
-      {/* Title */}
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium mb-1">Title *</label>
+        <label className="block text-sm font-medium">Title</label>
         <input
-          className="w-full rounded-xl border px-3 py-2"
-          placeholder="e.g. Our Installation Night"
-          {...register('title', { required: 'Title is required' })}
+          type="text"
+          value={formValues.title}
+          onChange={(e) => handleChange("title", e.target.value)}
+          className="w-full border rounded px-3 py-2"
+          required
         />
-        {errors.title && (
-          <p className="text-sm text-red-600 mt-1">{errors.title.message}</p>
-        )}
       </div>
 
-      {/* Slug */}
       <div>
-        <label className="block text-sm font-medium mb-1">Slug</label>
-        <input
-          className="w-full rounded-xl border px-3 py-2"
-          placeholder="our-installation-night"
-          {...register('slug')}
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Example: <code>/news/{slug || slugify(title || 'post')}</code>
-        </p>
-      </div>
-
-      {/* Excerpt */}
-      <div>
-        <label className="block text-sm font-medium mb-1">Excerpt *</label>
+        <label className="block text-sm font-medium">Summary</label>
         <textarea
-          className="w-full rounded-xl border px-3 py-2 min-h-[80px]"
-          placeholder="Short summary shown in lists…"
-          {...register('excerpt', {
-            required: 'Excerpt is required',
-            minLength: { value: 10, message: 'At least 10 characters' },
-          })}
+          value={formValues.summary}
+          onChange={(e) => handleChange("summary", e.target.value)}
+          className="w-full border rounded px-3 py-2"
+          rows={2}
         />
-        {errors.excerpt && (
-          <p className="text-sm text-red-600 mt-1">{errors.excerpt.message}</p>
-        )}
       </div>
 
-      {/* Content */}
       <div>
-        <label className="block text-sm font-medium mb-1">Content *</label>
+        <label className="block text-sm font-medium">Content</label>
         <RichTextEditor
-          value={getValues('content') || ''}
-          onChange={(html) => setValue('content', html, { shouldDirty: true })}
-          placeholder="Write your post…"
+          value={formValues.content}
+          onChange={(html) => handleChange("content", html)}
+          placeholder="Write your article..."
         />
-        {errors.content && (
-          <p className="text-sm text-red-600 mt-1">{errors.content.message}</p>
-        )}
       </div>
 
-      {/* Category & Cover Image */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-          <label className="block text-sm font-medium mb-1">Category</label>
-          <input
-            className="w-full rounded-xl border px-3 py-2"
-            placeholder="e.g. Lodge News"
-            {...register('category')}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Cover Image URL</label>
-          <input
-            className="w-full rounded-xl border px-3 py-2"
-            placeholder="https://…/image.jpg"
-            {...register('coverImageUrl')}
-          />
-        </div>
-      </div>
-
-      {/* Tags */}
       <div>
-        <label className="block text-sm font-medium mb-1">
-          Tags (comma-separated)
-        </label>
-        <input
-          className="w-full rounded-xl border px-3 py-2"
-          placeholder="installation, charity, events"
-          value={tagsCsv}
-          onChange={handleTagsChange}
-        />
-      </div>
-
-      {/* Published toggle */}
-      <div className="flex items-center gap-3">
-        <input
-          id="published"
-          type="checkbox"
-          className="h-4 w-4"
-          {...register('published')}
-        />
-        <label htmlFor="published" className="text-sm select-none">
-          Published
-        </label>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-2xl px-4 py-2 border bg-black text-white disabled:opacity-60"
+        <label className="block text-sm font-medium">Category</label>
+        <select
+          value={formValues.category}
+          onChange={(e) => handleChange("category", e.target.value)}
+          className="w-full border rounded px-3 py-2"
         >
-          {isSubmitting ? 'Saving…' : submitLabel}
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-2xl px-4 py-2 border"
-          >
-            Cancel
-          </button>
-        )}
-        {!isDirty && <span className="text-xs text-gray-500">No changes</span>}
+          <option value="news">News</option>
+          <option value="blog">Blog</option>
+          <option value="charity">Charity</option>
+          <option value="snippets">Snippets</option>
+        </select>
       </div>
+
+      <div>
+        <label className="block text-sm font-medium">Tags (comma-separated)</label>
+        <input
+          type="text"
+          value={formValues.tags?.join(", ") || ""}
+          onChange={(e) =>
+            handleChange(
+              "tags",
+              e.target.value.split(",").map((tag) => tag.trim())
+            )
+          }
+          className="w-full border rounded px-3 py-2"
+        />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          checked={formValues.is_published}
+          onChange={(e) => handleChange("is_published", e.target.checked)}
+        />
+        <label className="text-sm">Published</label>
+      </div>
+
+      <Button type="submit">Save Post</Button>
     </form>
   )
 }
+
+export default BlogForm
