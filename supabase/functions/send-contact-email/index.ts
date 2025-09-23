@@ -1,120 +1,90 @@
-// @ts-nocheck
 // supabase/functions/send-contact-email/index.ts
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+interface ContactPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  interested: boolean;
+}
 
-// Simple in-memory rate limit (per IP, per function instance)
-// Resets on redeploy – good enough for anti-spam throttling.
-const requestCounts: Record<string, { count: number; timestamp: number }> = {};
-const RATE_LIMIT = 5; // max 5 requests
-const WINDOW_MS = 60 * 1000; // per 60 seconds
+interface ResendResponse {
+  id?: string;
+  error?: string;
+  [key: string]: unknown; // catch-all for other fields Resend might return
+}
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+Deno.serve(async (req: Request): Promise<Response> => {
   try {
-    if (req.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const rawBody = await req.text();
+    console.log("📨 Contact form raw body:", rawBody);
+
+    let payload: ContactPayload;
+    try {
+      payload = JSON.parse(rawBody) as ContactPayload;
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // 🚨 Rate limiting by IP
-    const ip = req.headers.get("x-forwarded-for") || "unknown";
-    const now = Date.now();
-    const entry = requestCounts[ip] || { count: 0, timestamp: now };
+    const { name, email, phone, subject, message, interested } = payload;
 
-    if (now - entry.timestamp < WINDOW_MS) {
-      if (entry.count >= RATE_LIMIT) {
-        return new Response(
-          JSON.stringify({ error: "Too many requests, slow down." }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-      entry.count++;
-    } else {
-      entry.count = 1;
-      entry.timestamp = now;
-    }
-    requestCounts[ip] = entry;
-
-    // Parse request body
-    const formData = await req.json();
-
-    const resendKey = Deno.env.get("EMAIL_SERVICE_API_KEY") || "";
+    // --- Environment variables ---
+    const resendKey = Deno.env.get("RESEND_API_KEY") || "";
     const sender =
-      Deno.env.get("EMAIL_SENDER_ADDRESS") || "onboarding@resend.dev";
+      Deno.env.get("EMAIL_SENDER_ADDRESS") ?? "contact@radlettfreemasons.org.uk";
     const recipient =
-      Deno.env.get("EMAIL_RECIPIENT_ADDRESS") || "ptalbot37@gmail.com";
+      Deno.env.get("EMAIL_RECIPIENT_ADDRESS") ?? "radlettlodge6652@gmail.com";
 
-    // Send email via Resend
-    const emailResponse = await fetch("https://api.resend.com/emails", {
+    // --- Build HTML email ---
+    const html = `
+      <h2>📩 New Contact Form Submission</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone || "N/A"}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong><br/>${message}</p>
+      <p><strong>Interested in Membership:</strong> ${interested ? "Yes" : "No"}</p>
+    `;
+
+    // --- Send with Resend ---
+    const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${resendKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `Radlett Lodge Website <${sender}>`,
+        from: sender,
         to: [recipient],
-        reply_to: formData.email,
-        subject: `Contact Form: ${formData.subject}`,
-        text: `
-New contact form submission:
-
-Name: ${formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone || "Not provided"}
-
-Message:
-${formData.message}
-
-${formData.interested ? "✓ Interested in Freemasonry" : ""}
-        `.trim(),
+        subject: `Lodge Contact Form: ${subject}`,
+        html,
       }),
     });
 
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      console.error("Resend API error:", errorText);
+    const result = (await resp.json()) as ResendResponse;
+    console.log("📤 Resend response:", result);
+
+    if (!resp.ok) {
       return new Response(
-        JSON.stringify({
-          error: "Failed to send email",
-          details: errorText,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Failed to send email", details: result }),
+        { status: resp.status, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const result = await emailResponse.json();
-    return new Response(JSON.stringify({ success: true, id: result.id }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        details: String(error),
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ success: true, id: result.id }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("❌ Function error:", err);
+    return new Response(
+      JSON.stringify({ error: "Unexpected server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 });

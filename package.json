@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3001 --strictPort --host 0.0.0.0",
+    "dev": "vite --port 3002 --strictPort --host 0.0.0.0",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview --port 3001 --host 0.0.0.0",
+    "start": "vite preview --port 3002 --host 0.0.0.0",
     "clean": "powershell -Command \"Get-Process node, esbuild -ErrorAction SilentlyContinue | Stop-Process -Force; if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }; if (Test-Path package-lock.json) { Remove-Item -Force package-lock.json }\""
   },
   "dependencies": {
@@ -45,12 +45,12 @@
     "globals": "^15.9.0",
     "kill-port": "^2.0.1",
     "postcss": "^8.4.35",
-    "rollup": "3.29.4",
+    "rollup": "^3.29.5",
     "rollup-plugin-visualizer": "^6.0.3",
     "supabase": "^2.40.7",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "vite": "^7.1.7"
   }
 }

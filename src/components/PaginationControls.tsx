@@ -1,6 +1,11 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import Button from './Button';
+import React from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import Button from "./Button";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -31,7 +36,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   onLastPage,
   onNextPage,
   onPrevPage,
-  className = ''
+  className = "",
 }) => {
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
@@ -41,14 +46,16 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     const range = [];
     const rangeWithDots = [];
 
-    for (let i = Math.max(2, currentPage - delta); 
-         i <= Math.min(totalPages - 1, currentPage + delta); 
-         i++) {
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
       range.push(i);
     }
 
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
+      rangeWithDots.push(1, "...");
     } else {
       rangeWithDots.push(1);
     }
@@ -56,7 +63,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     rangeWithDots.push(...range);
 
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
+      rangeWithDots.push("...", totalPages);
     } else if (totalPages > 1) {
       rangeWithDots.push(totalPages);
     }
@@ -69,7 +76,9 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}>
+    <div
+      className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}
+    >
       {/* Items info */}
       <div className="text-sm text-neutral-600">
         Showing {startItem} to {endItem} of {totalItems} items
@@ -119,11 +128,11 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           <div className="flex items-center gap-1">
             {getVisiblePages().map((page, index) => (
               <React.Fragment key={index}>
-                {page === '...' ? (
+                {page === "..." ? (
                   <span className="px-2 py-1 text-neutral-500">...</span>
                 ) : (
                   <Button
-                    variant={currentPage === page ? 'primary' : 'outline'}
+                    variant={currentPage === page ? "primary" : "outline"}
                     size="sm"
                     onClick={() => onPageChange(page as number)}
                     className="min-w-[32px] h-8"

@@ -1,53 +1,38 @@
 import React from "react";
 
-interface ButtonProps {
-  children?: React.ReactNode; // ✅ made optional so <Button /> won't error
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
-  className?: string;
-  onClick?: () => void;
-  type?: "button" | "submit" | "reset";
-  disabled?: boolean;
-  fullWidth?: boolean;
+  title?: string; // ✅ allow tooltips
 }
 
+const variantClasses = {
+  primary:
+    "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500",
+  secondary:
+    "bg-neutral-600 text-white hover:bg-neutral-700 focus:ring-neutral-500",
+  outline:
+    "border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:ring-primary-500",
+};
+
+const sizeClasses = {
+  sm: "px-2 py-1 text-sm rounded",
+  md: "px-4 py-2 text-base rounded-md",
+  lg: "px-6 py-3 text-lg rounded-lg",
+};
+
 const Button: React.FC<ButtonProps> = ({
-  children,
   variant = "primary",
   size = "md",
   className = "",
-  onClick,
-  type = "button",
-  disabled = false,
-  fullWidth = false,
+  children,
+  ...props
 }) => {
-  const baseStyles =
-    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
-
-  const variantStyles = {
-    primary:
-      "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-    secondary:
-      "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
-    outline:
-      "border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white focus:ring-blue-500",
-  };
-
-  const sizeStyles = {
-    sm: "py-1.5 px-3 text-sm",
-    md: "py-2 px-4 text-base",
-    lg: "py-3 px-6 text-lg",
-  };
-
-  const disabledStyles = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
-  const widthStyles = fullWidth ? "w-full" : "";
-
   return (
     <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${className}`}
-      onClick={onClick}
-      type={type}
-      disabled={disabled}
+      className={`${variantClasses[variant]} ${sizeClasses[size]} focus:outline-none focus:ring-2 focus:ring-offset-2 ${className}`}
+      {...props}
     >
       {children}
     </button>
