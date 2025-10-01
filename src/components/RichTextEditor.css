@@ -1,0 +1,38 @@
+/* src/components/RichTextEditor.css */
+
+.rte-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.rte-toolbar {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid #eee;
+  padding: 6px;
+  background: #f9f9f9;
+}
+
+.rte-toolbar button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.rte-toolbar button:hover {
+  background: #eee;
+}
+
+.rte-toolbar button.is-active {
+  background: #ddd;
+}
+
+.rte-editor {
+  min-height: 200px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
