@@ -15,10 +15,7 @@ export default defineConfig({
     }) as unknown as PluginOption,
   ],
 
-  // If you still want to exclude lucide from optimizeDeps, keep this block.
-  // Otherwise you can delete optimizeDeps entirely.
   optimizeDeps: {
-    // include: ['react-quill'], // ❌ we moved to Tiptap; keep removed
     exclude: ['lucide-react'],
   },
 
@@ -45,7 +42,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return
-          if (id.includes('react') || id.includes('scheduler')) return 'react'
+          // ✅ DO NOT split React core — let Vite handle it safely
           if (id.includes('react-router')) return 'router'
           if (id.includes('@supabase')) return 'supabase'
           if (id.includes('lucide-react')) return 'icons'
