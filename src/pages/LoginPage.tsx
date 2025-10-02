@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthForm from '../components/AuthForm';
 import { LogIn } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const expired = params.get('expired') === '1';
 
   if (user) {
     return <Navigate to="/members" replace />;
@@ -26,37 +29,62 @@ const LoginPage: React.FC = () => {
               Sign in to access the Members Area or create a new account
             </p>
           </div>
-          
+
+          {/* 🔔 Inline alert for expired session */}
+          {expired && (
+            <div className="mb-4 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 text-sm">
+              ⚠️ Your session expired. Please log in again.
+            </div>
+          )}
+
           <div className="bg-white rounded-lg p-6 shadow-medium">
             <AuthForm />
           </div>
-          
+
           {/* Features Overview */}
           <div className="mt-8 bg-white rounded-lg p-6 shadow-soft">
-            <h3 className="font-heading font-semibold text-primary-600 mb-4">Member Area Features</h3>
+            <h3 className="font-heading font-semibold text-primary-600 mb-4">
+              Member Area Features
+            </h3>
             <div className="space-y-3 text-sm text-neutral-600">
               <div className="flex items-start">
-                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">1</span>
+                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">
+                  1
+                </span>
                 <div>
-                  <p><strong>Lodge Documents:</strong> Access important communications, bylaws, and forms</p>
+                  <p>
+                    <strong>Lodge Documents:</strong> Access important communications, bylaws, and forms
+                  </p>
                 </div>
               </div>
               <div className="flex items-start">
-                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">2</span>
+                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">
+                  2
+                </span>
                 <div>
-                  <p><strong>Meeting Minutes:</strong> Review records of past Lodge meetings</p>
+                  <p>
+                    <strong>Meeting Minutes:</strong> Review records of past Lodge meetings
+                  </p>
                 </div>
               </div>
               <div className="flex items-start">
-                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">3</span>
+                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">
+                  3
+                </span>
                 <div>
-                  <p><strong>Member Directory:</strong> Connect with fellow Lodge members</p>
+                  <p>
+                    <strong>Member Directory:</strong> Connect with fellow Lodge members
+                  </p>
                 </div>
               </div>
               <div className="flex items-start">
-                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">4</span>
+                <span className="inline-block w-6 h-6 bg-secondary-500 text-primary-800 rounded-full text-xs font-bold flex items-center justify-center mr-3 mt-0.5">
+                  4
+                </span>
                 <div>
-                  <p><strong>Admin Tools:</strong> Manage content and member profiles (admin only)</p>
+                  <p>
+                    <strong>Admin Tools:</strong> Manage content and member profiles (admin only)
+                  </p>
                 </div>
               </div>
             </div>

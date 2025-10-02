@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
@@ -12,7 +13,6 @@ interface AuthContextType {
   isAdmin: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
-  needsPasswordReset: boolean;
   forceRefresh: () => Promise<void>;
 }
 
@@ -24,7 +24,6 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   error: null,
   refreshProfile: async () => {},
-  needsPasswordReset: false,
   forceRefresh: async () => {},
 });
 
@@ -49,12 +48,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userProfile = await api.getMemberProfile(currentUser.id);
       const loadTime = Date.now() - startTime;
 
-      console.log(`👤 AuthContext: Profile loaded in ${loadTime}ms:`, userProfile ? {
-        id: userProfile.id,
-        full_name: userProfile.full_name,
-        role: userProfile.role,
-        status: userProfile.status
-      } : null);
+      console.log(
+        `👤 AuthContext: Profile loaded in ${loadTime}ms:`,
+        userProfile
+          ? {
+              id: userProfile.id,
+              full_name: userProfile.full_name,
+              role: userProfile.role,
+              status: userProfile.status,
+            }
+          : null
+      );
 
       setProfile(userProfile);
 
@@ -62,11 +66,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('🔐 AuthContext: User role:', userProfile.role);
         console.log('🔐 AuthContext: User status:', userProfile.status);
         console.log('🔐 AuthContext: Is admin:', userProfile.role === 'admin');
-        console.log('🔐 AuthContext: Is active admin:', userProfile.role === 'admin' && userProfile.status === 'active');
+        console.log(
+          '🔐 AuthContext: Is active admin:',
+          userProfile.role === 'admin' && userProfile.status === 'active'
+        );
       }
     } catch (error) {
       console.error('Error in loadProfile:', error);
-      setError(`Failed to load user profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setError(
+        `Failed to load user profile: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
       setProfile(null);
     } finally {
       setProfileLoading(false);
@@ -137,10 +148,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('🔄 AuthContext: Token refreshed for:', session.user.email);
           setUser(session.user);
           await loadProfile(session.user);
+        } else if (event === 'TOKEN_REFRESHED' && !session) {
+          console.warn('⚠️ AuthContext: Token refresh failed, redirecting to login');
+          // 👇 Redirect with expired flag
+          window.location.href = '/login?expired=1';
         }
       } catch (err) {
         console.error('Error handling auth state change:', err);
         setError('Authentication error');
+        // 👇 fallback redirect if something unexpected happens
+        window.location.href = '/login?expired=1';
       }
     });
 
@@ -150,7 +167,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // ✅ Fixed signOut with session check
   const signOut = async () => {
     try {
       console.log('👋 AuthContext: Starting sign out...');
@@ -178,7 +194,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isAdmin = profile?.role === 'admin' && profile?.status === 'active';
-  const needsPasswordReset = profile?.needs_password_reset === true;
 
   const contextValue = {
     user,
@@ -188,13 +203,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     error,
     refreshProfile,
-    needsPasswordReset,
-    forceRefresh
+    forceRefresh,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
