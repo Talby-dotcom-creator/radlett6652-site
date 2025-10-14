@@ -31,24 +31,24 @@ export const optimizedApi = {
       let query = supabase
         .from("blog_posts")
         .select("*")
+        .eq("is_published", true)
         .order("publish_date", { ascending: false });
 
-      // ✅ Ensure category is a non-empty string before filtering
-      if (typeof category === "string" && category.trim() !== "") {
-        query = query.eq("category", category.trim());
-      }
+      // only filter if a category is provided
+      if (category) query = query.eq("category", category);
 
       const { data, error } = await query;
       if (error) handleError(error, "getBlogPosts");
 
       return (data ?? []).map((post: any) => ({
         ...post,
+        title: post.title ?? "Untitled Post",
         summary: post.summary ?? "",
         category: post.category ?? "news",
         publish_date: post.publish_date ?? new Date().toISOString(),
         is_published: Boolean(post.is_published),
         is_members_only: Boolean(post.is_members_only),
-        slug: post.slug ?? "", // ✅ ensures slug always exists
+        slug: post.slug ?? post.id,
       }));
     } catch (err: any) {
       handleError(err, "getBlogPosts");
@@ -107,15 +107,28 @@ export const optimizedApi = {
 
   /* ---------------- TESTIMONIALS ---------------- */
   async getTestimonials(): Promise<Testimonial[]> {
-    const { data, error } = await supabase
-      .from("testimonials")
-      .select("*")
-      .order("sort_order");
-    if (error) handleError(error, "getTestimonials");
-    return (data ?? []).map((testimonial: any) => ({
-      ...testimonial,
-      name: testimonial.name ?? testimonial.member_name ?? "",
-    }));
+    try {
+      const { data, error } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+
+      if (error) handleError(error, "getTestimonials");
+
+      return (data ?? []).map((t: any) => ({
+        id: t.id,
+        name: t.name ?? t.member_name ?? "Anonymous",
+        content: t.content ?? "",
+        image_url: t.image_url ?? "",
+        sort_order: t.sort_order ?? 0,
+        quote: t.quote ?? undefined,
+        role: t.role ?? undefined,
+      }));
+    } catch (err: any) {
+      handleError(err, "getTestimonials");
+      return [];
+    }
   },
 
   /* ---------------- MEMBER PROFILES ---------------- */

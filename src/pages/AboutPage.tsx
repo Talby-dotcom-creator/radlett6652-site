@@ -2,41 +2,41 @@
 import React, { useEffect, useState } from "react";
 import optimizedApi from "../lib/optimizedApi";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { Officer, CMSBlogPost } from "../types";
+import { Officer, Testimonial } from "../types";
 
 const AboutPage: React.FC = () => {
   const [aboutContent, setAboutContent] = useState<string | null>(null);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [snippetHtml, setSnippetHtml] = useState<string | null>(null);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadContent = async () => {
       try {
         setLoading(true);
-        const [about, officersData, snippets] = await Promise.all([
+
+        const [about, officersData, testimonialsData] = await Promise.all([
           optimizedApi.getPageContent("about-radlett-lodge"),
-          optimizedApi.getOfficers?.(),
-          optimizedApi.getSnippets?.(),
+          optimizedApi.getOfficers(),
+          optimizedApi.getTestimonials(),
         ]);
 
-        setAboutContent(about || null);
-        setOfficers(
-          (officersData || []).map((officer) => ({
-            ...officer,
-            is_active: true,
-            sort_order: 0,
-            created_at: "",
-            updated_at: "",
-          }))
-        );
+        const snippets = await optimizedApi.getBlogPosts("snippet");
+
+        setAboutContent(about?.content ?? null);
+        setOfficers(officersData ?? []);
         setSnippetHtml(snippets?.[0]?.content ?? null);
+        setTestimonials(testimonialsData ?? []);
+
+        console.log("✅ Testimonials loaded:", testimonialsData);
       } catch (err) {
         console.error("Error loading About page:", err);
       } finally {
         setLoading(false);
       }
     };
+
     loadContent();
   }, []);
 
@@ -80,7 +80,7 @@ const AboutPage: React.FC = () => {
               },
               {
                 title: "What We Do",
-                text: "We meet regularly in our Lodge to conduct ceremonial rituals that teach moral lessons, engage in social activities, support charitable causes, and work together on personal development. We aim to make a positive impact in our local communities and the wider world.",
+                text: "We meet regularly in our Lodge to conduct ceremonial rituals that teach moral lessons, engage in social activities, support charitable causes, and work together on personal development.",
               },
               {
                 title: "Our Principles",
@@ -128,8 +128,6 @@ const AboutPage: React.FC = () => {
             }}
           />
         </div>
-
-        {/* ✨ Soft shimmer animation overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer pointer-events-none" />
       </section>
 
@@ -149,7 +147,7 @@ const AboutPage: React.FC = () => {
                 {officer.image_url ? (
                   <img
                     src={officer.image_url}
-                    alt={officer.full_name}
+                    alt={officer.name}
                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-4 object-cover border border-neutral-300"
                   />
                 ) : (
@@ -158,7 +156,7 @@ const AboutPage: React.FC = () => {
                   </div>
                 )}
                 <h3 className="text-lg font-semibold text-primary-700 mb-1">
-                  {officer.full_name}
+                  {officer.name}
                 </h3>
                 <p className="text-neutral-700 text-sm font-medium">
                   {officer.position}
@@ -171,7 +169,52 @@ const AboutPage: React.FC = () => {
         )}
       </section>
 
-      {/* 5️⃣ CTA FOOTER */}
+      {/* 5️⃣ MEMBER EXPERIENCES */}
+      <section className="bg-neutral-50 py-20">
+        <div className="container mx-auto px-4 md:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-neutral-900 mb-12">
+            Member Experiences
+          </h2>
+          <p className="text-lg text-neutral-700 max-w-2xl mx-auto mb-16">
+            Hear from some of our members about their Masonic journey.
+          </p>
+
+          {testimonials.length > 0 ? (
+            <div className="grid gap-10 md:grid-cols-3">
+              {testimonials.map((t) => (
+                <div
+                  key={t.id}
+                  className="bg-white rounded-xl shadow-md p-8 flex flex-col items-center text-center"
+                >
+                  {t.image_url ? (
+                    <img
+                      src={t.image_url}
+                      alt={t.member_name}
+                      className="w-24 h-24 rounded-full object-cover border border-neutral-200 mb-4"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-neutral-200 mb-4 flex items-center justify-center text-neutral-500">
+                      No Image
+                    </div>
+                  )}
+                  <p className="text-neutral-700 italic mb-4 leading-relaxed">
+                    “{t.content}”
+                  </p>
+                  <h4 className="font-semibold text-primary-700">
+                    {t.member_name}
+                  </h4>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-neutral-600">
+              No testimonials available at this time.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* 6️⃣ CTA FOOTER */}
       <section className="bg-primary-900 text-white text-center py-20">
         <h3 className="text-2xl md:text-3xl font-heading font-bold mb-3">
           Interested in Becoming a Freemason?

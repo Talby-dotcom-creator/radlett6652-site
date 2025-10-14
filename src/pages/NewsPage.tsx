@@ -5,7 +5,7 @@ import { Calendar, ArrowLeft } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import HeroSection from "../components/HeroSection";
 import { CMSBlogPost } from "../types";
-import { supabase } from "../lib/supabase";
+import optimizedApi from "../lib/optimizedApi";
 
 const NewsPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -19,16 +19,10 @@ const NewsPostPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .select("*")
-          .eq("slug", slug ?? "")
-          .maybeSingle();
-
-        if (error) throw error;
-        if (!data) throw new Error("Post not found");
-
-        setPost(data as CMSBlogPost);
+        const data = await optimizedApi.getBlogPosts("news");
+        const found = data.find((post: CMSBlogPost) => post.slug === slug);
+        if (!found) throw new Error("Post not found");
+        setPost(found);
       } catch (err: any) {
         console.error("Error loading post:", err.message || err);
         setError("This article could not be found.");
