@@ -1,12 +1,12 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { CMSFAQItem } from '../../types';
+import { FAQItem } from '../../types';
 import Button from '../Button';
 
 interface FAQFormProps {
-  onSubmit: (data: Omit<CMSFAQItem, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSubmit: (data: Omit<FAQItem, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<CMSFAQItem>;
+  initialData?: Partial<FAQItem>;
 }
 
 const FAQForm: React.FC<FAQFormProps> = ({ onSubmit, onCancel, initialData }) => {

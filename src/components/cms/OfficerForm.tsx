@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CMSOfficer } from '../../types';
+import { Officer } from '../../types';
 import Button from '../Button';
 import MediaManager from './MediaManager';
 import { Image, X } from 'lucide-react';
 
 interface OfficerFormProps {
-  onSubmit: (data: Omit<CMSOfficer, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSubmit: (data: Omit<Officer, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<CMSOfficer>;
+  initialData?: Partial<Officer>;
 }
 
 const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialData }) => {

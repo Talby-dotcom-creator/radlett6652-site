@@ -1,12 +1,12 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { CMSPageContent } from '../../types';
+import { PageContent } from '../../types';
 import Button from '../Button';
 
 interface PageContentFormProps {
-  onSubmit: (data: Omit<CMSPageContent, 'id' | 'updated_at'>) => Promise<void>;
+  onSubmit: (data: Omit<PageContent, 'id' | 'updated_at'>) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<CMSPageContent>;
+  initialData?: Partial<PageContent>;
 }
 
 const PageContentForm: React.FC<PageContentFormProps> = ({ onSubmit, onCancel, initialData }) => {

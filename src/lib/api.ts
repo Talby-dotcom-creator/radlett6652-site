@@ -1,314 +1,308 @@
-import { supabase } from './supabase';
-import { MemberProfile, LodgeDocument, MeetingMinutes } from '../types';
+// src/lib/api.ts
+import { supabase } from "./supabase";
+import {
+  MemberProfile,
+  LodgeDocument,
+  MeetingMinutes,
+  CMSBlogPost,
+  Event,
+} from "../types";
+import type { PostgrestResponse } from "@supabase/supabase-js";
 
-// Helper function to add timeout to promises
-const withTimeout = <T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> => {
-  return Promise.race([
+/* ------------------------------------------------------
+ * Utility helpers
+ * ---------------------------------------------------- */
+const withTimeout = async <T>(
+  task: Promise<T> | { then?: unknown },
+  timeoutMs: number = 15000
+): Promise<T> => {
+  const promise: Promise<T> =
+    typeof (task as any).then === "function"
+      ? (task as Promise<T>)
+      : Promise.resolve(task as T);
+
+  return (await Promise.race([
     promise,
-    new Promise<T>((_, reject) => 
-      setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
-    )
-  ]);
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Request timeout after ${timeoutMs}ms`)),
+        timeoutMs
+      )
+    ),
+  ])) as T;
 };
 
-// Add connection health check
 const checkConnection = async (): Promise<boolean> => {
   try {
-    // Simple ping test with very short timeout
-    const { error } = await Promise.race([
-      supabase.from('member_profiles').select('count', { count: 'exact', head: true }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 3000))
-    ]);
-    
+    const { error } = await supabase
+      .from("member_profiles")
+      .select("id")
+      .limit(1);
     if (error) {
-      console.warn('Connection check failed:', error.message);
+      console.warn("⚠️ Supabase connection failed:", error.message);
       return false;
     }
     return true;
   } catch {
-    console.warn('Connection check failed with exception');
     return false;
   }
 };
 
+/* ------------------------------------------------------
+ * Main API — Safe Supabase access layer
+ * ---------------------------------------------------- */
 export const api = {
-  // Member Profiles
-  getMemberProfile: async (userId: string): Promise<MemberProfile | null> => {
-    try {
-      // Quick connection check first
-      const isConnected = await checkConnection();
-      if (!isConnected) {
-        throw new Error('Database connection unavailable');
-      }
-      
-      console.log('🔍 API: Fetching member profile for:', userId);
-      const startTime = Date.now();
-      
-      const query = supabase
-        .from('member_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .limit(1);
-      
-      const { data, error } = await withTimeout(query, 10000); // Much shorter timeout
-      
-      const queryTime = Date.now() - startTime;
-      console.log(`👤 API: Profile query completed in ${queryTime}ms`);
-      
-      if (error) {
-        console.error('Error fetching member profile:', error);
-        throw new Error(`Failed to fetch profile: ${error.message}`);
-      }
-      
-      const profile = data && data.length > 0 ? data[0] as MemberProfile : null;
-      console.log('👤 API: Profile result:', profile ? { role: profile.role, status: profile.status } : null);
-      return profile;
-    } catch (error) {
-      console.error('API Error - getMemberProfile:', error);
-      throw error;
-    }
+  /* ---------------- Member Profiles ---------------- */
+  async getMemberProfile(userId: string): Promise<MemberProfile | null> {
+    if (!(await checkConnection())) throw new Error("Database unavailable");
+
+    const { data, error } = (await withTimeout(
+      supabase
+        .from("member_profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .limit(1),
+      10000
+    )) as PostgrestResponse<MemberProfile>;
+
+    if (error) throw new Error(error.message);
+    if (!data || !data.length) return null;
+    return { ...data[0], status: data[0].status ?? "active" };
   },
 
-  createMemberProfile: async (userId: string, fullName: string): Promise<MemberProfile> => {
-    try {
-      const query = supabase
-        .from('member_profiles')
-        .insert({
-          user_id: userId,
-          full_name: fullName.trim(),
-          role: 'member',
-          status: 'pending',
-          registration_date: new Date().toISOString(),
-          email_verified: false
-        })
-        .select()
-        .single();
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error creating member profile:', error);
-        throw new Error(`Failed to create profile: ${error.message}`);
+  async createMemberProfile(
+    userId: string,
+    fullName: string
+  ): Promise<MemberProfile> {
+    const insertObj: Omit<MemberProfile, "id"> = {
+      user_id: userId,
+      full_name: fullName,
+      status: "active",
+      join_date: new Date().toISOString() || undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      role: "member" as "member" | "admin",
+      contact_email: null,
+      contact_phone: null,
+      email_verified: null,
+    };
+
+    // Ensure join_date is string or undefined, never null
+    const safeInsertObj = {
+      ...insertObj,
+      join_date:
+        typeof insertObj.join_date === "string"
+          ? insertObj.join_date
+          : undefined,
+      role: insertObj.role === "admin" ? "admin" : "member",
+    };
+    const { data, error } = await supabase
+      .from("member_profiles")
+      .insert([safeInsertObj])
+      .select();
+    if (error) throw new Error(error.message);
+    return (
+      data?.[0] ?? {
+        id: "",
+        user_id: userId,
+        full_name: fullName,
+        contact_email: null,
+        contact_phone: null,
+        address: null,
+        join_date:
+          typeof insertObj.join_date === "string"
+            ? insertObj.join_date
+            : undefined,
+        position: null,
+        role: "member",
+        status: "active",
+        notes: null,
+        email_verified: null,
+        grand_lodge_rank: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
-      
-      return data as MemberProfile;
-    } catch (error) {
-      console.error('API Error - createMemberProfile:', error);
-      throw error;
-    }
+    );
   },
 
-  adminCreateMemberProfile: async (profile: {
-    user_id: string;
-    full_name: string;
-    position?: string;
-    role: 'member' | 'admin';
-  }): Promise<MemberProfile> => {
-    try {
-      const query = supabase
-        .from('member_profiles')
-        .insert(profile)
-        .select()
-        .single();
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error creating member profile (admin):', error);
-        throw new Error(`Failed to create profile: ${error.message}`);
-      }
-      
-      return data as MemberProfile;
-    } catch (error) {
-      console.error('API Error - adminCreateMemberProfile:', error);
-      throw error;
+  async updateMemberProfile(
+    userId: string,
+    updates: Partial<MemberProfile>
+  ): Promise<MemberProfile> {
+    // Prepare updates, ensuring join_date is never null and role is correct
+    const updateObj: Partial<MemberProfile> = { ...updates };
+    // Remove join_date if not a string or is null
+    if (
+      typeof updateObj.join_date !== "string" ||
+      updateObj.join_date === null
+    ) {
+      delete updateObj.join_date;
     }
+    // Ensure role is only 'member' or 'admin'
+    if (updateObj.role !== "member" && updateObj.role !== "admin") {
+      updateObj.role = "member";
+    }
+    const { data, error } = await supabase
+      .from("member_profiles")
+      .update(updateObj)
+      .eq("user_id", userId)
+      .select();
+    if (error) throw new Error(error.message);
+
+    return (
+      data?.[0] ?? {
+        id: "",
+        user_id: userId,
+        full_name:
+          typeof updateObj.full_name === "string" ? updateObj.full_name : "",
+        contact_email:
+          typeof updateObj.contact_email === "string"
+            ? updateObj.contact_email
+            : null,
+        contact_phone:
+          typeof updateObj.contact_phone === "string"
+            ? updateObj.contact_phone
+            : null,
+        address:
+          typeof updateObj.address === "string" ? updateObj.address : null,
+        join_date:
+          typeof updateObj.join_date === "string"
+            ? updateObj.join_date
+            : undefined,
+        position:
+          typeof updateObj.position === "string" ? updateObj.position : null,
+        role: updateObj.role === "admin" ? "admin" : "member",
+        status:
+          updateObj.status === "pending" || updateObj.status === "inactive"
+            ? updateObj.status
+            : "active",
+        notes: typeof updateObj.notes === "string" ? updateObj.notes : null,
+        email_verified:
+          typeof updateObj.email_verified === "boolean"
+            ? updateObj.email_verified
+            : null,
+        grand_lodge_rank:
+          typeof updateObj.grand_lodge_rank === "string"
+            ? updateObj.grand_lodge_rank
+            : null,
+        created_at:
+          typeof updateObj.created_at === "string"
+            ? updateObj.created_at
+            : new Date().toISOString(),
+        updated_at:
+          typeof updateObj.updated_at === "string"
+            ? updateObj.updated_at
+            : new Date().toISOString(),
+      }
+    );
   },
 
-  getAllMembers: async (): Promise<MemberProfile[]> => {
-    try {
-      const query = supabase
-        .from('member_profiles')
-        .select('*')
-        .order('full_name', { ascending: true });
-      
-      const { data, error } = await withTimeout(query, 90000);
-      
-      if (error) {
-        console.error('Error fetching all members:', error);
-        throw new Error(`Failed to fetch members: ${error.message}`);
-      }
-      
-      return data as MemberProfile[];
-    } catch (error) {
-      console.error('API Error - getAllMembers:', error);
-      throw error;
-    }
+  /* ---------------- Site Settings ---------------- */
+  async getSiteSettings(): Promise<Record<string, string>> {
+    const { data, error } = (await withTimeout(
+      supabase.from("site_settings").select("setting_key, setting_value"),
+      10000
+    )) as PostgrestResponse<{ setting_key: string; setting_value: string }>;
+    if (error) throw new Error(error.message);
+    const map: Record<string, string> = {};
+    (data ?? []).forEach((row) => {
+      map[row.setting_key] = row.setting_value;
+    });
+    return map;
   },
 
-  updateMemberProfile: async (userId: string, profile: Partial<MemberProfile>): Promise<MemberProfile> => {
-    try {
-      const query = supabase
-        .from('member_profiles')
-        .update(profile)
-        .eq('user_id', userId)
-        .select()
-        .single();
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error updating member profile:', error);
-        throw new Error(`Failed to update profile: ${error.message}`);
-      }
-      
-      return data as MemberProfile;
-    } catch (error) {
-      console.error('API Error - updateMemberProfile:', error);
-      throw error;
-    }
+  /* ---------------- Testimonials ---------------- */
+  async getTestimonials() {
+    const { data, error } = (await withTimeout(
+      supabase
+        .from("testimonials")
+        .select("*")
+        .eq("is_published", true)
+        .order("sort_order"),
+      10000
+    )) as PostgrestResponse<any>;
+
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((t: any) => ({
+      ...t,
+      is_published: !!t.is_published,
+    }));
   },
 
-  deleteMemberProfile: async (userId: string): Promise<void> => {
-    try {
-      const query = supabase
-        .from('member_profiles')
-        .delete()
-        .eq('user_id', userId);
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error deleting member profile:', error);
-        throw new Error(`Failed to delete profile: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('API Error - deleteMemberProfile:', error);
-      throw error;
-    }
+  /* ---------------- Events ---------------- */
+  async getEvents(): Promise<Event[]> {
+    const { data, error } = (await withTimeout(
+      supabase.from("events").select("*").order("event_date"),
+      10000
+    )) as PostgrestResponse<Event>;
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
   },
 
-  // Secure user deletion via Edge Function
-  deleteUserAndProfile: async (userId: string): Promise<any> => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
+  async getNextUpcomingEvent(): Promise<Event | null> {
+    const now = new Date().toISOString();
+    const { data, error } = (await withTimeout(
+      supabase
+        .from("events")
+        .select("*")
+        .gt("event_date", now)
+        .order("event_date")
+        .limit(1),
+      10000
+    )) as PostgrestResponse<Event>;
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete user');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API Error - deleteUserAndProfile:', error);
-      throw error;
-    }
+    if (error) throw new Error(error.message);
+    return data?.[0] ?? null;
   },
 
-  // Lodge Documents
-  getLodgeDocuments: async (category?: string): Promise<LodgeDocument[]> => {
-    try {
-      // Create the query
-      let query = supabase
-        .from('lodge_documents')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      // Add category filter if provided
-      if (category) {
-        query = query.eq('category', category);
-      }
-      
-      // Execute the query with timeout
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error fetching lodge documents:', error);
-        throw new Error(`Failed to fetch documents: ${error.message}`);
-      }
-      
-      return data as LodgeDocument[];
-    } catch (error) {
-      console.error('API Error - getLodgeDocuments:', error);
-      throw error;
-    }
+  /* ---------------- Blog / News ---------------- */
+  async getBlogPosts(category?: string): Promise<CMSBlogPost[]> {
+    const { data, error } = (await withTimeout(
+      supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("is_published", true)
+        .order("publish_date", { ascending: false }),
+      10000
+    )) as PostgrestResponse<CMSBlogPost>;
+
+    if (error) throw new Error(error.message);
+
+    const filtered = category
+      ? data?.filter((p: any) => p.category === category)
+      : data;
+
+    return filtered ?? [];
   },
 
-  createDocument: async (document: Omit<LodgeDocument, 'id' | 'created_at' | 'updated_at'>): Promise<LodgeDocument> => {
-    try {
-      const query = supabase
-        .from('lodge_documents')
-        .insert(document)
-        .select()
-        .single();
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error creating document:', error);
-        throw new Error(`Failed to create document: ${error.message}`);
-      }
-      
-      return data as LodgeDocument;
-    } catch (error) {
-      console.error('API Error - createDocument:', error);
-      throw error;
-    }
+  /* ---------------- Documents ---------------- */
+  async getLodgeDocuments(): Promise<LodgeDocument[]> {
+    const { data, error } = (await withTimeout(
+      supabase
+        .from("lodge_documents")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      10000
+    )) as PostgrestResponse<LodgeDocument>;
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
   },
 
-  // Meeting Minutes
-  getMeetingMinutes: async (): Promise<MeetingMinutes[]> => {
-    try {
-      const query = supabase
-        .from('meeting_minutes')
-        .select('*')
-        .order('meeting_date', { ascending: false });
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error fetching meeting minutes:', error);
-        throw new Error(`Failed to fetch meeting minutes: ${error.message}`);
-      }
-      
-      return data as MeetingMinutes[];
-    } catch (error) {
-      console.error('API Error - getMeetingMinutes:', error);
-      throw error;
-    }
-  },
+  /* ---------------- Meeting Minutes ---------------- */
+  async getMeetingMinutes(): Promise<MeetingMinutes[]> {
+    const { data, error } = (await withTimeout(
+      supabase
+        .from("meeting_minutes")
+        .select("*")
+        .order("meeting_date", { ascending: false }),
+      10000
+    )) as PostgrestResponse<MeetingMinutes>;
 
-  createMinutes: async (minutes: Omit<MeetingMinutes, 'id' | 'created_at' | 'updated_at'>): Promise<MeetingMinutes> => {
-    try {
-      const query = supabase
-        .from('meeting_minutes')
-        .insert(minutes)
-        .select()
-        .single();
-      
-      const { data, error } = await withTimeout(query, 60000);
-      
-      if (error) {
-        console.error('Error creating meeting minutes:', error);
-        throw new Error(`Failed to create meeting minutes: ${error.message}`);
-      }
-      
-      return data as MeetingMinutes;
-    } catch (error) {
-      console.error('API Error - createMinutes:', error);
-      throw error;
-    }
-  }
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
 };
+
+export default api;

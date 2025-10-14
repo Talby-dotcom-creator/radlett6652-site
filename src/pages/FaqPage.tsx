@@ -6,11 +6,11 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
 import { cmsApi } from '../lib/cmsApi';
-import { CMSFAQItem } from '../types';
+import { FAQItem } from '../types';
 import { HelpCircle } from 'lucide-react';
 
 const FaqPage: React.FC = () => {
-  const [faqs, setFaqs] = useState<CMSFAQItem[]>([]);
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +38,7 @@ const FaqPage: React.FC = () => {
   }, []);
 
   // Convert CMS FAQ to component format
-  const convertFAQData = (cmsFAQ: CMSFAQItem) => ({
+  const convertFAQData = (cmsFAQ: FAQItem) => ({
     question: cmsFAQ.question,
     answer: cmsFAQ.answer
   });

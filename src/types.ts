@@ -1,69 +1,148 @@
 // src/types.ts
 
-// ✅ Shared type for CMS blog posts, news, snippets, charity
+/* ------------------------------------------------------------------
+ * 🔷 CMS Core Types — unified model for blog, events, officers, etc.
+ * ------------------------------------------------------------------ */
+
 export interface CMSBlogPost {
-  id: string
-  title: string
-  summary?: string | null
-  content: string
-  created_at: string | null
-  publish_date?: string | null
-  category?: string | null        // "news" | "blog" | "charity" | "snippets"
-  tags?: string[] | null
-  image_url?: string | null       // ✅ added to fix NewsPage
-  is_members_only?: boolean | null
-  is_published?: boolean | null   // published/draft flag
-  author?: string | null
-  featured?: boolean | null
-  view_count?: number | null
+  id: string;
+  title: string;
+  content: string;
+  summary?: string | null;
+  author?: string | null;
+  category: "news" | "blog" | "snippet";
+  image_url?: string | null;
+  publish_date?: string | null;
+  featured?: boolean | null;
+  is_published?: boolean | null;
+  is_members_only?: boolean | null;
+  view_count?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  slug?: string;
 }
 
-// ✅ Lodge documents (e.g., summons, minutes, resources)
+/* ------------------------------------------------------------------
+ * 🔷 Events
+ * ------------------------------------------------------------------ */
+export interface Event {
+  id: string;
+  title: string;
+  description?: string | null;
+  event_date: string;
+  location?: string | null;
+  image_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  is_members_only?: boolean;
+}
+
+/* ------------------------------------------------------------------
+ * 🔷 Officers
+ * ------------------------------------------------------------------ */
+export interface Officer {
+  id: string;
+  position: string;
+  name: string;
+  image_url?: string | null;
+  sort_order?: number | null;
+}
+
+/* ------------------------------------------------------------------
+ * 🔷 Testimonials
+ * ------------------------------------------------------------------ */
+export interface Testimonial {
+  id: string;
+  name: string;
+  content: string;
+  image_url?: string | null;
+  sort_order?: number | null;
+  quote?: string;
+  role?: string;
+}
+
+/* ------------------------------------------------------------------
+ * 🔷 Lodge Documents
+ * ------------------------------------------------------------------ */
 export interface LodgeDocument {
-  id: string
-  title: string
-  description?: string
-  url: string
-  category: string // e.g., "grand_lodge" | "provincial" | "summons" | "minutes" | "resources" | "gpc_minutes"
-  created_at: string
-  updated_at: string
+  id: string;
+  title: string;
+  description?: string | null;
+  category: string;
+  file_url: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
-// ✅ Meeting minutes (specialised document type)
+/* ------------------------------------------------------------------
+ * 🔷 Meeting Minutes
+ * ------------------------------------------------------------------ */
 export interface MeetingMinutes {
-  id: string
-  meeting_date: string
-  title: string
-  content: string
-  created_at: string
-  updated_at: string
-  document_url?: string | null
+  id: string;
+  title: string;
+  meeting_date: string;
+  file_url: string;
+  created_at?: string | null;
 }
 
-// ✅ Lodge member profile (for Admin dashboard)
+/* ------------------------------------------------------------------
+ * 🔷 Member Profiles
+ * ------------------------------------------------------------------ */
 export interface MemberProfile {
-  id: string
-  user_id: string
-  full_name: string
-  position?: string | null
-  role: "member" | "admin"
-  join_date: string
-  status?: "active" | "inactive" | "pending"
-  contact_email?: string | null
-  contact_phone?: string | null
-  share_contact_info?: boolean
-  created_at: string
-  updated_at: string
-  last_login?: string | null
+  id: string;
+  user_id: string;
+  full_name: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  address?: string | null;
+  join_date?: string | null;
+  position?: string | null;
+  role: "member" | "admin";
+  status?: "active" | "pending" | "inactive";
+  notes?: string | null;
+  email_verified?: boolean | null;
+  grand_lodge_rank?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
-// ✅ Events (for CMS + public pages)
-export interface CMSEvent {
-  id: string
-  title: string
-  description: string
-  event_date: string
-  location?: string | null
-  is_members_only?: boolean
-  created_at: string
+/* ------------------------------------------------------------------
+ * 🔷 Page Content
+ * ------------------------------------------------------------------ */
+export interface PageContent {
+  id: string;
+  page_name: string;
+  content: string;
+  updated_at?: string | null;
 }
+
+/* ------------------------------------------------------------------
+ * 🔷 FAQ Items
+ * ------------------------------------------------------------------ */
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  sort_order?: number | null;
+  is_published?: boolean | null;
+}
+
+/* ------------------------------------------------------------------
+ * 🔷 Site Settings
+ * ------------------------------------------------------------------ */
+export interface SiteSetting {
+  id: string;
+  setting_key: string;
+  setting_value: string;
+  updated_at?: string | null;
+}
+
+/* ------------------------------------------------------------------
+ * 🔷 Generic Utilities
+ * ------------------------------------------------------------------ */
+export type Nullable<T> = T | null;
+export type Maybe<T> = T | null | undefined;
+
+/* ------------------------------------------------------------------
+ * 🔷 Re-export groups
+ * ------------------------------------------------------------------ */

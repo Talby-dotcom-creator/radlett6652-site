@@ -19,7 +19,7 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
 
-  base: '/',
+  base: './', // ✅ CHANGE THIS LINE
 
   server: {
     host: '0.0.0.0',
@@ -28,11 +28,6 @@ export default defineConfig({
     open: false,
   },
 
-  preview: {
-    host: '0.0.0.0',
-    port: 3001,
-    strictPort: true,
-  },
 
   build: {
     sourcemap: false,

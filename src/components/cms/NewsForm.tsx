@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CMSNewsArticle } from '../../types';
+import { CMSBlogPost } from '../../types';
 import Button from '../Button';
 import MediaManager from './MediaManager';
 import { Image, X } from 'lucide-react';
 
 interface NewsFormProps {
-  onSubmit: (data: Omit<CMSNewsArticle, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSubmit: (data: Omit<CMSBlogPost, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<CMSNewsArticle>;
+  initialData?: Partial<CMSBlogPost>;
 }
 
 const NewsForm: React.FC<NewsFormProps> = ({ onSubmit, onCancel, initialData }) => {

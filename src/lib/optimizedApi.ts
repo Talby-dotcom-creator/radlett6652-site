@@ -1,277 +1,177 @@
 // src/lib/optimizedApi.ts
-import { supabase } from './supabase'
+import { supabase } from "./supabase";
 import {
   CMSBlogPost,
-  MemberProfile,
+  Event,
+  Officer,
+  Testimonial,
   LodgeDocument,
   MeetingMinutes,
-  CMSEvent,
-} from '../types'
+  MemberProfile,
+  PageContent,
+  FAQItem,
+  SiteSetting,
+} from "../types";
 
-/* ------------------ BLOGS ------------------ */
-async function getBlogPosts(): Promise<CMSBlogPost[]> {
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .order('created_at', { ascending: false })
+/* ------------------------------------------------------
+ * Error handling helper
+ * ---------------------------------------------------- */
+const handleError = (error: any, context: string) => {
+  console.error(`❌ ${context}:`, error.message || error);
+  throw new Error(`${context} failed: ${error.message || "Unknown error"}`);
+};
 
-  if (error) {
-    console.error('❌ Error fetching blog posts:', error)
-    return []
-  }
-  return (data ?? []) as CMSBlogPost[]
-}
-
-async function getBlogPost(id: string): Promise<CMSBlogPost | null> {
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) {
-    console.error(`❌ Error fetching blog post ${id}:`, error)
-    return null
-  }
-  return data as CMSBlogPost
-}
-
-async function getNews(): Promise<CMSBlogPost[]> {
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('category', 'news')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-
-  if (error) return []
-  return (data ?? []) as CMSBlogPost[]
-}
-
-async function getSnippets(): Promise<CMSBlogPost[]> {
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('category', 'snippets')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-
-  if (error) return []
-  return (data ?? []) as CMSBlogPost[]
-}
-
-async function getCharity(): Promise<CMSBlogPost[]> {
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('category', 'charity')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-
-  if (error) return []
-  return (data ?? []) as CMSBlogPost[]
-}
-
-/* ------------------ MEMBERS ------------------ */
-async function getAllMembers(): Promise<MemberProfile[]> {
-  const { data, error } = await supabase
-    .from('member_profiles')
-    .select('*')
-    .order('full_name')
-
-  if (error) {
-    console.error('❌ Error fetching members:', error)
-    return []
-  }
-  return (data ?? []) as MemberProfile[]
-}
-
-async function updateMemberProfile(
-  userId: string,
-  updates: Partial<MemberProfile>
-) {
-  const { data, error } = await supabase
-    .from('member_profiles')
-    .update(updates)
-    .eq('user_id', userId)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as MemberProfile
-}
-
-async function adminCreateMemberProfile(profile: Omit<MemberProfile, 'id' | 'created_at' | 'updated_at'>) {
-  const { data, error } = await supabase
-    .from('member_profiles')
-    .insert(profile)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as MemberProfile
-}
-
-async function deleteUserAndProfile(userId: string) {
-  await supabase.from('member_profiles').delete().eq('user_id', userId)
-  // ⚠️ Deleting from auth.users requires service role key (server-side only)
-}
-
-/* ------------------ DOCUMENTS ------------------ */
-async function getLodgeDocuments(): Promise<LodgeDocument[]> {
-  const { data, error } = await supabase
-    .from('lodge_documents')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('❌ Error fetching documents:', error)
-    return []
-  }
-  return (data ?? []) as LodgeDocument[]
-}
-
-async function getLodgeDocumentsPaginated(
-  page: number,
-  pageSize: number,
-  category?: string
-) {
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
-
-  let query = supabase
-    .from('lodge_documents')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-
-  if (category) query = query.eq('category', category)
-
-  const { data, error, count } = await query.range(from, to)
-
-  if (error) {
-    console.error('❌ Error fetching paginated documents:', error)
-    return { documents: [], total: 0, hasMore: false }
-  }
-
-  return {
-    documents: data as LodgeDocument[],
-    total: count ?? 0,
-    hasMore: to + 1 < (count ?? 0),
-  }
-}
-
-async function createDocument(
-  doc: Omit<LodgeDocument, 'id' | 'created_at' | 'updated_at'>
-) {
-  const { data, error } = await supabase
-    .from('lodge_documents')
-    .insert(doc)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as LodgeDocument
-}
-
-async function updateDocument(id: string, updates: Partial<LodgeDocument>) {
-  const { data, error } = await supabase
-    .from('lodge_documents')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as LodgeDocument
-}
-
-async function deleteDocument(id: string) {
-  const { error } = await supabase.from('lodge_documents').delete().eq('id', id)
-  if (error) throw error
-}
-
-/* ------------------ MEETING MINUTES ------------------ */
-async function getMeetingMinutes(): Promise<MeetingMinutes[]> {
-  const { data, error } = await supabase
-    .from('meeting_minutes')
-    .select('*')
-    .order('meeting_date', { ascending: false })
-
-  if (error) {
-    console.error('❌ Error fetching minutes:', error)
-    return []
-  }
-  return (data ?? []) as MeetingMinutes[]
-}
-
-async function createMinutes(
-  minute: Omit<MeetingMinutes, 'id' | 'created_at' | 'updated_at'>
-) {
-  const { data, error } = await supabase
-    .from('meeting_minutes')
-    .insert(minute)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as MeetingMinutes
-}
-
-async function updateMinutes(id: string, updates: Partial<MeetingMinutes>) {
-  const { data, error } = await supabase
-    .from('meeting_minutes')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as MeetingMinutes
-}
-
-async function deleteMinutes(id: string) {
-  const { error } = await supabase.from('meeting_minutes').delete().eq('id', id)
-  if (error) throw error
-}
-
-/* ------------------ EVENTS ------------------ */
-async function getEvents(): Promise<CMSEvent[]> {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .order('event_date', { ascending: true })
-
-  if (error) {
-    console.error('❌ Error fetching events:', error)
-    return []
-  }
-  return (data ?? []) as CMSEvent[]
-}
-
-/* ------------------ EXPORT ------------------ */
+/* ------------------------------------------------------
+ * Unified Optimized API Layer
+ * ---------------------------------------------------- */
 export const optimizedApi = {
-  // Blog
-  getBlogPosts,
-  getBlogPost,
-  getNews,
-  getSnippets,
-  getCharity,
-  // Members
-  getAllMembers,
-  updateMemberProfile,
-  adminCreateMemberProfile,
-  deleteUserAndProfile,
-  // Documents
-  getLodgeDocuments,
-  getLodgeDocumentsPaginated,
-  createDocument,
-  updateDocument,
-  deleteDocument,
-  // Minutes
-  getMeetingMinutes,
-  createMinutes,
-  updateMinutes,
-  deleteMinutes,
-  // Events
-  getEvents,
-}
+  /* ---------------- BLOG POSTS ---------------- */
+  async getBlogPosts(category?: string): Promise<CMSBlogPost[]> {
+    try {
+      let query = supabase
+        .from("blog_posts")
+        .select("*")
+        .order("publish_date", { ascending: false });
+
+      // ✅ Ensure category is a non-empty string before filtering
+      if (typeof category === "string" && category.trim() !== "") {
+        query = query.eq("category", category.trim());
+      }
+
+      const { data, error } = await query;
+      if (error) handleError(error, "getBlogPosts");
+
+      return (data ?? []).map((post: any) => ({
+        ...post,
+        summary: post.summary ?? "",
+        category: post.category ?? "news",
+        publish_date: post.publish_date ?? new Date().toISOString(),
+        is_published: Boolean(post.is_published),
+        is_members_only: Boolean(post.is_members_only),
+        slug: post.slug ?? "", // ✅ ensures slug always exists
+      }));
+    } catch (err: any) {
+      handleError(err, "getBlogPosts");
+      return [];
+    }
+  },
+
+  /* ---------------- EVENTS ---------------- */
+  async getEvents(): Promise<Event[]> {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("event_date");
+    if (error) handleError(error, "getEvents");
+    return (data ?? []).map((event: any) => ({
+      ...event,
+      is_members_only: event.is_members_only ?? undefined,
+    }));
+  },
+
+  async getNextUpcomingEvent(): Promise<Event | null> {
+    try {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .gt("event_date", now)
+        .order("event_date", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) handleError(error, "getNextUpcomingEvent");
+      if (!data) return null;
+      return {
+        ...data,
+        is_members_only: data.is_members_only ?? undefined,
+      };
+    } catch (err: any) {
+      handleError(err, "getNextUpcomingEvent");
+      return null;
+    }
+  },
+
+  /* ---------------- OFFICERS ---------------- */
+  async getOfficers(): Promise<Officer[]> {
+    const { data, error } = await supabase
+      .from("officers")
+      .select("*")
+      .order("sort_order");
+    if (error) handleError(error, "getOfficers");
+    return (data ?? []).map((officer: any) => ({
+      ...officer,
+      name: officer.name ?? officer.full_name ?? "",
+    }));
+  },
+
+  /* ---------------- TESTIMONIALS ---------------- */
+  async getTestimonials(): Promise<Testimonial[]> {
+    const { data, error } = await supabase
+      .from("testimonials")
+      .select("*")
+      .order("sort_order");
+    if (error) handleError(error, "getTestimonials");
+    return (data ?? []).map((testimonial: any) => ({
+      ...testimonial,
+      name: testimonial.name ?? testimonial.member_name ?? "",
+    }));
+  },
+
+  /* ---------------- MEMBER PROFILES ---------------- */
+  async getAllMembers(): Promise<MemberProfile[]> {
+    const { data, error } = await supabase
+      .from("member_profiles")
+      .select("*")
+      .order("full_name");
+    if (error) handleError(error, "getAllMembers");
+
+    return (data ?? []).map((m: any) => ({
+      ...m,
+      status: m.status ?? "active",
+      contact_email: m.contact_email ?? "",
+      contact_phone: m.contact_phone ?? "",
+    }));
+  },
+
+  /* ---------------- PAGE CONTENT ---------------- */
+  async getPageContent(pageName: string): Promise<PageContent | null> {
+    const { data, error } = await supabase
+      .from("page_content")
+      .select("*")
+      .eq("page_name", pageName)
+      .maybeSingle();
+    if (error) handleError(error, "getPageContent");
+    return data ?? null;
+  },
+
+  /* ---------------- FAQ ITEMS ---------------- */
+  async getFAQItems(): Promise<FAQItem[]> {
+    const { data, error } = await supabase
+      .from("faq_items")
+      .select("*")
+      .order("sort_order");
+    if (error) handleError(error, "getFAQItems");
+    return data ?? [];
+  },
+
+  /* ---------------- SITE SETTINGS ---------------- */
+  async getSiteSettings(): Promise<SiteSetting[]> {
+    const { data, error } = await supabase.from("site_settings").select("*");
+    if (error) handleError(error, "getSiteSettings");
+    return data ?? [];
+  },
+
+  async updateSiteSetting(key: string, value: string) {
+    const { data, error } = await supabase
+      .from("site_settings")
+      .update({ setting_value: value })
+      .eq("setting_key", key)
+      .select()
+      .single();
+    if (error) handleError(error, "updateSiteSetting");
+    return data;
+  },
+};
+
+export default optimizedApi;

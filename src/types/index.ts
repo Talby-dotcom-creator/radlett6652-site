@@ -26,7 +26,7 @@ export interface MeetingMinutes {
   created_at?: string;
 }
 
-export interface CMSEvent {
+export interface Event {
   id: string;
   title: string;
   description?: string;

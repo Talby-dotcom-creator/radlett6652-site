@@ -1,105 +1,111 @@
-// src/pages/NewsPage.tsx
-import React, { useState, useEffect } from 'react'
-import HeroSection from '../components/HeroSection'
-import SectionHeading from '../components/SectionHeading'
-import NewsCard from '../components/NewsCard'
-import LoadingSpinner from '../components/LoadingSpinner'
-import CategoryFilter from '../components/CategoryFilter'
-import { optimizedApi as cmsApi } from '../lib/optimizedApi'
-import { CMSBlogPost } from '../types'
+// src/pages/NewsPostPage.tsx
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Calendar, ArrowLeft } from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
+import HeroSection from "../components/HeroSection";
+import { CMSBlogPost } from "../types";
+import { supabase } from "../lib/supabase";
 
-const NewsPage: React.FC = () => {
-  const [news, setNews] = useState<CMSBlogPost[]>([])
-  const [filteredNews, setFilteredNews] = useState<CMSBlogPost[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+const NewsPostPage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const [post, setPost] = useState<CMSBlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadNews = async () => {
+    const loadPost = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        const newsData = await cmsApi.getNews()
-        setNews(newsData as CMSBlogPost[])
-      } catch (err) {
-        console.error('Error loading news:', err)
-        setError('Failed to load news articles. Please try again later.')
-        setNews([])
+        setLoading(true);
+        setError(null);
+
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("*")
+          .eq("slug", slug ?? "")
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) throw new Error("Post not found");
+
+        setPost(data as CMSBlogPost);
+      } catch (err: any) {
+        console.error("Error loading post:", err.message || err);
+        setError("This article could not be found.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadNews()
-  }, [])
+    loadPost();
+  }, [slug]);
 
-  // Convert CMS data to NewsCard props
-  const convertNewsData = (cmsNews: CMSBlogPost) => ({
-    id: cmsNews.id,
-    title: cmsNews.title,
-    date: cmsNews.publish_date
-      ? new Date(cmsNews.publish_date)
-      : new Date(cmsNews.created_at ?? ''),
-    summary: cmsNews.summary ?? '',
-    content: cmsNews.content ?? '',
-    image: cmsNews.image_url ?? '',
-    isMembers: cmsNews.is_members_only ?? false,
-  })
-
-  // Sort results (newest first)
-  const sortedNews = [...filteredNews].sort(
-    (a, b) =>
-      new Date(b.publish_date ?? b.created_at ?? '').getTime() -
-      new Date(a.publish_date ?? a.created_at ?? '').getTime()
-  )
+  if (loading) return <LoadingSpinner />;
+  if (error || !post)
+    return (
+      <main className="py-20 text-center">
+        <p className="text-lg text-neutral-600">{error}</p>
+        <Link
+          to="/news"
+          className="mt-4 inline-block text-secondary-600 hover:text-secondary-800"
+        >
+          ← Back to News
+        </Link>
+      </main>
+    );
 
   return (
-    <>
+    <main>
       <HeroSection
-        title="News & Updates"
-        subtitle="Stay informed about the latest activities and announcements from Radlett Lodge"
-        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/Radlett%20news%20and%20events_1753695345519_vp0q3d.webp"
+        title={post.title}
+        subtitle="Lodge News"
+        backgroundImage={post.image_url || "/images/news-banner.webp"}
       />
 
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
-          <SectionHeading
-            title="Latest News"
-            subtitle="Keeping you updated with the activities and achievements of our Lodge."
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 md:px-8 max-w-3xl">
+          {/* Back link */}
+          <Link
+            to="/news"
+            className="flex items-center text-secondary-600 hover:text-secondary-800 mb-6"
+          >
+            <ArrowLeft size={18} className="mr-2" />
+            Back to News
+          </Link>
+
+          {/* Title */}
+          <h1 className="text-3xl md:text-4xl font-heading font-bold text-primary-800 mb-4">
+            {post.title}
+          </h1>
+
+          {/* Date */}
+          <p className="text-sm text-neutral-500 flex items-center gap-2 mb-6">
+            <span className="text-secondary-500">🗓️</span>
+            {post.publish_date
+              ? new Date(post.publish_date).toLocaleDateString("en-GB")
+              : "Date TBA"}
+          </p>
+
+          {/* Image */}
+          {post.image_url && (
+            <img
+              src={post.image_url}
+              alt={post.title}
+              className="w-full rounded-lg shadow-md mb-8"
+            />
+          )}
+
+          {/* Content */}
+          <article
+            className="prose prose-lg max-w-none text-neutral-800"
+            dangerouslySetInnerHTML={{
+              __html: post.content ?? post.summary ?? "",
+            }}
           />
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-              <p className="text-red-600">{error}</p>
-            </div>
-          )}
-
-          {/* Filters */}
-          <CategoryFilter items={news} onFilter={setFilteredNews} />
-
-          {/* News Grid */}
-          {loading ? (
-            <LoadingSpinner subtle={true} className="py-4" />
-          ) : sortedNews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {sortedNews.map((newsItem) => (
-                <NewsCard key={newsItem.id} news={convertNewsData(newsItem)} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-neutral-50 p-8 rounded-lg text-center">
-              <p className="text-neutral-600">
-                No news articles available at this time.
-              </p>
-              <p className="text-sm text-neutral-500 mt-2">
-                Check back soon for updates!
-              </p>
-            </div>
-          )}
         </div>
       </section>
-    </>
-  )
-}
+    </main>
+  );
+};
 
-export default NewsPage
+export default NewsPostPage;

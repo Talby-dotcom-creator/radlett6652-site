@@ -1,46 +1,49 @@
 // src/pages/NewsDetailPage.tsx
-import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import { optimizedApi, CMSBlogPost } from '../lib/optimizedApi'
-import LoadingSpinner from '../components/LoadingSpinner'
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import optimizedApi from "../lib/optimizedApi";
+import type { CMSBlogPost } from "../types";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const NewsDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
-  const [article, setArticle] = useState<CMSBlogPost | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { id } = useParams<{ id: string }>();
+  const [article, setArticle] = useState<CMSBlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchArticle() {
       try {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
         if (id) {
-          const data = await optimizedApi.getBlogPost(id)
-          setArticle(data)
+          const data = await optimizedApi.getBlogPosts(id);
+          setArticle(data);
         }
       } catch (err) {
-        console.error('❌ Failed to load article:', err)
-        setError('Could not load this article.')
+        console.error("❌ Failed to load news article:", err);
+        setError("Could not load this article. Please try again later.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchArticle()
-  }, [id])
+    fetchArticle();
+  }, [id]);
 
-  if (loading) return <LoadingSpinner subtle={true} className="py-10" />
-  if (error) return <p className="text-red-600">{error}</p>
-  if (!article) return <p>Article not found.</p>
+  if (loading) return <LoadingSpinner subtle={true} className="py-10" />;
+  if (error) return <p className="text-red-600">{error}</p>;
+  if (!article) return <p>Article not found.</p>;
 
-  const publishDate = article.created_at
-    ? new Date(article.created_at).toLocaleDateString('en-GB')
-    : 'Unknown date'
+  const publishDate = article.publish_date
+    ? new Date(article.publish_date).toLocaleDateString("en-GB")
+    : article.created_at
+    ? new Date(article.created_at).toLocaleDateString("en-GB")
+    : "Unknown date";
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-10">
+    <div className="container mx-auto px-4 md:px-6 py-12">
       {/* Back link */}
       <div className="mb-6">
         <Link
@@ -53,25 +56,27 @@ const NewsDetailPage: React.FC = () => {
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
+      <h1 className="text-4xl font-bold text-primary-700 mb-4">
+        {article.title}
+      </h1>
 
-      {/* Date */}
+      {/* Date + Members-only badge */}
       <p className="text-sm text-gray-500 mb-6">
         Published: {publishDate}
-        {(article as any).is_members_only && (
-          <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-600">
+        {article.is_members_only && (
+          <span className="ml-3 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-600">
             Members Only
           </span>
         )}
       </p>
 
-      {/* Image (optional) */}
-      {(article as any).image_url && (
-        <div className="mb-6">
+      {/* Image */}
+      {article.image_url && (
+        <div className="mb-8">
           <img
-            src={(article as any).image_url}
+            src={article.image_url}
             alt={article.title}
-            className="w-full max-h-[400px] object-cover rounded-lg shadow"
+            className="w-full max-h-[500px] object-cover rounded-lg shadow-md"
           />
         </div>
       )}
@@ -79,7 +84,7 @@ const NewsDetailPage: React.FC = () => {
       {/* Content */}
       <div className="prose prose-lg max-w-none">{article.content}</div>
     </div>
-  )
-}
+  );
+};
 
-export default NewsDetailPage
+export default NewsDetailPage;

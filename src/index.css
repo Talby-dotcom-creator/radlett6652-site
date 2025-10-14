@@ -1,17 +1,68 @@
+/* -----------------------------------------------------
+   🌟 Tailwind Core Imports (MUST COME FIRST)
+   ----------------------------------------------------- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* -----------------------------------------------------
+   ✨ Custom Global Animations & Utilities
+   ----------------------------------------------------- */
+
+/* -----------------------------------------------------
+   ✨ Shimmer animation for section headings & dividers
+   ----------------------------------------------------- */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s linear infinite;
+  background-size: 200% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+/* Footer shimmer (slower, continuous motion) */
+@keyframes footer-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-footer-shimmer {
+  animation: footer-shimmer 6s linear infinite;
+  background-size: 200% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
+
+/* -----------------------------------------------------
+   🌐 Base Layer
+   ----------------------------------------------------- */
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply font-sans text-neutral-900;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading;
   }
 
@@ -43,9 +94,7 @@
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    * {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -54,11 +103,14 @@
   }
 }
 
+/* -----------------------------------------------------
+   ⚙️ Utilities & Custom Components
+   ----------------------------------------------------- */
 @layer utilities {
   .animate-fadeIn {
     animation: fadeIn 0.8s ease forwards;
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -69,13 +121,14 @@
       transform: translateY(0);
     }
   }
-  
+
   .animate-bounce {
     animation: bounce 2s infinite;
   }
-  
+
   @keyframes bounce {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0) translateX(-50%);
     }
     50% {
@@ -90,7 +143,8 @@
 
   /* Text effects */
   .text-chiselled {
-    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5), -2px -2px 0px rgba(255, 255, 255, 0.2);
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5),
+      -2px -2px 0px rgba(255, 255, 255, 0.2);
   }
 
   /* Adjust page spacing for taller header */
@@ -103,35 +157,35 @@
     width: 100%;
     max-width: 350px;
   }
-  
+
   /* Override default react-calendar styles */
   .react-calendar {
     width: 100%;
     border: 1px solid #e5e5e5;
     border-radius: 0.5rem;
-    font-family: 'Open Sans', sans-serif;
+    font-family: "Open Sans", sans-serif;
   }
-  
+
   .react-calendar__tile--active {
-    background: #FCA311;
-    color: #14213D;
+    background: #fca311;
+    color: #14213d;
   }
-  
+
   .react-calendar__tile--active:enabled:hover,
   .react-calendar__tile--active:enabled:focus {
-    background: #FCA311;
+    background: #fca311;
   }
-  
+
   .react-calendar__tile--now {
     background: #d1d1d1;
   }
-  
+
   .react-calendar__tile.has-event {
     position: relative;
   }
-  
+
   .react-calendar__tile.has-event::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 4px;
     left: 50%;
@@ -139,11 +193,104 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: #FCA311;
+    background-color: #fca311;
   }
-  
+
   .react-calendar__tile:enabled:hover,
   .react-calendar__tile:enabled:focus {
     background-color: #f8f8f8;
   }
+}
+
+/* -----------------------------------------------------
+   💎 Reflections in Stone Enhancements
+   ----------------------------------------------------- */
+.engrave-shimmer {
+  position: relative;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 -1px 0 rgba(0, 0, 0, 0.25);
+  -webkit-mask-image: linear-gradient(
+    120deg,
+    #000 40%,
+    rgba(0, 0, 0, 0.8) 50%,
+    #000 60%
+  );
+  -webkit-mask-size: 200% 100%;
+  mask-image: linear-gradient(
+    120deg,
+    #000 40%,
+    rgba(0, 0, 0, 0.8) 50%,
+    #000 60%
+  );
+  mask-size: 200% 100%;
+  animation: engraveSweep 4.5s linear infinite;
+}
+
+@keyframes engraveSweep {
+  0% {
+    -webkit-mask-position: 120% 0;
+    mask-position: 120% 0;
+  }
+  100% {
+    -webkit-mask-position: -20% 0;
+    mask-position: -20% 0;
+  }
+}
+
+.glow-soft {
+  filter: drop-shadow(0 6px 12px rgba(255, 255, 255, 0.15))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+}
+
+.slab-etch {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 35px 65px rgba(0, 0, 0, 0.25);
+}
+
+/* -----------------------------------------------------
+   ✨ Scroll Fade-In Animation Utility
+   ----------------------------------------------------- */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+[data-animate]:not([data-animated]) {
+  opacity: 0;
+}
+
+/* -----------------------------------------------------
+   ✨ Golden Glow Hover Effect (Reusable Across Cards)
+   ----------------------------------------------------- */
+@keyframes goldPulse {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.15), 0 0 0 rgba(255, 215, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.35),
+      0 0 15px rgba(255, 215, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.15), 0 0 0 rgba(255, 215, 0, 0.1);
+  }
+}
+
+.card-glow {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card-glow:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2);
+  animation: goldPulse 3s ease-in-out infinite;
 }

@@ -1,15 +1,15 @@
 import React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CMSEvent } from '../../types';
+import { Event } from '../../types';
 import Button from '../Button';
 import MediaManager from './MediaManager';
 import { Image, X } from 'lucide-react';
 
 interface EventFormProps {
-  onSubmit: (data: Omit<CMSEvent, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSubmit: (data: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<CMSEvent>;
+  initialData?: Partial<Event>;
 }
 
 const EventForm: React.FC<EventFormProps> = ({ onSubmit, onCancel, initialData }) => {

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { CMSSiteSetting } from '../../types';
+import { SiteSetting } from '../../types';
 import Button from '../Button';
 
 interface SiteSettingsFormProps {
-  initialData: CMSSiteSetting[];
+  initialData: SiteSetting[];
   onSubmit: (data: Record<string, string>) => Promise<void>;
   onCancel: () => void;
 }
@@ -36,7 +36,7 @@ const SiteSettingsForm: React.FC<SiteSettingsFormProps> = ({ initialData, onSubm
     }
     acc[category].push(setting);
     return acc;
-  }, {} as Record<string, CMSSiteSetting[]>);
+  }, {} as Record<string, SiteSetting[]>);
 
   const getInputType = (settingType: string) => {
     switch (settingType) {
@@ -51,7 +51,7 @@ const SiteSettingsForm: React.FC<SiteSettingsFormProps> = ({ initialData, onSubm
     }
   };
 
-  const renderSettingInput = (setting: CMSSiteSetting) => {
+  const renderSettingInput = (setting: SiteSetting) => {
     const inputType = getInputType(setting.setting_type || 'text');
     const isTextarea = setting.setting_key.includes('schedule') || setting.setting_key.includes('location');
 

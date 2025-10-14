@@ -1,249 +1,85 @@
-// src/pages/EventsPage.tsx
-import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Filter } from 'lucide-react';
-import Calendar from 'react-calendar';
-import HeroSection from '../components/HeroSection';
-import SectionHeading from '../components/SectionHeading';
-import EventCard from '../components/EventCard';
-import EventDetailsModal from '../components/EventDetailsModal';
-import Button from '../components/Button';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { optimizedApi as cmsApi } from '../lib/optimizedApi';
-import { CMSEvent } from '../types';   // ✅ Only CMSEvent
-import 'react-calendar/dist/Calendar.css';
-
-type ValuePiece = Date | null;
-type Value = ValuePiece | [ValuePiece, ValuePiece];
+import React, { useEffect, useState } from "react";
+import HeroSection from "../components/HeroSection";
+import LoadingSpinner from "../components/LoadingSpinner";
+import optimizedApi from "../lib/optimizedApi";
+import { Event } from "../types";
 
 const EventsPage: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Value>(null);
-  const [showPublicOnly, setShowPublicOnly] = useState(false);
-  const [events, setEvents] = useState<CMSEvent[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<CMSEvent | null>(null); // ✅ fixed
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const eventsData = await cmsApi.getEvents();
-        setEvents(eventsData);
+        const data = await optimizedApi.getEvents();
+        setEvents(data);
       } catch (err) {
-        console.error('Error loading events:', err);
-        setError('Failed to load events. Please try again later.');
-        setEvents([]);
+        console.error("Error fetching events:", err);
       } finally {
         setLoading(false);
       }
     };
-
     loadEvents();
   }, []);
 
-  // Convert CMS event to component format
-  const convertEventData = (cmsEvent: CMSEvent) => ({
-    id: cmsEvent.id,
-    title: cmsEvent.title,
-    date: new Date(cmsEvent.event_date),
-    description: cmsEvent.description,
-    location: cmsEvent.location,
-    isMembers: cmsEvent.is_members_only
-  });
-
-  // Filter events
-  const filteredEvents = events.filter(event => {
-    if (showPublicOnly && event.is_members_only) {
-      return false;
-    }
-
-    if (selectedDate instanceof Date) {
-      const eventDate = new Date(event.event_date);
-      return (
-        eventDate.getDate() === selectedDate.getDate() &&
-        eventDate.getMonth() === selectedDate.getMonth() &&
-        eventDate.getFullYear() === selectedDate.getFullYear()
-      );
-    }
-
-    return true;
-  });
-
-  // Sort by date
-  const sortedEvents = [...filteredEvents].sort(
-    (a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
-  );
-
-  const futureEvents = sortedEvents.filter(
-    event => new Date(event.event_date).getTime() >= new Date().setHours(0, 0, 0, 0)
-  );
-
-  const pastEventsFiltered = sortedEvents
-    .filter(event => new Date(event.event_date).getTime() < new Date().setHours(0, 0, 0, 0))
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
-
-  // Dates for calendar highlight
-  const eventDates = events.map(event => new Date(event.event_date));
-
-  const handleViewDetails = (event: CMSEvent) => {
-    setSelectedEvent(event);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedEvent(null);
-  };
-
   return (
-    <>
+    <main>
       <HeroSection
-        title="Events Calendar"
-        subtitle="Stay up to date with all Lodge meetings and social events"
-        backgroundImage="https://images.pexels.com/photos/6044226/pexels-photo-6044226.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+        title="Lodge Events"
+        subtitle="Discover upcoming meetings, socials, and special gatherings"
+        backgroundImage="/images/events-banner.webp"
       />
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-heading font-bold text-center mb-8">
+            Upcoming Events
+          </h2>
 
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
-          <SectionHeading
-            title="Find Events"
-            subtitle="Use the calendar and filters to find events that interest you."
-          />
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-              <p className="text-red-600">{error}</p>
+          {loading ? (
+            <LoadingSpinner />
+          ) : events.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {events.map((event) => (
+                <div
+                  key={event.id}
+                  className="bg-neutral-50 rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                >
+                  {event.image_url && (
+                    <img
+                      src={event.image_url}
+                      alt={event.title}
+                      className="w-full h-48 object-cover rounded-md mb-4"
+                    />
+                  )}
+                  <h3 className="text-xl font-semibold text-primary-700 mb-2">
+                    {event.title}
+                  </h3>
+                  <p className="text-neutral-700 mb-2">
+                    📅{" "}
+                    {new Date(event.event_date).toLocaleDateString("en-GB", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                  <p className="text-neutral-600 mb-3">
+                    📍 {event.location || "Location to be confirmed"}
+                  </p>
+                  <p className="text-neutral-700 text-sm">
+                    {event.description}
+                  </p>
+                </div>
+              ))}
             </div>
+          ) : (
+            <p className="text-center text-neutral-600">
+              No upcoming events at this time.
+            </p>
           )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Filters + Calendar */}
-            <div className="lg:col-span-1">
-              <div className="bg-neutral-50 rounded-lg p-6 shadow-soft">
-                <div className="mb-6">
-                  <h3 className="text-xl font-heading font-semibold text-primary-600 mb-4 flex items-center">
-                    <Filter size={20} className="mr-2 text-secondary-500" />
-                    Filters
-                  </h3>
-                  <div className="flex items-center mb-2">
-                    <input
-                      type="checkbox"
-                      id="public-only"
-                      checked={showPublicOnly}
-                      onChange={(e) => setShowPublicOnly(e.target.checked)}
-                      className="mr-2"
-                    />
-                    <label htmlFor="public-only" className="text-neutral-600">
-                      Show public events only
-                    </label>
-                  </div>
-                  {selectedDate && (
-                    <div className="mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedDate(null)}
-                      >
-                        Clear Date Filter
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-heading font-semibold text-primary-600 mb-4 flex items-center">
-                    <CalendarIcon size={20} className="mr-2 text-secondary-500" />
-                    Calendar
-                  </h3>
-                  <div className="calendar-container">
-                    <Calendar
-                      onChange={setSelectedDate}
-                      value={selectedDate}
-                      tileClassName={({ date }) =>
-                        eventDates.some(eventDate =>
-                          date.getDate() === eventDate.getDate() &&
-                          date.getMonth() === eventDate.getMonth() &&
-                          date.getFullYear() === eventDate.getFullYear()
-                        )
-                          ? 'has-event'
-                          : null
-                      }
-                      className="border-0 shadow-none"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Events list */}
-            <div className="lg:col-span-2">
-              {loading ? (
-                <LoadingSpinner subtle={true} className="py-4" />
-              ) : (
-                <>
-                  <div className="mb-8">
-                    <h3 className="text-2xl font-heading font-semibold text-primary-600 mb-6">
-                      {selectedDate instanceof Date
-                        ? `Events on ${selectedDate.toLocaleDateString('en-GB')}`
-                        : 'Upcoming Events'}
-                    </h3>
-                    {futureEvents.length > 0 ? (
-                      <div className="space-y-6">
-                        {futureEvents.map(event => (
-                          <EventCard
-                            key={event.id}
-                            event={convertEventData(event)}
-                            detailed
-                            onViewDetails={() => handleViewDetails(event)}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="bg-neutral-50 p-6 rounded-lg text-center">
-                        <CalendarIcon className="w-12 h-12 mx-auto mb-3 text-neutral-300" />
-                        <p className="text-neutral-600">
-                          No upcoming events found for the selected filters.
-                        </p>
-                        <p className="text-sm text-neutral-500 mt-2">
-                          Check back soon for new events!
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {pastEventsFiltered.length > 0 && (
-                    <div>
-                      <h3 className="text-2xl font-heading font-semibold text-primary-600 mb-6">
-                        Past Events
-                      </h3>
-                      <div className="space-y-6">
-                        {pastEventsFiltered.map(event => (
-                          <EventCard
-                            key={event.id}
-                            event={convertEventData(event)}
-                            detailed
-                            onViewDetails={() => handleViewDetails(event)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
         </div>
       </section>
-
-      {/* Event details modal */}
-      <EventDetailsModal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        event={selectedEvent}
-      />
-    </>
+    </main>
   );
 };
 

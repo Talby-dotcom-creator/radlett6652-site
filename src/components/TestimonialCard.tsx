@@ -1,30 +1,29 @@
-import React from 'react';
-import { Quote } from 'lucide-react';
-import { Testimonial } from '../types';
+import React from "react";
+import { Quote } from "lucide-react";
+import { Testimonial } from "../types";
 
 interface TestimonialCardProps {
   testimonial: Testimonial;
 }
 
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
-  const { name, content, image } = testimonial;
-  
   return (
-    <div className="bg-white shadow-soft rounded-lg p-6 border border-neutral-100 relative">
-      <Quote className="absolute top-4 right-4 w-10 h-10 text-secondary-100" />
-      <div className="text-neutral-600 mb-6 relative z-10">{content}</div>
-      <div className="flex items-center">
-        {image && (
-          <img 
-            src={image} 
-            alt={name} 
-            className="w-12 h-12 rounded-full mr-4 object-cover border-2 border-secondary-500"
-          />
+    <div className="card-glow bg-white rounded-lg shadow-soft p-6 flex flex-col justify-between transition-all duration-300 hover:translate-y-[-4px] text-center max-w-lg mx-auto">
+      <Quote className="w-10 h-10 mx-auto mb-4 text-secondary-500 opacity-70" />
+
+      {/* Full testimonial text, no clamping */}
+      <p className="text-neutral-700 italic mb-6 leading-relaxed whitespace-pre-line">
+        “
+        {testimonial.quote ||
+          "Freemasonry has been a life-changing experience for me, fostering personal growth, integrity, and brotherhood."}
+        ”
+      </p>
+
+      <div>
+        <h4 className="font-semibold text-primary-700">{testimonial.name}</h4>
+        {testimonial.role && (
+          <p className="text-sm text-neutral-500">{testimonial.role}</p>
         )}
-        <div>
-          <h4 className="font-heading font-semibold text-primary-600">{name}</h4>
-          <p className="text-sm text-neutral-500">Member</p>
-        </div>
       </div>
     </div>
   );

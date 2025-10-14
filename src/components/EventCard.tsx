@@ -1,64 +1,57 @@
-import React from 'react';
-import { Calendar, Clock, MapPin, Lock } from 'lucide-react';
-import { format } from 'date-fns';
-import { Event } from '../types';
-import Button from './Button';
+// src/components/EventCard.tsx
+import React from "react";
+import { Calendar, MapPin, Users } from "lucide-react";
+import { Event } from "../types";
+import { format } from "date-fns";
 
 interface EventCardProps {
   event: Event;
-  detailed?: boolean;
-  onViewDetails?: (event: Event) => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event, detailed = false, onViewDetails }) => {
-  const { title, date, description, location, isMembers } = event;
-  
+const EventCard: React.FC<EventCardProps> = ({ event }) => {
+  // ✅ Safely handle event date to avoid "Invalid time value" errors
+  let formattedDate = "Date TBA";
+  if (event.event_date) {
+    const parsed = new Date(event.event_date);
+    if (!isNaN(parsed.getTime())) {
+      formattedDate = format(parsed, "dd MMM yyyy");
+    }
+  }
+
   return (
-    <div className="bg-white shadow-soft rounded-lg overflow-hidden border border-neutral-100 transition-all duration-300 hover:shadow-medium h-full">
-      <div className="p-6">
-        <div className="flex items-start justify-between">
-          <h3 className="text-xl font-heading font-semibold text-primary-600">{title}</h3>
-          {isMembers && (
-            <div className="flex items-center text-xs font-medium bg-primary-100 text-primary-600 px-2 py-1 rounded">
-              <Lock size={12} className="mr-1" />
-              Members Only
-            </div>
-          )}
+    <div className="card-glow bg-white rounded-lg shadow-soft p-6 flex flex-col justify-between transition-all duration-300 hover:translate-y-[-4px]">
+      <div>
+        {/* Event Title */}
+        <h3 className="text-xl font-semibold text-primary-700 mb-2">
+          {event.title}
+        </h3>
+
+        {/* Event Description */}
+        <p className="text-neutral-600 mb-4 line-clamp-3">
+          {event.description || "Details to be announced."}
+        </p>
+      </div>
+
+      <div className="text-sm text-neutral-500 space-y-2 mt-2">
+        {/* Event Date */}
+        <div className="flex items-center">
+          <Calendar size={16} className="mr-2 text-secondary-500" />
+          {formattedDate}
         </div>
-        
-        <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-neutral-500">
+
+        {/* Event Location */}
+        {event.location && (
           <div className="flex items-center">
-            <Calendar size={16} className="mr-1.5 text-secondary-500" />
-            <span>{format(date, 'dd/MM/yyyy')}</span>
+            <MapPin size={16} className="mr-2 text-secondary-500" />
+            {event.location}
           </div>
-          <div className="flex items-center">
-            <Clock size={16} className="mr-1.5 text-secondary-500" />
-            <span>{format(date, 'h:mm a')}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-start mt-3">
-          <MapPin size={16} className="mr-1.5 text-secondary-500 mt-0.5 flex-shrink-0" />
-          <span className="text-sm text-neutral-500">{location}</span>
-        </div>
-        
-        {detailed ? (
-          <div className="mt-4 text-neutral-600">
-            <p>{description}</p>
-          </div>
-        ) : (
-          <p className="mt-4 text-neutral-600 line-clamp-2">{description}</p>
         )}
-        
-        {!detailed && (
-          <div className="mt-5">
-            <Button
-              variant="outline" 
-              size="sm"
-              onClick={() => onViewDetails?.(event)}
-            >
-              View Details
-            </Button>
+
+        {/* Members Only Tag */}
+        {event.is_members_only && (
+          <div className="flex items-center text-secondary-600 font-medium">
+            <Users size={16} className="mr-2 text-secondary-500" />
+            Members Only
           </div>
         )}
       </div>

@@ -18,7 +18,7 @@ const DirectoryPage: React.FC = () => {
   useEffect(() => {
     const loadMembers = async () => {
       try {
-        const data = await api.getAllMembers();
+        const data = await api.optimizedApi.getAllMembers();
         // Filter to only show active members
         const activeMembers = data.filter(member => member.status === 'active');
         setMembers(activeMembers);

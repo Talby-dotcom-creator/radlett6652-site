@@ -1,0 +1,11 @@
+[functions.new-member-notify]
+enabled = true
+verify_jwt = false   # temporarily disabled for testing
+import_map = "./functions/new-member-notify/deno.json"
+entrypoint = "./functions/new-member-notify/index.ts"
+
+[functions.send-contact-email]
+enabled = true
+verify_jwt = false
+import_map = "./functions/send-contact-email/deno.json"
+entrypoint = "./functions/send-contact-email/index.ts"

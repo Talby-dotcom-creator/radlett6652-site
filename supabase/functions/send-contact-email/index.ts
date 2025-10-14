@@ -1,44 +1,41 @@
 // supabase/functions/send-contact-email/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-interface ContactPayload {
-  name: string;
-  email: string;
-  phone?: string;
-  subject: string;
-  message: string;
-  interested: boolean;
-}
+Deno.serve(async (req) => {
+  // ✅ Handle preflight CORS request
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: {
+        "Access-Control-Allow-Origin": "*", // you can replace * with your domain for tighter security
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+      },
+    });
+  }
 
-interface ResendResponse {
-  id?: string;
-  error?: string;
-  [key: string]: unknown; // catch-all for other fields Resend might return
-}
-
-Deno.serve(async (req: Request): Promise<Response> => {
   try {
     const rawBody = await req.text();
     console.log("📨 Contact form raw body:", rawBody);
 
-    let payload: ContactPayload;
+    let payload;
     try {
-      payload = JSON.parse(rawBody) as ContactPayload;
+      payload = JSON.parse(rawBody);
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
     }
 
     const { name, email, phone, subject, message, interested } = payload;
 
     // --- Environment variables ---
     const resendKey = Deno.env.get("RESEND_API_KEY") || "";
-    const sender =
-      Deno.env.get("EMAIL_SENDER_ADDRESS") ?? "contact@radlettfreemasons.org.uk";
-    const recipient =
-      Deno.env.get("EMAIL_RECIPIENT_ADDRESS") ?? "radlettlodge6652@gmail.com";
+    const sender = Deno.env.get("EMAIL_SENDER_ADDRESS") ?? "contact@radlettfreemasons.org.uk";
+    const recipient = Deno.env.get("EMAIL_RECIPIENT_ADDRESS") ?? "radlettlodge6652@gmail.com";
 
     // --- Build HTML email ---
     const html = `
@@ -66,25 +63,33 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }),
     });
 
-    const result = (await resp.json()) as ResendResponse;
+    const result = await resp.json();
     console.log("📤 Resend response:", result);
 
     if (!resp.ok) {
-      return new Response(
-        JSON.stringify({ error: "Failed to send email", details: result }),
-        { status: resp.status, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to send email", details: result }), {
+        status: resp.status,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
     }
 
-    return new Response(
-      JSON.stringify({ success: true, id: result.id }),
-      { headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, id: result.id }), {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
   } catch (err) {
     console.error("❌ Function error:", err);
-    return new Response(
-      JSON.stringify({ error: "Unexpected server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Unexpected server error" }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
   }
 });
