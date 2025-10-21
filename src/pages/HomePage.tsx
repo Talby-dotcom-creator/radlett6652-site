@@ -1,292 +1,336 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Calendar, Users, Heart, BookOpen } from "lucide-react";
+import { Calendar, Users, Heart } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+
 import SectionHeading from "../components/SectionHeading";
+import SectionDivider from "../components/SectionDivider";
 import SEOHead from "../components/SEOHead";
 import Button from "../components/Button";
-import EventCard from "../components/EventCard";
 import NewsCard from "../components/NewsCard";
 import TestimonialCard from "../components/TestimonialCard";
-import StatsSection from "../components/StatsSection";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
 import { LodgeEvent, Testimonial, CMSBlogPost } from "../types";
+import CoreValuesSection from "../components/CoreValuesSection";
+import UpcomingEventSpotlight from "../components/UpcomingEventSpotlight";
+import NewsDetailsModal from "../components/NewsDetailsModal";
+import MemberExperiences from "../components/MemberExperiences";
+import QuoteBanner from "../components/QuoteBanner";
 
 const HomePage: React.FC = () => {
   const [events, setEvents] = useState<LodgeEvent[]>([]);
   const [news, setNews] = useState<CMSBlogPost[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pageCounters, setPageCounters] = useState<Record<string, string>>({
-    founded_year: "1948",
-    active_members_count: "100+",
-  });
+  const [, setError] = useState<string | null>(null);
+  const [selectedNews, setSelectedNews] = useState<CMSBlogPost | null>(null);
+
+  // Parallax for hero background
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 400], [0, 60]); // gentle drift
 
   useEffect(() => {
-    let mounted = true;
     const loadData = async () => {
       try {
-        const [eventData, newsData, testimonialData, settingsData] =
-          await Promise.all([
-            optimizedApi.getEvents(),
-            optimizedApi.getBlogPosts("news"),
-            optimizedApi.getTestimonials(),
-            optimizedApi.getSiteSettings(),
-          ]);
+        setLoading(true);
+        const [eventsData, newsData, testimonialsData] = await Promise.all([
+          optimizedApi.getEvents(),
+          optimizedApi.getBlogPosts("news"),
+          optimizedApi.getTestimonials(),
+        ]);
 
-        if (!mounted) return;
-        setEvents(eventData || []);
-        setNews(newsData || []);
-        setTestimonials(testimonialData || []);
+        const now = new Date();
 
-        // Map settings to counters
-        const counters: Record<string, string> = { ...pageCounters };
-        if (Array.isArray(settingsData)) {
-          settingsData.forEach((row: any) => {
-            if (row.setting_key === "founded_year")
-              counters.founded_year = row.setting_value;
-            if (row.setting_key === "active_members_count")
-              counters.active_members_count = row.setting_value;
-          });
-        }
-        setPageCounters(counters);
+        const upcomingEvents = eventsData
+          .filter((e) => e.event_date && new Date(e.event_date) > now)
+          .sort(
+            (a, b) =>
+              new Date(a.event_date!).getTime() -
+              new Date(b.event_date!).getTime()
+          )
+          .slice(0, 3);
+
+        const publishedNews = newsData
+          .filter((n) => n.is_published)
+          .sort(
+            (a, b) =>
+              new Date(b.publish_date || b.created_at || "").getTime() -
+              new Date(a.publish_date || a.created_at || "").getTime()
+          )
+          .slice(0, 3);
+
+        const sortedTestimonials = testimonialsData.sort(
+          (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+        );
+
+        setEvents(upcomingEvents);
+        setNews(publishedNews);
+        setTestimonials(sortedTestimonials);
       } catch (err) {
         console.error("Error loading homepage data:", err);
+        setError("Failed to load content. Please try again later.");
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     };
-    loadData();
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
-  if (loading) return <LoadingSpinner />;
+    loadData();
+  }, []);
 
   return (
     <>
       <SEOHead
-        title="Radlett Lodge No. 6652 — Freemasonry in Hertfordshire"
-        description="Discover the spirit of Freemasonry in Radlett — integrity, friendship, respect, and service since 1948."
+        title="Radlett Lodge No. 6652 - Freemasons | Brotherhood, Charity & Tradition"
+        description="Welcome to Radlett Lodge No. 6652, a Masonic Lodge in Hertfordshire under the United Grand Lodge of England. Discover our history, values, and how to join."
+        keywords="Radlett Lodge 6652, Freemasonry, Hertfordshire, United Grand Lodge England, Masonic Lodge, Brotherhood, Charity, Tradition, Join Freemasons"
       />
 
-      <section
-        className="relative h-screen flex flex-col items-center justify-center text-center text-white overflow-hidden"
-        style={{
-          backgroundImage: "url('/masonic-pillars.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/30" />
+      {/* 🏛 HERO — with parallax background and counters near bottom */}
+      <section className="relative min-h-screen text-white overflow-hidden">
+        {/* Parallax background */}
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 bg-[url('/masonic-pillars.png')] bg-cover bg-bottom"
+          style={{ y }}
+        />
+        {/* Dark overlay for contrast */}
+        <div className="absolute inset-0 bg-primary-900/35" />
 
-        <div className="text-center space-y-4 md:space-y-6">
-          {/* Lodge Logo */}
-          <div className="flex justify-center mb-4">
-            <img
-              src="/lodge-logo.png"
-              alt="Radlett Lodge logo"
-              className="max-w-[160px] md:max-w-[200px] h-auto object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]"
-            />
-          </div>
+        {/* Main content */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 pt-28 md:pt-36 pb-44 flex flex-col items-center text-center">
+          <motion.img
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            src="/icon-512.png"
+            alt="Radlett Lodge Crest"
+            className="w-44 h-44 md:w-60 md:h-60 mx-auto mb-6 drop-shadow-2xl"
+          />
 
-          {/* Title */}
-          <h1
-            className="text-4xl md:text-6xl font-bold drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]"
-            style={{ color: "#d4af37" }}
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.7 }}
+            className="text-5xl md:text-6xl font-heading font-bold mb-3 text-secondary-500"
           >
             Radlett Lodge No. 6652
-          </h1>
+          </motion.h1>
 
-          {/* Subtitle Lines */}
-          <div className="leading-relaxed md:leading-loose space-y-1">
-            <p className="text-lg md:text-xl font-semibold tracking-wide text-yellow-300">
-              Integrity • Friendship • Respect • Service
-            </p>
-            <p className="text-base md:text-lg text-neutral-100 font-light">
-              A Masonic Lodge under the United Grand Lodge of England
-            </p>
-          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.7 }}
+            className="text-lg md:text-xl"
+          >
+            Integrity • Friendship • Respect • Service
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.7 }}
+            className="text-base md:text-lg text-secondary-100 mt-2"
+          >
+            A Masonic Lodge under the jurisdiction of the United Grand Lodge of
+            England
+          </motion.p>
+
+          {/* CTA row (beneath counters visually on small screens it will still be visible) */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.7 }}
+            className="flex flex-col sm:flex-row justify-center gap-4 mt-8"
+          >
+            <Link to="/about">
+              <Button variant="primary" size="lg">
+                Learn About Us
+              </Button>
+            </Link>
+            <Link to="/join">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white text-white hover:bg-white hover:text-primary-700"
+              >
+                Curious?
+              </Button>
+            </Link>
+          </motion.div>
         </div>
 
-        <Link
-          to="/join"
-          className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold px-8 py-3 rounded-lg shadow-md"
-        >
-          Discover Yourself
-        </Link>
-
-        <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20 flex flex-wrap justify-center gap-8">
-          {[
-            { key: "founded_year", label: "Founded" },
-            { key: "active_members_count", label: "Active Members" },
-          ].map((item) => (
-            <motion.div
-              key={item.key}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.8,
-                delay: item.key === "active_members_count" ? 0.2 : 0,
-              }}
-              className="backdrop-blur-lg bg-white/5 border border-white/20 rounded-2xl px-6 py-4 text-center"
-            >
-              <p className="text-sm uppercase text-neutral-200 mb-1">
-                {item.label}
-              </p>
-              <p className="text-2xl md:text-3xl font-semibold text-yellow-300">
-                {pageCounters[item.key] ?? "--"}
-              </p>
-            </motion.div>
-          ))}
+        {/* Floating counters near bottom of hero */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-6 md:bottom-10 z-10">
+          <div className="mx-auto max-w-4xl px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-70">
+              {/* Founded */}
+              <div className="pointer-events-auto bg-primary-900/25 backdrop-blur-sm rounded-xl p-5 border border-white/15 transition-transform hover:scale-[1.02]">
+                <div className="text-secondary-400 mb-1 flex justify-center">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <h3 className="font-heading font-semibold text-base mb-1 text-white">
+                  Founded
+                </h3>
+                <p className="text-neutral-100 text-sm">1948</p>
+              </div>
+              {/* Members */}
+              <div className="pointer-events-auto bg-primary-900/25 backdrop-blur-sm rounded-xl p-5 border border-white/15 transition-transform hover:scale-[1.02]">
+                <div className="text-secondary-400 mb-1 flex justify-center">
+                  <Users className="w-6 h-6" />
+                </div>
+                <h3 className="font-heading font-semibold text-base mb-1 text-white">
+                  Active Members
+                </h3>
+                <p className="text-neutral-100 text-sm">40+</p>
+              </div>
+              {/* Charity */}
+              <div className="pointer-events-auto bg-primary-900/25 backdrop-blur-sm rounded-xl p-5 border border-white/15 transition-transform hover:scale-[1.02]">
+                <div className="text-secondary-400 mb-1 flex justify-center">
+                  <Heart className="w-6 h-6" />
+                </div>
+                <h3 className="font-heading font-semibold text-base mb-1 text-white">
+                  Charity Raised
+                </h3>
+                <p className="text-neutral-100 text-sm">£50,000+ annually</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
+      {/* Warm ribbon under hero */}
+      <section className="bg-primary-900 text-secondary-400 text-center py-4">
+        <p className="text-sm md:text-base tracking-wide">
+          Discover brotherhood, purpose, and personal growth in a timeless
+          tradition.
+        </p>
+      </section>
+
+      {/* Strong divider */}
+      <SectionDivider variant="bold" />
+
+      {/* Welcome section — image scales gracefully with content */}
       <section className="py-20 bg-white">
-        <div className="container mx-auto px-6 grid md:grid-cols-2 items-center gap-12 max-w-6xl">
+        <div className="container mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-yellow-500 mb-6">
+            <h2 className="text-4xl font-heading font-bold text-primary-600 mb-6">
               Welcome to Our Lodge
             </h2>
-            <p className="text-lg text-neutral-700 leading-relaxed mb-6">
-              Since our founding in 1948,{" "}
-              <strong>Radlett Lodge No. 6652</strong> has been part of the
-              Province of Hertfordshire under the United Grand Lodge of England.
+            <p className="text-lg text-neutral-700 mb-6">
+              Founded in 1948, Radlett Lodge No. 6652 is a vibrant Masonic Lodge
+              operating within the Province of Hertfordshire.
             </p>
-            <p className="text-lg text-neutral-700 leading-relaxed mb-8">
-              Whether you are curious about Freemasonry or looking to rekindle
-              your Masonic journey, you’ll find a warm welcome and community
-              spirit.
+            <p className="text-lg text-neutral-700 mb-6">
+              We are committed to personal growth, ethical conduct, and
+              charitable giving — honouring centuries of Masonic tradition while
+              remaining relevant today.
             </p>
-            <Link
-              to="/about"
-              className="inline-block bg-gradient-to-r from-[#F7D36B] to-[#B9852F] text-black font-semibold px-6 py-3 rounded-lg"
-            >
-              Learn More About Us
+            <Link to="/about">
+              <Button variant="primary" className="mt-2">
+                Discover Our History
+              </Button>
             </Link>
           </div>
-
           <div className="relative">
             <img
               src="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/radlett-%20lodge-%20outside.jpg"
-              alt="Radlett Lodge exterior"
-              className="rounded-2xl shadow-lg w-full h-auto object-cover"
+              alt="Radlett Lodge"
+              className="w-full h-auto max-h-[520px] object-cover rounded-lg shadow-medium"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl pointer-events-none" />
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-neutral-50">
-        <div className="container mx-auto px-6">
+      <SectionDivider />
+
+      {/* Core Values */}
+      <CoreValuesSection />
+
+      {/* Quote Banner */}
+      <QuoteBanner />
+
+      {/* Upcoming Event Spotlight (already in your style; no diary icon) */}
+      <UpcomingEventSpotlight />
+
+      <SectionDivider />
+
+      {/* Member Experiences (enhanced component you’re adding) */}
+      <section className="py-20 bg-primary-50">
+        <div className="container mx-auto px-4">
           <SectionHeading
-            title="Upcoming Events"
-            subtitle="Join us for meetings, social gatherings, and charitable activities."
-            icon={<Calendar className="w-8 h-8 text-yellow-500" />}
+            title="Member Experiences"
+            subtitle="Hear, feel, and understand what Freemasonry means in real lives."
+            centered
           />
-          {events.length === 0 ? (
-            <p className="text-center text-neutral-600">No upcoming events.</p>
+          {loading ? (
+            <LoadingSpinner subtle />
+          ) : testimonials.length > 0 ? (
+            <MemberExperiences testimonials={testimonials} />
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-              {events.slice(0, 3).map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
+            <p className="text-center text-neutral-600 mt-6">
+              Member portraits and stories are arriving shortly.
+            </p>
           )}
-          <div className="text-center mt-12">
-            <Link
-              to="/events"
-              className="inline-block bg-yellow-500 px-6 py-3 rounded-lg text-oxford-blue font-semibold"
-            >
-              View All Events
-            </Link>
-          </div>
         </div>
       </section>
 
+      <SectionDivider />
+
+      {/* News Section — with CTA under the cards */}
       <section className="py-20 bg-white">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4">
           <SectionHeading
             title="Latest News"
-            subtitle="Stories and updates from Radlett Lodge."
-            icon={<BookOpen className="w-8 h-8 text-yellow-500" />}
+            subtitle="Stay updated with the latest activities from our Lodge."
           />
-          {news.length === 0 ? (
-            <p className="text-center text-neutral-600">
-              No news articles found.
+          {loading ? (
+            <LoadingSpinner subtle />
+          ) : news.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+                {news.map((n) => (
+                  <NewsCard
+                    key={n.id}
+                    news={{
+                      ...n,
+                      summary: n.summary ?? "",
+                      date: n.publish_date
+                        ? new Date(n.publish_date)
+                        : new Date(),
+                    }}
+                    onOpen={(post) => setSelectedNews(post)}
+                  />
+                ))}
+              </div>
+
+              {/* CTA under news cards */}
+              <div className="text-center mt-10">
+                <Link to="/news">
+                  <Button variant="outline" className="hover:shadow-soft">
+                    See all news — past and present
+                  </Button>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-neutral-600 mt-6">
+              No news articles yet.
             </p>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-              {news.slice(0, 3).map((n) => (
-                <NewsCard
-                  key={n.id}
-                  news={{
-                    id: n.id,
-                    title: n.title,
-                    summary: n.summary || "",
-                    date: new Date(n.publish_date || n.created_at || ""),
-                    image: n.image_url || undefined,
-                    isMembers: Boolean(n.is_members_only),
-                    content: n.content,
-                  }}
-                />
-              ))}
-            </div>
-          )}
-          <div className="text-center mt-12">
-            <Link
-              to="/news"
-              className="inline-block bg-yellow-500 px-6 py-3 rounded-lg text-oxford-blue font-semibold"
-            >
-              View All News
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-neutral-50">
-        <div className="container mx-auto px-6">
-          <SectionHeading
-            title="What Our Members Say"
-            subtitle="Reflections from Brethren of Radlett Lodge."
-            icon={<Users className="w-8 h-8 text-yellow-500" />}
-          />
-          {testimonials.length === 0 ? (
-            <p className="text-center text-neutral-600">No testimonials yet.</p>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-              {testimonials.map((t) => (
-                <TestimonialCard key={t.id} testimonial={t} />
-              ))}
-            </div>
           )}
         </div>
       </section>
 
-      <section className="py-20 bg-white text-center">
-        <div className="container mx-auto px-6">
-          <SectionHeading
-            title="Charity at the Heart"
-            subtitle="Our members are committed to supporting Masonic and local charitable causes."
-            icon={<Heart className="w-8 h-8 text-yellow-500" />}
-          />
-          <p className="text-neutral-600 max-w-3xl mx-auto mb-8">
-            Freemasonry has long been associated with benevolence and community
-            support. Radlett Lodge actively contributes to charitable causes in
-            Hertfordshire and beyond.
-          </p>
-          <Link
-            to="/charity"
-            className="inline-block bg-yellow-500 px-6 py-3 rounded-lg text-oxford-blue font-semibold"
-          >
-            Learn More
-          </Link>
-        </div>
-      </section>
+      {/* Modal for expanded news */}
+      {selectedNews && (
+        <NewsDetailsModal
+          news={selectedNews}
+          onClose={() => setSelectedNews(null)}
+        />
+      )}
 
-      <StatsSection />
+      {/* Final, calm divider */}
+      <SectionDivider variant="bold" shimmer={false} />
     </>
   );
 };

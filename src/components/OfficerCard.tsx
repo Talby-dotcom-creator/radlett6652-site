@@ -1,49 +1,43 @@
 import React from "react";
 import { Officer } from "../types";
-import { getPublicUrl } from "../lib/optimizedApi";
+import { User, Star } from "lucide-react";
 
 interface OfficerCardProps {
   officer: Officer;
 }
 
 const OfficerCard: React.FC<OfficerCardProps> = ({ officer }) => {
-  const { position, name, image, photo_path } = officer as Officer & {
-    photo_path?: string;
-  };
-
-  // Determine the correct image path (supports both `image` and `photo_path`)
-  let imagePath: string | null = null;
-
-  if (photo_path) {
-    // New Supabase storage format
-    imagePath = photo_path.toLowerCase().startsWith("officers/")
-      ? photo_path
-      : `Officers/${photo_path}`;
-  } else if (image) {
-    // Legacy CMS field (likely already a public URL)
-    imagePath = image;
-  }
-
-  // Convert to a public Supabase URL if needed
-  const imageUrl = imagePath?.startsWith("http")
-    ? imagePath
-    : getPublicUrl(imagePath || "") || "/placeholder-officer.png";
+  const imageUrl =
+    officer.image_url || officer.image || "/placeholder-officer.webp";
 
   return (
-    <div className="bg-white shadow-soft rounded-lg overflow-hidden border border-neutral-100 transition-all duration-300 hover:shadow-medium">
-      {imageUrl && (
-        <div className="aspect-square overflow-hidden">
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-full object-cover"
-            onError={(e) => (e.currentTarget.src = "/placeholder-officer.png")}
-          />
-        </div>
-      )}
-      <div className="p-4 text-center">
-        <h3 className="font-heading font-semibold text-primary-600">{name}</h3>
-        <p className="text-sm text-neutral-500">{position}</p>
+    <div className="radlett-card group text-center overflow-hidden">
+      {/* Officer Image */}
+      <div className="relative w-full h-56 overflow-hidden rounded-t-2xl">
+        <img
+          src={imageUrl}
+          alt={officer.name || officer.full_name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder-officer.webp";
+          }}
+        />
+        {/* Subtle gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-70 group-hover:opacity-60 transition-opacity"></div>
+      </div>
+
+      {/* Officer Details */}
+      <div className="radlett-card-content">
+        <h3 className="text-xl font-heading font-semibold text-primary-700 mb-1 group-hover:text-secondary-500 transition-colors">
+          {officer.name || officer.full_name}
+        </h3>
+        <p className="text-sm text-neutral-600 mb-3">{officer.position}</p>
+
+        {officer.is_active && (
+          <div className="flex items-center justify-center gap-1 text-secondary-500 text-sm font-medium">
+            <Star className="w-4 h-4" /> Active Officer
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ module.exports = {
           300: "#92a9cb",
           400: "#7391bc",
           500: "#5479ae",
-          600: "#002147", // legacy main navy
+          600: "#002147",
           700: "#0e1a30",
           800: "#091324",
           900: "#040b17",
@@ -22,7 +22,7 @@ module.exports = {
           200: "#fedb7a",
           300: "#fdcd44",
           400: "#fcc01d",
-          500: "#FCA311", // 🔶 Masonic Gold
+          500: "#FCA311",
           600: "#d68504",
           700: "#af6c03",
           800: "#895303",
@@ -41,10 +41,10 @@ module.exports = {
           900: "#0d0d0d",
         },
 
-        // ✨ Custom brand aliases
+        // Brand aliases
         "masonic-gold": "#FCA311",
         "masonic-navy": "#002147",
-        "oxford-blue": "#002147", // 🟦 Official Freemasonry Oxford Blue
+        "oxford-blue": "#002147",
       },
 
       fontFamily: {
@@ -56,21 +56,29 @@ module.exports = {
         soft: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
         medium:
           "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+        gold: "0 0 25px rgba(255, 215, 0, 0.25), 0 8px 20px rgba(0,0,0,0.15)",
       },
 
-      // ✨ Subtle animations
+      backdropBlur: {
+        xs: "2px",
+      },
+
       keyframes: {
         goldShimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
         goldPulse: {
-          "0%, 100%": { opacity: 1 },
+          "0%,100%": { opacity: 1 },
           "50%": { opacity: 0.6 },
         },
         slowLight: {
           "0%,100%": { backgroundPosition: "center top" },
           "50%": { backgroundPosition: "center bottom" },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
         },
       },
 
@@ -78,15 +86,18 @@ module.exports = {
         goldShimmer: "goldShimmer 10s linear infinite",
         goldPulse: "goldPulse 8s ease-in-out infinite",
         slowLight: "slowLight 60s ease-in-out infinite",
+        shimmer: "shimmer 2s infinite linear",
       },
     },
   },
+
   plugins: [
     require("@tailwindcss/typography"),
+    require("@tailwindcss/line-clamp"),
     function ({ addBase }) {
       addBase({
         a: { transition: "color 0.3s ease" },
-        "a:hover": { color: "#FCA311" }, // 🔶 Gold hover effect globally
+        "a:hover": { color: "#FCA311" },
       });
     },
   ],
