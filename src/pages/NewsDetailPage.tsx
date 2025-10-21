@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import optimizedApi from "../lib/optimizedApi";
+import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
 
@@ -17,9 +17,15 @@ const NewsDetailPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
+
         if (id) {
-          const data = await optimizedApi.getBlogPosts(id);
-          setArticle(data);
+          // ✅ getBlogPosts returns all posts, so we filter by ID manually
+          const data = await optimizedApi.getBlogPosts();
+          const found =
+            Array.isArray(data) && data.length > 0
+              ? data.find((p) => p.id === id)
+              : null;
+          setArticle(found ?? null);
         }
       } catch (err) {
         console.error("❌ Failed to load news article:", err);
@@ -82,7 +88,10 @@ const NewsDetailPage: React.FC = () => {
       )}
 
       {/* Content */}
-      <div className="prose prose-lg max-w-none">{article.content}</div>
+      <div
+        className="prose prose-lg max-w-none"
+        dangerouslySetInnerHTML={{ __html: article.content ?? "" }}
+      />
     </div>
   );
 };

@@ -11,7 +11,7 @@ module.exports = {
           300: "#92a9cb",
           400: "#7391bc",
           500: "#5479ae",
-          600: "#14213D", // main navy
+          600: "#002147", // legacy main navy
           700: "#0e1a30",
           800: "#091324",
           900: "#040b17",
@@ -22,7 +22,7 @@ module.exports = {
           200: "#fedb7a",
           300: "#fdcd44",
           400: "#fcc01d",
-          500: "#FCA311", // gold
+          500: "#FCA311", // 🔶 Masonic Gold
           600: "#d68504",
           700: "#af6c03",
           800: "#895303",
@@ -40,18 +40,25 @@ module.exports = {
           800: "#1a1a1a",
           900: "#0d0d0d",
         },
+
+        // ✨ Custom brand aliases
+        "masonic-gold": "#FCA311",
+        "masonic-navy": "#002147",
+        "oxford-blue": "#002147", // 🟦 Official Freemasonry Oxford Blue
       },
+
       fontFamily: {
         heading: ['"Playfair Display"', "serif"],
         sans: ['"Open Sans"', "sans-serif"],
       },
+
       boxShadow: {
         soft: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
         medium:
           "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
       },
 
-      // ✨ Animations
+      // ✨ Subtle animations
       keyframes: {
         goldShimmer: {
           "0%": { backgroundPosition: "-200% 0" },
@@ -66,6 +73,7 @@ module.exports = {
           "50%": { backgroundPosition: "center bottom" },
         },
       },
+
       animation: {
         goldShimmer: "goldShimmer 10s linear infinite",
         goldPulse: "goldPulse 8s ease-in-out infinite",
@@ -73,5 +81,13 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/typography"),
+    function ({ addBase }) {
+      addBase({
+        a: { transition: "color 0.3s ease" },
+        "a:hover": { color: "#FCA311" }, // 🔶 Gold hover effect globally
+      });
+    },
+  ],
 };

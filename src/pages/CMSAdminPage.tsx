@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { cmsApi } from "../lib/cmsApi";
 import {
   CMSBlogPost,
-  Event,
+  LodgeEvent,
   Officer,
   FAQItem,
   PageContent,
@@ -11,16 +11,17 @@ import {
 } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Button from "../components/Button";
+import CMSPageOverview from "../components/admin/CMSPageOverview";
 
 const CMSAdminPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [newsArticles, setNewsArticles] = useState<CMSBlogPost[]>([]);
   const [snippets, setSnippets] = useState<CMSBlogPost[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<LodgeEvent[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
-  const [pageContent, setPageContent] = useState<PageContent | null>(null);
+  const [pageContent, setPageContent] = useState<PageContent[] | null>(null);
 
   /* -------------------------------------------------------
    *  Load All CMS Data
@@ -93,7 +94,6 @@ const CMSAdminPage: React.FC = () => {
             location: ev.location ?? "",
             image_url: ev.image_url ?? null,
             is_members_only: ev.is_members_only ?? false,
-            is_past_event: ev.is_past_event ?? false,
             created_at: ev.created_at ?? "",
             updated_at: ev.updated_at ?? "",
           }))
@@ -257,7 +257,7 @@ const CMSAdminPage: React.FC = () => {
   /* -------------------------------------------------------
    *  EVENTS CRUD
    * ----------------------------------------------------- */
-  const handleCreateEvent = async (event: Partial<Event>) => {
+  const handleCreateEvent = async (event: Partial<LodgeEvent>) => {
     await cmsApi.createEvent({
       title: event.title ?? "Untitled Event",
       description: event.description ?? "",
@@ -265,13 +265,12 @@ const CMSAdminPage: React.FC = () => {
       location: event.location ?? "TBC",
       image_url: event.image_url ?? null,
       is_members_only: event.is_members_only ?? false,
-      is_past_event: event.is_past_event ?? false,
       updated_at: event.updated_at ?? new Date().toISOString(),
     });
     await refreshData();
   };
 
-  const handleUpdateEvent = async (id: string, event: Partial<Event>) => {
+  const handleUpdateEvent = async (id: string, event: Partial<LodgeEvent>) => {
     await cmsApi.updateEvent(id, {
       title: event.title ?? "Untitled Event",
       description: event.description ?? "",
@@ -279,7 +278,6 @@ const CMSAdminPage: React.FC = () => {
       location: event.location ?? "TBC",
       image_url: event.image_url ?? null,
       is_members_only: event.is_members_only ?? false,
-      is_past_event: event.is_past_event ?? false,
       updated_at: event.updated_at ?? new Date().toISOString(),
     });
     await refreshData();
@@ -307,9 +305,8 @@ const CMSAdminPage: React.FC = () => {
   /* -------------------------------------------------------
    *  PAGE CONTENT
    * ----------------------------------------------------- */
-  const handleUpdatePageContent = async (newContent: string) => {
-    if (!pageContent) return;
-    await cmsApi.updateSiteSetting(pageContent.id, { content: newContent });
+  const handleUpdatePageContent = async (id: string, newContent: string) => {
+    await cmsApi.updatePageContent(id, { content: newContent });
     const refreshed = await cmsApi.getPageContent("about");
     setPageContent(refreshed);
   };
@@ -414,6 +411,16 @@ const CMSAdminPage: React.FC = () => {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* -------------------- PAGE CONTENT OVERVIEW -------------------- */}
+      <section>
+        <h2 className="text-xl font-medium mb-2">CMS Page Content</h2>
+        <p className="text-sm text-neutral-600 mb-3">
+          All static content stored in Supabase <code>page_content</code> table.
+        </p>
+
+        {loading ? <LoadingSpinner /> : <CMSPageOverview />}
       </section>
     </div>
   );

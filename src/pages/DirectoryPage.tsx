@@ -1,29 +1,40 @@
 // src/pages/DirectoryPage.tsx
 
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
-import { MemberProfile } from '../types';
-import SectionHeading from '../components/SectionHeading';
-import { Search, Mail, Phone, Shield, User, Calendar, EyeOff } from 'lucide-react'; // Add EyeOff here
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { api } from "../lib/api";
+import { optimizedApi } from "../lib/optimizedApi";
+import { MemberProfile } from "../types";
+import SectionHeading from "../components/SectionHeading";
+import {
+  Search,
+  Mail,
+  Phone,
+  Shield,
+  User,
+  Calendar,
+  EyeOff,
+} from "lucide-react"; // Add EyeOff here
 
 const DirectoryPage: React.FC = () => {
   const { user, needsPasswordReset } = useAuth();
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const loadMembers = async () => {
       try {
-        const data = await api.optimizedApi.getAllMembers();
+        const data = await optimizedApi.getAllMembers();
         // Filter to only show active members
-        const activeMembers = data.filter(member => member.status === 'active');
+        const activeMembers = data.filter(
+          (member) => member.status === "active"
+        );
         setMembers(activeMembers);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -35,15 +46,17 @@ const DirectoryPage: React.FC = () => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   // Redirect to password reset if needed
   if (needsPasswordReset) {
     return <Navigate to="/password-reset" replace />;
   }
 
-  const filteredMembers = members.filter(member =>
-    member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (member.position && member.position.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredMembers = members.filter(
+    (member) =>
+      member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member.position &&
+        member.position.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -68,8 +81,9 @@ const DirectoryPage: React.FC = () => {
               <div className="text-sm text-blue-700">
                 <p className="font-medium mb-1">Privacy Notice</p>
                 <p>
-                  Contact information is only shown for members who have opted to share it. 
-                  You can control your own privacy settings in your profile.
+                  Contact information is only shown for members who have opted
+                  to share it. You can control your own privacy settings in your
+                  profile.
                 </p>
               </div>
             </div>
@@ -83,7 +97,10 @@ const DirectoryPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 pl-10 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
+              size={20}
+            />
           </div>
 
           {loading ? (
@@ -93,8 +110,11 @@ const DirectoryPage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredMembers.map(member => (
-                <div key={member.id} className="bg-white rounded-lg p-6 shadow-soft border border-neutral-100 hover:shadow-medium transition-shadow">
+              {filteredMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="bg-white rounded-lg p-6 shadow-soft border border-neutral-100 hover:shadow-medium transition-shadow"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
                       <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
@@ -112,32 +132,41 @@ const DirectoryPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Role Badge */}
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                      member.role === 'admin' 
-                        ? 'bg-secondary-100 text-secondary-700' 
-                        : 'bg-neutral-100 text-neutral-600'
-                    }`}>
-                      {member.role === 'admin' ? 'Administrator' : 'Member'}
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${
+                        member.role === "admin"
+                          ? "bg-secondary-100 text-secondary-700"
+                          : "bg-neutral-100 text-neutral-600"
+                      }`}
+                    >
+                      {member.role === "admin" ? "Administrator" : "Member"}
                     </span>
                   </div>
 
                   {/* Member Since */}
                   <div className="flex items-center text-sm text-neutral-500 mb-4">
                     <Calendar className="w-4 h-4 mr-2 text-secondary-500" />
-                    <span>Member since {new Date(member.join_date).getFullYear()}</span>
+                    <span>
+                      Member since{" "}
+                      {member.join_date
+                        ? new Date(member.join_date).getFullYear()
+                        : "Unknown"}
+                    </span>
                   </div>
 
                   {/* Contact Information - Only show if member has opted in */}
                   {member.share_contact_info ? (
                     <div className="space-y-3 pt-4 border-t border-neutral-100">
-                      <h4 className="text-sm font-medium text-primary-600 mb-2">Contact Information</h4>
-                      
+                      <h4 className="text-sm font-medium text-primary-600 mb-2">
+                        Contact Information
+                      </h4>
+
                       {member.contact_email && (
                         <div className="flex items-center text-sm">
                           <Mail className="w-4 h-4 mr-2 text-secondary-500 flex-shrink-0" />
-                          <a 
+                          <a
                             href={`mailto:${member.contact_email}`}
                             className="text-secondary-600 hover:text-secondary-700 transition-colors truncate"
                           >
@@ -145,19 +174,22 @@ const DirectoryPage: React.FC = () => {
                           </a>
                         </div>
                       )}
-                      
+
                       {member.contact_phone && (
                         <div className="flex items-center text-sm">
                           <Phone className="w-4 h-4 mr-2 text-secondary-500 flex-shrink-0" />
-                          <a 
-                            href={`tel:${member.contact_phone.replace(/\s+/g, '')}`}
+                          <a
+                            href={`tel:${member.contact_phone.replace(
+                              /\s+/g,
+                              ""
+                            )}`}
                             className="text-secondary-600 hover:text-secondary-700 transition-colors"
                           >
                             {member.contact_phone}
                           </a>
                         </div>
                       )}
-                      
+
                       {!member.contact_email && !member.contact_phone && (
                         <p className="text-xs text-neutral-500 italic">
                           No additional contact information provided
@@ -167,7 +199,8 @@ const DirectoryPage: React.FC = () => {
                   ) : (
                     <div className="pt-4 border-t border-neutral-100">
                       <div className="flex items-center text-xs text-neutral-500">
-                        <EyeOff className="w-4 h-4 mr-2" /> {/* This is the line causing the error */}
+                        <EyeOff className="w-4 h-4 mr-2" />{" "}
+                        {/* This is the line causing the error */}
                         <span>Contact information not shared</span>
                       </div>
                     </div>
@@ -181,12 +214,13 @@ const DirectoryPage: React.FC = () => {
           {!loading && filteredMembers.length === 0 && (
             <div className="text-center py-12">
               <User className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-              <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Members Found</h3>
+              <h3 className="text-xl font-semibold text-neutral-600 mb-2">
+                No Members Found
+              </h3>
               <p className="text-neutral-500">
-                {searchTerm 
+                {searchTerm
                   ? `No members match your search "${searchTerm}".`
-                  : 'No active members found in the directory.'
-                }
+                  : "No active members found in the directory."}
               </p>
             </div>
           )}
@@ -196,18 +230,22 @@ const DirectoryPage: React.FC = () => {
             <div className="mt-8 bg-neutral-50 rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-primary-600">{filteredMembers.length}</div>
+                  <div className="text-2xl font-bold text-primary-600">
+                    {filteredMembers.length}
+                  </div>
                   <div className="text-sm text-neutral-600">Active Members</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-secondary-600">
-                    {filteredMembers.filter(m => m.share_contact_info).length}
+                    {filteredMembers.filter((m) => m.share_contact_info).length}
                   </div>
-                  <div className="text-sm text-neutral-600">Sharing Contact Info</div>
+                  <div className="text-sm text-neutral-600">
+                    Sharing Contact Info
+                  </div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-neutral-600">
-                    {filteredMembers.filter(m => m.role === 'admin').length}
+                    {filteredMembers.filter((m) => m.role === "admin").length}
                   </div>
                   <div className="text-sm text-neutral-600">Administrators</div>
                 </div>

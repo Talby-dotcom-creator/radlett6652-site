@@ -67,7 +67,10 @@ export const api = {
 
     if (error) throw new Error(error.message);
     if (!data || !data.length) return null;
-    return { ...data[0], status: data[0].status ?? "active" };
+    return {
+      ...(data[0] as unknown as MemberProfile),
+      status: (data[0] as any).status ?? "active",
+    } as unknown as MemberProfile;
   },
 
   async createMemberProfile(
@@ -101,28 +104,26 @@ export const api = {
       .insert([safeInsertObj])
       .select();
     if (error) throw new Error(error.message);
-    return (
-      data?.[0] ?? {
-        id: "",
-        user_id: userId,
-        full_name: fullName,
-        contact_email: null,
-        contact_phone: null,
-        address: null,
-        join_date:
-          typeof insertObj.join_date === "string"
-            ? insertObj.join_date
-            : undefined,
-        position: null,
-        role: "member",
-        status: "active",
-        notes: null,
-        email_verified: null,
-        grand_lodge_rank: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-    );
+    return (data?.[0] ?? {
+      id: "",
+      user_id: userId,
+      full_name: fullName,
+      contact_email: null,
+      contact_phone: null,
+      address: null,
+      join_date:
+        typeof insertObj.join_date === "string"
+          ? insertObj.join_date
+          : undefined,
+      position: null,
+      role: "member",
+      status: "active",
+      notes: null,
+      email_verified: null,
+      grand_lodge_rank: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }) as unknown as MemberProfile;
   },
 
   async updateMemberProfile(
@@ -144,57 +145,56 @@ export const api = {
     }
     const { data, error } = await supabase
       .from("member_profiles")
-      .update(updateObj)
+      .update(updateObj as any)
       .eq("user_id", userId)
       .select();
     if (error) throw new Error(error.message);
 
-    return (
-      data?.[0] ?? {
-        id: "",
-        user_id: userId,
-        full_name:
-          typeof updateObj.full_name === "string" ? updateObj.full_name : "",
-        contact_email:
-          typeof updateObj.contact_email === "string"
-            ? updateObj.contact_email
-            : null,
-        contact_phone:
-          typeof updateObj.contact_phone === "string"
-            ? updateObj.contact_phone
-            : null,
-        address:
-          typeof updateObj.address === "string" ? updateObj.address : null,
-        join_date:
-          typeof updateObj.join_date === "string"
-            ? updateObj.join_date
-            : undefined,
-        position:
-          typeof updateObj.position === "string" ? updateObj.position : null,
-        role: updateObj.role === "admin" ? "admin" : "member",
-        status:
-          updateObj.status === "pending" || updateObj.status === "inactive"
-            ? updateObj.status
-            : "active",
-        notes: typeof updateObj.notes === "string" ? updateObj.notes : null,
-        email_verified:
-          typeof updateObj.email_verified === "boolean"
-            ? updateObj.email_verified
-            : null,
-        grand_lodge_rank:
-          typeof updateObj.grand_lodge_rank === "string"
-            ? updateObj.grand_lodge_rank
-            : null,
-        created_at:
-          typeof updateObj.created_at === "string"
-            ? updateObj.created_at
-            : new Date().toISOString(),
-        updated_at:
-          typeof updateObj.updated_at === "string"
-            ? updateObj.updated_at
-            : new Date().toISOString(),
-      }
-    );
+    const result = (data?.[0] as unknown as MemberProfile) ?? {
+      id: "",
+      user_id: userId,
+      full_name:
+        typeof updateObj.full_name === "string" ? updateObj.full_name : "",
+      contact_email:
+        typeof updateObj.contact_email === "string"
+          ? updateObj.contact_email
+          : null,
+      contact_phone:
+        typeof updateObj.contact_phone === "string"
+          ? updateObj.contact_phone
+          : null,
+      address: typeof updateObj.address === "string" ? updateObj.address : null,
+      join_date:
+        typeof updateObj.join_date === "string"
+          ? updateObj.join_date
+          : undefined,
+      position:
+        typeof updateObj.position === "string" ? updateObj.position : null,
+      role: updateObj.role === "admin" ? "admin" : "member",
+      status:
+        updateObj.status === "pending" || updateObj.status === "inactive"
+          ? updateObj.status
+          : "active",
+      notes: typeof updateObj.notes === "string" ? updateObj.notes : null,
+      email_verified:
+        typeof updateObj.email_verified === "boolean"
+          ? updateObj.email_verified
+          : null,
+      grand_lodge_rank:
+        typeof updateObj.grand_lodge_rank === "string"
+          ? updateObj.grand_lodge_rank
+          : null,
+      created_at:
+        typeof updateObj.created_at === "string"
+          ? updateObj.created_at
+          : new Date().toISOString(),
+      updated_at:
+        typeof updateObj.updated_at === "string"
+          ? updateObj.updated_at
+          : new Date().toISOString(),
+    };
+
+    return result as unknown as MemberProfile;
   },
 
   /* ---------------- Site Settings ---------------- */

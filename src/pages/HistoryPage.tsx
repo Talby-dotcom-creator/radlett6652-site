@@ -1,18 +1,25 @@
+// src/pages/HistoryPage.tsx
 import React, { useEffect, useState } from "react";
-import optimizedApi from "../lib/optimizedApi";
+import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const HistoryPage: React.FC = () => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // ✅ fixed typo
 
   useEffect(() => {
     const fetchContent = async () => {
       try {
         setLoading(true);
         const pageData = await optimizedApi.getPageContent("our-history");
-        setContent(pageData);
+
+        // ✅ getPageContent returns an array of PageContent rows
+        if (Array.isArray(pageData) && pageData.length > 0) {
+          setContent(pageData[0].content ?? null);
+        } else {
+          setContent(null);
+        }
       } catch (err: any) {
         console.error("Error loading History page:", err);
         setError("Could not load page content. Please try again later.");
@@ -20,6 +27,7 @@ const HistoryPage: React.FC = () => {
         setLoading(false);
       }
     };
+
     fetchContent();
   }, []);
 

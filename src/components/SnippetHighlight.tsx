@@ -1,7 +1,7 @@
 // src/components/SnippetHighlight.tsx
 import React, { useEffect, useState } from "react";
 import { CMSBlogPost } from "../types";
-import optimizedApi from "../lib/optimizedApi";
+import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import { Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -13,25 +13,29 @@ const SnippetHighlight: React.FC = () => {
   useEffect(() => {
     const loadSnippet = async () => {
       try {
-        const snippets = await optimizedApi.getBlogPosts("snippet")();
+        const snippets = await optimizedApi.getBlogPosts("snippet");
 
-        // Find the one matching your chosen title (case-insensitive)
+        // ✅ tell TypeScript what "s" is
         const featured =
           snippets.find(
-            (s) =>
+            (s: CMSBlogPost) =>
               s.title?.toLowerCase().trim() ===
               FEATURE_SNIPPET_TITLE.toLowerCase().trim()
           ) || null;
 
-        // fallback to most recent if not found
+        // ✅ tell TypeScript what "a" and "b" are
         const latest =
           featured ||
           (snippets.length > 0
-            ? snippets.sort(
-                (a, b) =>
-                  new Date(b.publish_date || 0).getTime() -
-                  new Date(a.publish_date || 0).getTime()
-              )[0]
+            ? snippets.sort((a: CMSBlogPost, b: CMSBlogPost) => {
+                const ta = new Date(
+                  a.publish_date ?? a.created_at ?? 0
+                ).getTime();
+                const tb = new Date(
+                  b.publish_date ?? b.created_at ?? 0
+                ).getTime();
+                return tb - ta;
+              })[0]
             : null);
 
         setSnippet(latest);
@@ -70,7 +74,8 @@ const SnippetHighlight: React.FC = () => {
 
           <div
             className="prose prose-lg max-w-none text-neutral-800 mb-6 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: snippet.content }}
+            // snippet.content can be string | null | undefined; ensure a string for TS
+            dangerouslySetInnerHTML={{ __html: snippet.content ?? "" }}
           />
 
           <div className="flex items-center justify-between text-sm text-neutral-600">

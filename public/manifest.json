@@ -4,7 +4,7 @@
   "description": "Official website of Radlett Lodge No. 6652 - Freemasons",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#14213D",
+  "background_color": "#002147",
   "theme_color": "#FCA311",
   "orientation": "portrait-primary",
   "icons": [

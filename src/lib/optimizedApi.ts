@@ -2,7 +2,7 @@
 import { supabase } from "./supabase";
 import {
   CMSBlogPost,
-  Event,
+  LodgeEvent,
   Officer,
   Testimonial,
   LodgeDocument,
@@ -25,6 +25,22 @@ const handleError = (error: any, context: string) => {
  * Unified Optimized API Layer
  * ---------------------------------------------------- */
 export const optimizedApi = {
+  /* ---------------- CONNECTION TEST ---------------- */
+  async checkConnection() {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("id")
+        .limit(1);
+      if (error) throw error;
+      console.log("✅ Supabase connected successfully");
+      return true;
+    } catch (err) {
+      console.error("❌ Supabase connection failed:", err);
+      return false;
+    }
+  },
+
   /* ---------------- BLOG POSTS ---------------- */
   async getBlogPosts(category?: string): Promise<CMSBlogPost[]> {
     try {
@@ -34,7 +50,6 @@ export const optimizedApi = {
         .eq("is_published", true)
         .order("publish_date", { ascending: false });
 
-      // only filter if a category is provided
       if (category) query = query.eq("category", category);
 
       const { data, error } = await query;
@@ -57,7 +72,7 @@ export const optimizedApi = {
   },
 
   /* ---------------- EVENTS ---------------- */
-  async getEvents(): Promise<Event[]> {
+  async getEvents(): Promise<LodgeEvent[]> {
     const { data, error } = await supabase
       .from("events")
       .select("*")
@@ -69,7 +84,7 @@ export const optimizedApi = {
     }));
   },
 
-  async getNextUpcomingEvent(): Promise<Event | null> {
+  async getNextUpcomingEvent(): Promise<LodgeEvent | null> {
     try {
       const now = new Date().toISOString();
       const { data, error } = await supabase
@@ -97,11 +112,14 @@ export const optimizedApi = {
     const { data, error } = await supabase
       .from("officers")
       .select("*")
-      .order("sort_order");
+      .order("sort_order", { ascending: true });
     if (error) handleError(error, "getOfficers");
+
     return (data ?? []).map((officer: any) => ({
       ...officer,
       name: officer.name ?? officer.full_name ?? "",
+      image_url: officer.image_url ?? "",
+      position: officer.position ?? "",
     }));
   },
 
@@ -148,14 +166,41 @@ export const optimizedApi = {
   },
 
   /* ---------------- PAGE CONTENT ---------------- */
-  async getPageContent(pageName: string): Promise<PageContent | null> {
-    const { data, error } = await supabase
-      .from("page_content")
-      .select("*")
-      .eq("page_name", pageName)
-      .maybeSingle();
-    if (error) handleError(error, "getPageContent");
-    return data ?? null;
+  async getPageContent(pageName: string): Promise<PageContent[] | null> {
+    try {
+      const { data, error } = await supabase
+        .from("page_content")
+        .select("*")
+        .eq("page_name", pageName)
+        .order("updated_at", { ascending: false });
+
+      if (error) handleError(error, "getPageContent");
+      return data ?? null;
+    } catch (err: any) {
+      handleError(err, "getPageContent");
+      return null;
+    }
+  },
+
+  /* ---------------- SINGLE PAGE SECTION ---------------- */
+  async getPageSection(
+    pageName: string,
+    sectionName: string
+  ): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from("page_content")
+        .select("content")
+        .eq("page_name", pageName)
+        .eq("section_name", sectionName)
+        .maybeSingle();
+
+      if (error) handleError(error, "getPageSection");
+      return data?.content ?? null;
+    } catch (err: any) {
+      handleError(err, "getPageSection");
+      return null;
+    }
   },
 
   /* ---------------- FAQ ITEMS ---------------- */
@@ -166,6 +211,31 @@ export const optimizedApi = {
       .order("sort_order");
     if (error) handleError(error, "getFAQItems");
     return data ?? [];
+  },
+
+  /* ---------------- DOCUMENTS ---------------- */
+  async getLodgeDocuments(): Promise<LodgeDocument[]> {
+    const { data, error } = await supabase
+      .from("lodge_documents")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) handleError(error, "getLodgeDocuments");
+    return (data ?? []).map((doc: any) => ({
+      ...doc,
+      file_url: doc.file_url ?? doc.url ?? "",
+    }));
+  },
+
+  async getMeetingMinutes(): Promise<MeetingMinutes[]> {
+    const { data, error } = await supabase
+      .from("meeting_minutes")
+      .select("*")
+      .order("meeting_date", { ascending: false });
+    if (error) handleError(error, "getMeetingMinutes");
+    return (data ?? []).map((m: any) => ({
+      ...m,
+      file_url: m.file_url ?? m.document_url ?? "",
+    }));
   },
 
   /* ---------------- SITE SETTINGS ---------------- */
@@ -187,4 +257,11 @@ export const optimizedApi = {
   },
 };
 
-export default optimizedApi;
+/* ---------------------------------------------------------
+ * 🧩 Helper: Build a public URL for media stored in Supabase
+ * --------------------------------------------------------- */
+export const getPublicUrl = (path: string | null): string | null => {
+  if (!path) return null;
+  const { data } = supabase.storage.from("cms-media").getPublicUrl(path);
+  return data?.publicUrl || null;
+};

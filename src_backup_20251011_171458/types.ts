@@ -151,3 +151,6 @@ export type {
   PageContent as CMSPageContent,
   SiteSetting as CMSSiteSetting,
 };
+
+// Backwards-compatible alias used in newer code
+export type LodgeEvent = Event;

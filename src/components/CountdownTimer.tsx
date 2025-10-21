@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Calendar, Clock, MapPin, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import optimizedApi from "../lib/optimizedApi";
+import { optimizedApi } from "../lib/optimizedApi";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface CountdownTimerProps {

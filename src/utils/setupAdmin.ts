@@ -38,11 +38,11 @@ export const setupAdminProfile = async () => {
       return existingProfile;
     } else {
       // Create new admin profile
-      const newProfile = await api.adminCreateMemberProfile({
-        user_id: user.id,
-        full_name: "Paul Talbot",
-        status: "active", // Ensure status is set to active
+      const newProfile = await api.createMemberProfile(user.id, "Paul Talbot");
+      // Ensure role updated to admin after creating profile
+      await api.updateMemberProfile(user.id, {
         role: "admin",
+        status: "active",
       });
       console.log("Admin profile created:", newProfile);
       return newProfile;

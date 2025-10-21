@@ -1,11 +1,14 @@
+// src/pages/EventsPage.tsx
+console.log("📅 EventsPage loaded!");
 import React, { useEffect, useState } from "react";
 import HeroSection from "../components/HeroSection";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
-import { CMSEvent } from "../types";
+import { Event } from "../types";
+
 
 const EventsPage: React.FC = () => {
-  const [events, setEvents] = useState<CMSEvent[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,16 +28,22 @@ const EventsPage: React.FC = () => {
   return (
     <main>
       <HeroSection
-        title="Lodge Events"
-        subtitle="Discover upcoming meetings, socials, and special gatherings"
-        backgroundImage="/images/events-banner.webp"
+        title="Events Calendar"
+        subtitle="Stay up to date with all Lodge meetings and social events."
+        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/radlett_event.png"
+        overlayOpacity={0.35}
+        verticalPosition="bottom"
+        showScrollHint
       />
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-heading font-bold text-center mb-8">
-            Upcoming Events
-          </h2>
+    </main>
+  );
+};
 
+export default EventsPage;
+
+
+      <section className="py-12">
+        <div className="container mx-auto px-4">
           {loading ? (
             <LoadingSpinner />
           ) : events.length > 0 ? (

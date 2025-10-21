@@ -12,14 +12,6 @@ const Header: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    console.log("🏠 Header: Auth state:", {
-      user: user ? { id: user.id, email: user.email } : null,
-      location: location.pathname,
-    });
-  }, [user, location.pathname]);
-
-  // Scroll background + hide-on-scroll
-  useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       setScrolled(currentScrollY > 20);
@@ -38,16 +30,18 @@ const Header: React.FC = () => {
     setIsMenuOpen(false);
   }, [location]);
 
+  // Detect if current page is NOT the homepage
+  const isHomePage = location.pathname === "/";
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        scrolled
-          ? "bg-black/80 backdrop-blur-md shadow-md py-4 md:py-5"
+        scrolled || !isHomePage
+          ? "bg-[#0A174E]/95 backdrop-blur-md shadow-md py-4 md:py-5"
           : "bg-transparent py-6 md:py-10"
       } ${isHidden ? "-translate-y-full" : "translate-y-0"}`}
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
-        {/* ✅ Empty spacer to balance layout (no logo or text) */}
         <div className="w-6 md:w-10" />
 
         {/* Desktop Navigation */}
@@ -84,7 +78,7 @@ const Header: React.FC = () => {
           {!user && (
             <Link
               to="/login"
-              className="flex items-center text-neutral-50 hover:text-secondary-300 transition-colors"
+              className="flex items-center text-neutral-50 hover:text-[#FFD700] transition-colors"
               aria-label="Members Area Login"
             >
               <LogIn size={18} className="mr-2" />
@@ -101,10 +95,10 @@ const Header: React.FC = () => {
           )}
         </nav>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden text-neutral-50 hover:text-secondary-400 transition-colors p-2"
+          className="md:hidden text-neutral-50 hover:text-[#FFD700] transition-colors p-2"
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-menu"
@@ -121,57 +115,39 @@ const Header: React.FC = () => {
       {isMenuOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden absolute top-full left-0 right-0 bg-black/90 backdrop-blur-md shadow-md py-4 px-4 animate-fadeIn"
+          className="md:hidden absolute top-full left-0 right-0 bg-[#0A174E]/95 backdrop-blur-md shadow-md py-4 px-4 animate-fadeIn"
           role="navigation"
           aria-label="Mobile navigation"
         >
           <div className="flex flex-col space-y-4">
-            <MobileNavLink to="/" active={location.pathname === "/"}>
-              Home
-            </MobileNavLink>
-            <MobileNavLink to="/about" active={location.pathname === "/about"}>
-              About
-            </MobileNavLink>
-            <MobileNavLink to="/join" active={location.pathname === "/join"}>
-              Join Us
-            </MobileNavLink>
-            <MobileNavLink
-              to="/events"
-              active={location.pathname === "/events"}
-            >
-              Events
-            </MobileNavLink>
-            <MobileNavLink to="/news" active={location.pathname === "/news"}>
-              News
-            </MobileNavLink>
-            <MobileNavLink to="/blog" active={location.pathname === "/blog"}>
-              Blog
-            </MobileNavLink>
-            <MobileNavLink
-              to="/snippets"
-              active={location.pathname === "/snippets"}
-            >
-              Snippets
-            </MobileNavLink>
-            <MobileNavLink
-              to="/contact"
-              active={location.pathname === "/contact"}
-            >
-              Contact
-            </MobileNavLink>
-
-            {!user && (
+            {[
+              { to: "/", label: "Home" },
+              { to: "/about", label: "About" },
+              { to: "/join", label: "Join Us" },
+              { to: "/events", label: "Events" },
+              { to: "/news", label: "News" },
+              { to: "/blog", label: "Blog" },
+              { to: "/snippets", label: "Snippets" },
+              { to: "/contact", label: "Contact" },
+            ].map((item) => (
+              <MobileNavLink
+                key={item.to}
+                to={item.to}
+                active={location.pathname === item.to}
+              >
+                {item.label}
+              </MobileNavLink>
+            ))}
+            {!user ? (
               <MobileNavLink
                 to="/login"
                 active={location.pathname === "/login"}
               >
                 <div className="flex items-center">
-                  <LogIn size={18} className="mr-2" />
-                  Members Area
+                  <LogIn size={18} className="mr-2" /> Members Area
                 </div>
               </MobileNavLink>
-            )}
-            {user && (
+            ) : (
               <MobileNavLink
                 to="/members"
                 active={location.pathname.startsWith("/members")}
@@ -186,7 +162,7 @@ const Header: React.FC = () => {
   );
 };
 
-// Desktop NavLink
+// Reusable link styles
 interface NavLinkProps {
   to: string;
   active: boolean;
@@ -196,24 +172,23 @@ interface NavLinkProps {
 const NavLink: React.FC<NavLinkProps> = ({ to, active, children }) => (
   <Link
     to={to}
-    className={`font-medium transition-colors duration-200 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 focus:ring-offset-primary-600 ${
+    className={`font-medium transition-colors duration-200 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-offset-2 focus:ring-offset-[#0A174E] ${
       active
-        ? "text-secondary-400 border-b-2 border-secondary-400"
-        : "text-neutral-50 hover:text-secondary-300"
+        ? "text-[#FFD700] border-b-2 border-[#FFD700]"
+        : "text-neutral-50 hover:text-[#FFD700]"
     }`}
   >
     {children}
   </Link>
 );
 
-// Mobile NavLink
 const MobileNavLink: React.FC<NavLinkProps> = ({ to, active, children }) => (
   <Link
     to={to}
     className={`block py-2 px-4 font-medium rounded-md transition-colors duration-200 ${
       active
-        ? "text-secondary-400 bg-primary-700/50"
-        : "text-neutral-50 hover:text-secondary-300 hover:bg-primary-700/50"
+        ? "text-[#FFD700] bg-[#112168]/70"
+        : "text-neutral-50 hover:text-[#FFD700] hover:bg-[#112168]/50"
     }`}
   >
     {children}

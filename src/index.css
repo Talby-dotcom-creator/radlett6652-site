@@ -126,14 +126,37 @@
     animation: bounce 2s infinite;
   }
 
+  /* Gradient shimmer animation used by HeroSection title */
+  @keyframes gradient-x {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 8s ease infinite;
+  }
+
   @keyframes bounce {
     0%,
     100% {
-      transform: translateY(0) translateX(-50%);
+      transform: translateY(0);
     }
     50% {
-      transform: translateY(-10px) translateX(-50%);
+      transform: translateY(-10px);
     }
+  }
+
+  /* Keep horizontal centering stable; elements using .animate-bounce
+     should also include translateX(-50%) in their base class if needed */
+  .animate-bounce {
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
   }
 
   /* Focus management */
@@ -168,7 +191,7 @@
 
   .react-calendar__tile--active {
     background: #fca311;
-    color: #14213d;
+    color: #002147;
   }
 
   .react-calendar__tile--active:enabled:hover,
@@ -199,6 +222,11 @@
   .react-calendar__tile:enabled:hover,
   .react-calendar__tile:enabled:focus {
     background-color: #f8f8f8;
+  }
+
+  /* === Lodge Gold Gradient Heading (Unified Deep Tone) === */
+  .lodge-heading {
+    @apply bg-gradient-to-r from-yellow-600 via-amber-400 to-yellow-300 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(255,200,0,0.35)];
   }
 }
 
@@ -293,4 +321,26 @@
   transform: translateY(-6px);
   box-shadow: 0 0 25px rgba(255, 215, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2);
   animation: goldPulse 3s ease-in-out infinite;
+}
+
+/* -----------------------------------------------------
+   🩶 Balanced Page Background
+   ----------------------------------------------------- */
+
+/* Default (light) background for all pages */
+html,
+body {
+  background-color: #fdfaf7;
+  color: #222;
+}
+
+/* Override for HomePage only — keep it dark and dramatic */
+body.homepage {
+  background-color: #000;
+  color: #fefefe;
+}
+
+main {
+  background-color: transparent;
+  color: inherit;
 }

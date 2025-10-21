@@ -1,35 +1,36 @@
-// src/pages/AboutPage.tsx
 import React, { useEffect, useState } from "react";
-import optimizedApi from "../lib/optimizedApi";
+import { Calendar, Users, Scale } from "lucide-react";
+import HeroSection from "../components/HeroSection";
+import MilestoneBlock from "../components/MilestoneBlock";
+import AboutStatsSection from "../components/AboutStatsSection";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { Officer, Testimonial } from "../types";
+import MotionSection from "../components/MotionSection";
+import { optimizedApi as api } from "../lib/optimizedApi";
 
 const AboutPage: React.FC = () => {
-  const [aboutContent, setAboutContent] = useState<string | null>(null);
-  const [officers, setOfficers] = useState<Officer[]>([]);
-  const [snippetHtml, setSnippetHtml] = useState<string | null>(null);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [historySections, setHistorySections] = useState<
+    Record<string, string>
+  >({});
+  const [officers, setOfficers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadContent = async () => {
       try {
-        setLoading(true);
+        const sections = ["founding_story", "growth_story", "modern_era"];
+        const results: Record<string, string> = {};
 
-        const [about, officersData, testimonialsData] = await Promise.all([
-          optimizedApi.getPageContent("about-radlett-lodge"),
-          optimizedApi.getOfficers(),
-          optimizedApi.getTestimonials(),
-        ]);
+        for (const section of sections) {
+          const content = await api.getPageSection?.(
+            "about-radlett-lodge",
+            section
+          );
+          if (content) results[section] = content;
+        }
 
-        const snippets = await optimizedApi.getBlogPosts("snippet");
-
-        setAboutContent(about?.content ?? null);
+        const officersData = await api.getOfficers?.();
+        setHistorySections(results);
         setOfficers(officersData ?? []);
-        setSnippetHtml(snippets?.[0]?.content ?? null);
-        setTestimonials(testimonialsData ?? []);
-
-        console.log("✅ Testimonials loaded:", testimonialsData);
       } catch (err) {
         console.error("Error loading About page:", err);
       } finally {
@@ -43,202 +44,235 @@ const AboutPage: React.FC = () => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <main className="w-full overflow-hidden">
-      {/* 1️⃣ OUR HISTORY */}
-      <section className="container mx-auto px-4 md:px-8 py-16">
-        <h1 className="text-3xl md:text-4xl font-heading font-bold text-neutral-900 mb-8 text-center">
-          Our History
-        </h1>
-        {aboutContent ? (
-          <article
-            className="prose lg:prose-lg mx-auto text-neutral-800 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: aboutContent }}
-          />
-        ) : (
-          <p className="text-center text-neutral-600">
-            No historical content available at this time.
-          </p>
-        )}
-      </section>
+    <div className="bg-white text-gray-900">
+      {/* 🏛️ HERO SECTION */}
+      <HeroSection
+        title="Discover the Story of Radlett Lodge No. 6652"
+        subtitle="A proud heritage built on brotherhood, charity, and tradition since 1948."
+        backgroundImage="/inside-of-radlett-hall.jpg"
+        overlayOpacity={0.4}
+        verticalPosition="bottom"
+      />
 
-      {/* 2️⃣ ABOUT FREEMASONRY */}
-      <section className="bg-neutral-100 py-20">
-        <div className="container mx-auto px-4 md:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-neutral-900 mb-4">
-            About Freemasonry
-          </h2>
-          <p className="text-lg text-neutral-700 max-w-3xl mx-auto mb-12">
-            Freemasonry is one of the world's oldest secular fraternal
-            societies, dedicated to making good men better.
-          </p>
+      <main>
+        {/* 🕰 OUR HISTORY */}
+        <MotionSection className="py-16 px-4 md:px-16">
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* 🟡 Lodge Gold Heading */}
+            <h1 className="text-4xl font-heading font-bold lodge-heading text-center mb-12">
+              About Radlett Lodge
+            </h1>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-10">
-            {[
-              {
-                title: "Who We Are",
-                text: "Freemasons are a diverse group of men from all walks of life who share common values of integrity, kindness, honesty, and fairness. We come together to build friendships, support each other, and contribute to our communities.",
-              },
-              {
-                title: "What We Do",
-                text: "We meet regularly in our Lodge to conduct ceremonial rituals that teach moral lessons, engage in social activities, support charitable causes, and work together on personal development.",
-              },
-              {
-                title: "Our Principles",
-                text: "Freemasonry is founded on the principles of Brotherly Love, Relief, and Truth. We practice charity, promote tolerance, maintain high moral standards, and encourage members to be good citizens who contribute positively to society.",
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-lg shadow-md p-8 hover:shadow-lg transition"
-              >
-                <h3 className="text-xl font-semibold text-primary-700 mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-neutral-700 leading-relaxed">{item.text}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center">
-            <a
-              href="/join"
-              className="px-6 py-3 rounded-lg bg-secondary-600 text-white text-lg font-medium hover:bg-secondary-700 transition shadow-md"
-            >
-              Learn How to Join
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* 3️⃣ REFLECTIONS IN STONE */}
-      <section
-        id="reflections"
-        className="relative w-full py-24 md:py-32 bg-cover bg-center overflow-hidden"
-        style={{ backgroundImage: "url('/images/churchyard.webp')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40" />
-        <div className="container relative z-10 mx-auto px-4 text-center text-neutral-50">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6 tracking-wide">
-            Reflections in Stone
-          </h2>
-          <div
-            className="max-w-3xl mx-auto text-lg leading-relaxed text-neutral-100 font-serif animate-engrave"
-            dangerouslySetInnerHTML={{
-              __html: snippetHtml || "<p>Loading reflections...</p>",
-            }}
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer pointer-events-none" />
-      </section>
-
-      {/* 4️⃣ CURRENT LODGE OFFICERS */}
-      <section className="container mx-auto px-4 md:px-8 py-16">
-        <h2 className="text-3xl md:text-4xl font-heading font-bold text-neutral-900 mb-8 text-center">
-          Current Lodge Officers
-        </h2>
-
-        {officers.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-            {officers.map((officer) => (
-              <div
-                key={officer.id}
-                className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center transition-transform hover:scale-105 hover:shadow-lg duration-300"
-              >
-                {officer.image_url ? (
-                  <img
-                    src={officer.image_url}
-                    alt={officer.name}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-4 object-cover border border-neutral-300"
+            <div className="flex flex-col md:flex-row items-start gap-10">
+              {/* LEFT — History text */}
+              <div className="md:w-1/2 w-full">
+                <article>
+                  <h3 className="text-2xl font-semibold text-oxford-blue flex items-center gap-2">
+                    <Calendar className="text-yellow-500" /> The Founding Years:
+                    1948–1960
+                  </h3>
+                  <div
+                    className="mt-4 text-lg leading-relaxed text-gray-800"
+                    dangerouslySetInnerHTML={{
+                      __html: historySections["founding_story"] || "",
+                    }}
                   />
-                ) : (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500 text-sm">
-                    No Image
-                  </div>
-                )}
-                <h3 className="text-lg font-semibold text-primary-700 mb-1">
-                  {officer.name}
-                </h3>
-                <p className="text-neutral-700 text-sm font-medium">
-                  {officer.position}
-                </p>
+                </article>
+
+                <article>
+                  <h3 className="text-2xl font-semibold text-oxford-blue flex items-center gap-2 mt-8">
+                    <Users className="text-yellow-500" /> Growth and Evolution:
+                    1960s–2000s
+                  </h3>
+                  <div
+                    className="mt-4 text-lg leading-relaxed text-gray-800"
+                    dangerouslySetInnerHTML={{
+                      __html: historySections["growth_story"] || "",
+                    }}
+                  />
+                </article>
               </div>
-            ))}
+
+              {/* RIGHT — Admiral + Milestone */}
+              <div className="md:w-1/2 w-full flex flex-col items-end">
+                <div className="w-full overflow-hidden rounded-2xl border border-neutral-200 shadow-lg">
+                  <img
+                    src="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/admiral_halsey.webp"
+                    alt="Admiral Sir Lionel Halsey — Founding Member of Radlett Lodge"
+                    className="w-full h-auto object-cover object-top md:max-h-[650px]"
+                  />
+                </div>
+
+                <div className="-mt-[2px] w-full">
+                  <MilestoneBlock />
+                </div>
+              </div>
+            </div>
+
+            {/* MODERN ERA */}
+            <section className="mt-10">
+              <h3 className="text-2xl font-semibold text-oxford-blue flex items-center gap-2 mb-4">
+                The Modern Era: 21st Century
+              </h3>
+              <div
+                className="text-lg leading-relaxed text-gray-800 text-justify"
+                dangerouslySetInnerHTML={{
+                  __html: historySections["modern_era"] || "",
+                }}
+              />
+            </section>
           </div>
-        ) : (
-          <p className="text-center text-neutral-600">No officers found.</p>
-        )}
-      </section>
+        </MotionSection>
 
-      {/* 5️⃣ MEMBER EXPERIENCES */}
-      <section className="bg-neutral-50 py-20">
-        <div className="container mx-auto px-4 md:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-neutral-900 mb-12">
-            Member Experiences
-          </h2>
-          <p className="text-lg text-neutral-700 max-w-2xl mx-auto mb-16">
-            Hear from some of our members about their Masonic journey.
-          </p>
+        {/* 🔶 DIVIDER */}
+        <div className="w-24 h-[3px] bg-yellow-500 mx-auto mb-20 rounded-full"></div>
 
-          {testimonials.length > 0 ? (
-            <div className="grid gap-10 md:grid-cols-3">
-              {testimonials.map((t) => (
+        {/* ⚜️ Our Heritage & Charity Stats */}
+        <AboutStatsSection />
+
+        {/* 🧭 ABOUT FREEMASONRY */}
+        <MotionSection className="bg-gray-100 py-24">
+          <div className="max-w-6xl mx-auto px-6 text-center">
+            <h2 className="text-4xl font-heading font-bold lodge-heading mb-4">
+              About Freemasonry
+            </h2>
+            <p className="text-lg text-gray-700 mb-12 max-w-3xl mx-auto">
+              Freemasonry is one of the world's oldest secular fraternal
+              societies, dedicated to making good men better.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-10">
+              {[
+                {
+                  icon: Calendar,
+                  title: "Who We Are",
+                  text: "Freemasons are a diverse group of men from all walks of life who share common values of integrity, kindness, honesty, and fairness.",
+                },
+                {
+                  icon: Users,
+                  title: "What We Do",
+                  text: "We meet regularly in our Lodge to conduct ceremonial rituals that teach moral lessons and promote charity and fellowship.",
+                },
+                {
+                  icon: Scale,
+                  title: "Our Principles",
+                  text: "Freemasonry is founded on the principles of Brotherly Love, Relief, and Truth — guiding us to live with integrity and compassion.",
+                },
+              ].map((item, i) => (
                 <div
-                  key={t.id}
-                  className="bg-white rounded-xl shadow-md p-8 flex flex-col items-center text-center"
+                  key={i}
+                  className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-transform hover:scale-105 duration-300"
                 >
-                  {t.image_url ? (
-                    <img
-                      src={t.image_url}
-                      alt={t.member_name}
-                      className="w-24 h-24 rounded-full object-cover border border-neutral-200 mb-4"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-neutral-200 mb-4 flex items-center justify-center text-neutral-500">
-                      No Image
-                    </div>
-                  )}
-                  <p className="text-neutral-700 italic mb-4 leading-relaxed">
-                    “{t.content}”
-                  </p>
-                  <h4 className="font-semibold text-primary-700">
-                    {t.member_name}
-                  </h4>
+                  <item.icon className="w-10 h-10 mx-auto mb-4 text-yellow-500" />
+                  <h3 className="text-xl font-semibold mb-3 text-oxford-blue">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-700">{item.text}</p>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-neutral-600">
-              No testimonials available at this time.
-            </p>
-          )}
-        </div>
-      </section>
 
-      {/* 6️⃣ CTA FOOTER */}
-      <section className="bg-primary-900 text-white text-center py-20">
-        <h3 className="text-2xl md:text-3xl font-heading font-bold mb-3">
-          Interested in Becoming a Freemason?
-        </h3>
-        <p className="opacity-90 mb-6">
-          Discover friendship, fulfilment, and the opportunity to make a
-          difference.
-        </p>
-        <div className="flex gap-3 justify-center">
-          <a
-            href="/join"
-            className="px-6 py-3 rounded-lg bg-secondary-600 text-white hover:bg-secondary-700 transition"
-          >
-            Learn How to Join
-          </a>
-          <a
-            href="/contact"
-            className="px-6 py-3 rounded-lg bg-white/10 ring-1 ring-white/30 hover:bg-white/15 transition"
-          >
-            Contact Us
-          </a>
-        </div>
-      </section>
-    </main>
+            <div className="mt-10">
+              <a
+                href="/join"
+                className="inline-block bg-yellow-500 text-oxford-blue font-semibold px-8 py-4 rounded-lg hover:bg-yellow-400 transition"
+              >
+                Join Us
+              </a>
+            </div>
+          </div>
+        </MotionSection>
+
+        {/* 🔶 DIVIDER */}
+        <div className="w-24 h-[3px] bg-yellow-500 mx-auto mb-20 rounded-full"></div>
+
+        {/* 🕊️ Masonic Motto Banner */}
+        <MotionSection
+          className="py-12 bg-oxford-blue text-center text-white"
+          aria-label="Masonic Motto Banner"
+        >
+          <div className="max-w-4xl mx-auto px-6">
+            <p className="text-2xl md:text-3xl italic font-semibold text-yellow-400">
+              "To be one, ask one"
+            </p>
+            <p className="mt-3 text-lg text-gray-100">
+              Upholding the values of Brotherly Love, Relief, and Truth since
+              1948.
+            </p>
+          </div>
+        </MotionSection>
+
+        {/* 👔 CURRENT LODGE OFFICERS */}
+        <MotionSection className="max-w-7xl mx-auto px-6 py-24">
+          <h2 className="text-4xl font-heading font-bold lodge-heading mb-2 text-center">
+            Current Lodge Officers
+          </h2>
+          <p className="text-lg text-gray-600 mb-12 text-center">
+            Meet the Brethren who lead and serve Radlett Lodge No. 6652
+          </p>
+
+          <div className="flex flex-wrap justify-between gap-6">
+            {officers
+              .filter((officer) => officer.is_active)
+              .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+              .slice(0, 6)
+              .map((officer) => (
+                <div
+                  key={officer.id}
+                  className="flex-1 min-w-[150px] max-w-[180px] bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-center"
+                >
+                  <img
+                    src={
+                      officer.image_url && officer.image_url.trim() !== ""
+                        ? officer.image_url
+                        : "/images/officer-placeholder.png"
+                    }
+                    alt={officer.full_name}
+                    className="w-full h-[260px] object-cover rounded-t-xl"
+                    onError={(e) => {
+                      e.currentTarget.src = "/images/officer-placeholder.png";
+                    }}
+                  />
+                  <div className="p-4">
+                    <h3 className="text-md font-semibold text-oxford-blue">
+                      {officer.full_name}
+                    </h3>
+                    <p className="text-gray-600 font-medium">
+                      {officer.position}
+                    </p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </MotionSection>
+
+        {/* 🕊️ FINAL CTA SECTION */}
+        <section className="text-white text-center py-20 bg-oxford-blue">
+          <h2 className="text-4xl font-heading font-bold lodge-heading mb-4">
+            Experience the Brotherhood of Freemasonry
+          </h2>
+          <p className="max-w-2xl mx-auto text-lg mb-8 text-gray-200">
+            Radlett Lodge offers a welcoming environment for men seeking moral,
+            intellectual, and spiritual growth through the teachings and
+            traditions of Freemasonry.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="/join"
+              className="bg-yellow-500 hover:bg-yellow-400 text-oxford-blue font-semibold px-6 py-3 rounded-lg transition"
+            >
+              Begin Your Journey
+            </a>
+            <a
+              href="/contact"
+              className="border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-oxford-blue font-semibold px-6 py-3 rounded-lg transition"
+            >
+              Contact Our Secretary
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 };
 

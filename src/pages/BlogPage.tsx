@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import HeroSection from "../components/HeroSection";
 import LoadingSpinner from "../components/LoadingSpinner";
-import optimizedApi from "../lib/optimizedApi";
+import { optimizedApi } from "../lib/optimizedApi";
 import { CMSBlogPost } from "../types";
 
 const BlogPage: React.FC = () => {

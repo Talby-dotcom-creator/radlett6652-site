@@ -102,8 +102,8 @@ describe("Layout Toasts", () => {
   afterAll(() => {
     jest.resetModules();
   });
-  it.skip("renders Toasts when present", () => {
-    const LayoutWithToast = require("./Layout").default;
+  it.skip("renders Toasts when present", async () => {
+    const LayoutWithToast = (await import("./Layout")).default;
     render(
       <MemoryRouter initialEntries={["/"]}>
         <Routes>

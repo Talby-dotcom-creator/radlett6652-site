@@ -1,7 +1,7 @@
 // src/App.tsx
-import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Header from "./components/Header"; // ✅ add this
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import JoinPage from "./pages/JoinPage";
@@ -12,20 +12,12 @@ import BlogPage from "./pages/BlogPage";
 import SnippetsPage from "./pages/SnippetsPage";
 import ContactPage from "./pages/ContactPage";
 import MembersPage from "./pages/MembersPage";
-// import NotFoundPage from "./pages/NotFoundPage";
-import "./index.css";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
-function App() {
-  useEffect(() => {
-    // optional intersection observer, etc.
-  }, []);
-
+const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      {/* ✅ Header is global and always visible */}
-      <Header />
-
-      {/* ✅ Page Routes */}
+    <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -37,10 +29,11 @@ function App() {
         <Route path="/snippets" element={<SnippetsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/members" element={<MembersPage />} />
-        {/* <Route path="*" element={<NotFoundPage />} /> */}
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>
-    </BrowserRouter>
+    </Layout>
   );
-}
+};
 
 export default App;

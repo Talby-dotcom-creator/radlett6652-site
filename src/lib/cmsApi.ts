@@ -4,7 +4,7 @@ import {
   LodgeDocument,
   MeetingMinutes,
   Testimonial,
-  Event,
+  LodgeEvent,
   Officer,
   FAQItem,
   SiteSetting,
@@ -69,7 +69,7 @@ export const cmsApi = {
     };
     const { data, error } = await supabase
       .from("blog_posts")
-      .insert(payload)
+      .insert(payload as any)
       .select()
       .single();
     if (error) handleError(error, "createBlogPost");
@@ -84,7 +84,7 @@ export const cmsApi = {
         : { ...rest };
     const { data, error } = await supabase
       .from("blog_posts")
-      .update(payload)
+      .update(payload as any)
       .eq("id", id)
       .select()
       .single();
@@ -98,32 +98,45 @@ export const cmsApi = {
   },
 
   /* ---------------- EVENTS ---------------- */
-  async getEvents(): Promise<Event[]> {
+  async getEvents(): Promise<LodgeEvent[]> {
     const { data, error } = await supabase
       .from("events")
       .select("*")
       .order("event_date");
     if (error) handleError(error, "getEvents");
-    return data ?? [];
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description ?? "",
+      event_date: row.event_date,
+      location: row.location ?? "",
+      image_url: row.image_url ?? null,
+      created_at: row.created_at ?? null,
+      updated_at: row.updated_at ?? null,
+      is_members_only:
+        typeof row.is_members_only === "boolean"
+          ? row.is_members_only
+          : Boolean(row.is_members_only),
+    }));
   },
 
-  async createEvent(event: Omit<Event, "id" | "created_at">) {
+  async createEvent(event: Omit<LodgeEvent, "id" | "created_at">) {
     if (!event.title || !event.description || !event.event_date) {
       throw new Error("Missing required event fields");
     }
     const { data, error } = await supabase
       .from("events")
-      .insert(event)
+      .insert(event as any)
       .select()
       .single();
     if (error) handleError(error, "createEvent");
     return data;
   },
 
-  async updateEvent(id: string, updates: Partial<Event>) {
+  async updateEvent(id: string, updates: Partial<LodgeEvent>) {
     const { data, error } = await supabase
       .from("events")
-      .update(updates)
+      .update(updates as any)
       .eq("id", id)
       .select()
       .single();
@@ -143,7 +156,13 @@ export const cmsApi = {
       .select("*")
       .order("sort_order");
     if (error) handleError(error, "getOfficers");
-    return data ?? [];
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      position: row.position,
+      name: row.name ?? row.full_name ?? "",
+      image_url: row.image_url ?? null,
+      sort_order: row.sort_order ?? null,
+    }));
   },
 
   /* ---------------- TESTIMONIALS ---------------- */
@@ -153,7 +172,21 @@ export const cmsApi = {
       .select("*")
       .order("sort_order");
     if (error) handleError(error, "getTestimonials");
-    return data ?? [];
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      name: row.name ?? row.member_name ?? "",
+      content: row.content ?? "",
+      image_url: row.image_url ?? null,
+      sort_order: row.sort_order ?? null,
+      quote: row.quote ?? undefined,
+      role: row.role ?? undefined,
+      is_published:
+        typeof row.is_published === "boolean"
+          ? row.is_published
+          : String(row.is_published).toLowerCase() === "true",
+      created_at: row.created_at ?? null,
+      updated_at: row.updated_at ?? null,
+    }));
   },
 
   /* ---------------- FAQ ITEMS ---------------- */
@@ -167,14 +200,59 @@ export const cmsApi = {
   },
 
   /* ---------------- PAGE CONTENT ---------------- */
-  async getPageContent(pageName: string): Promise<PageContent | null> {
+  async getPageContent(pageName: string): Promise<PageContent[]> {
     const { data, error } = await supabase
       .from("page_content")
       .select("*")
       .eq("page_name", pageName)
-      .maybeSingle();
+      .order("section_name", { ascending: true });
     if (error) handleError(error, "getPageContent");
-    return data ?? null;
+    return data ?? [];
+  },
+
+  async updatePageContent(id: string, updates: Partial<PageContent>) {
+    const { data, error } = await supabase
+      .from("page_content")
+      .update(updates as any)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) handleError(error, "updatePageContent");
+    return data;
+  },
+
+  async getPageSummaries(): Promise<
+    {
+      page_name: string;
+      section_count: number;
+      sections: string[];
+    }[]
+  > {
+    try {
+      const { data, error } = await supabase
+        .from("page_content")
+        .select("page_name, section_name")
+        .order("page_name", { ascending: true });
+      if (error) handleError(error, "getPageSummaries");
+
+      const grouped: Record<string, string[]> = {};
+      (data ?? []).forEach((row: any) => {
+        const page = row.page_name || "";
+        grouped[page] = grouped[page] || [];
+        if (row.section_name && !grouped[page].includes(row.section_name)) {
+          grouped[page].push(row.section_name);
+        }
+      });
+
+      return Object.keys(grouped).map((page) => ({
+        page_name: page,
+        section_count: grouped[page].length,
+        sections: grouped[page],
+      }));
+    } catch (err: any) {
+      handleError(err, "getPageSummaries");
+      return [];
+    }
   },
 
   /* ---------------- DOCUMENTS ---------------- */

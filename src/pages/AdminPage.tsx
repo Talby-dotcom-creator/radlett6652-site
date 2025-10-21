@@ -217,7 +217,7 @@ const AdminPage: React.FC = () => {
                     className="border p-3 rounded-md flex justify-between items-center"
                   >
                     <div>
-                      <p className="font-semibold">{t.member_name}</p>
+                      <p className="font-semibold">{t.name}</p>
                       <p className="text-sm text-neutral-600 line-clamp-2">
                         {t.content}
                       </p>

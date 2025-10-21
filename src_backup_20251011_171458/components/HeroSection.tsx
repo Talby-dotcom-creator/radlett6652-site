@@ -2,6 +2,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import Button from "./Button";
+import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
   title: string;
@@ -24,11 +25,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   verticalPosition = "center",
   showScrollHint = false,
 }) => {
+  // 🧠 Debug log – helps confirm the background image is being passed correctly
+  console.log("🖼️ HeroSection backgroundImage URL:", backgroundImage);
+
   const positionClass =
     verticalPosition === "top"
       ? "items-start pt-32 md:pt-40"
       : verticalPosition === "bottom"
-      ? "items-end pb-32 md:pb-40"
+      ? "items-end pb-44 md:pb-52" // Adjusted spacing for bottom placement
       : "items-center";
 
   const scrollToContent = () => {
@@ -40,82 +44,48 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <section
-      className={`relative min-h-[90vh] flex ${positionClass} justify-center text-center text-white overflow-visible`}
+      className={`relative h-screen flex ${positionClass} justify-center text-center text-white`}
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
-      {/* 🔹 Gradient Overlay */}
+      {/* Dark overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"
-        style={{ opacity: overlayOpacity }}
+        className="absolute inset-0"
+        style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` }}
       />
 
-      {/* 🔹 Main Hero Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center px-4 max-w-3xl">
-        {/* Lodge Logo */}
-        <img
-          src="/lodge-logo.png"
-          alt="Radlett Lodge No. 6652"
-          className="w-32 md:w-44 mb-6 drop-shadow-lg"
-        />
-
-        {/* Title and Subtitle */}
-        <h1 className="text-4xl md:text-5xl font-heading font-bold mb-3 drop-shadow-md">
+      {/* Main content */}
+      <div className="relative z-10 max-w-3xl px-6">
+        <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
           {title}
         </h1>
-        <p className="text-lg md:text-xl text-neutral-100 mb-6 opacity-95 leading-relaxed">
-          {subtitle}
-        </p>
+        <p className="text-lg md:text-xl mb-8 drop-shadow-md">{subtitle}</p>
 
-        {ctaText && ctaLink && (
-          <a href={ctaLink}>
-            <Button
-              variant="primary"
-              size="lg"
-              className="shadow-md hover:shadow-lg transition"
-            >
-              {ctaText}
-            </Button>
-          </a>
-        )}
-      </div>
-
-      {/* 🔹 Counters Area */}
-      <div className="absolute bottom-10 w-full flex justify-center z-10">
-        <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-center">
-          {[
-            { label: "Founded", value: "1948" },
-            { label: "Active Members", value: "24" },
-            { label: "Charity Raised", value: "£1,200+" },
-          ].map((counter, i) => (
-            <div
-              key={i}
-              className="bg-black/40 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/20 shadow-sm"
-            >
-              <div className="text-2xl md:text-3xl font-bold text-secondary-400">
-                {counter.value}
-              </div>
-              <div className="text-sm md:text-base text-neutral-100">
-                {counter.label}
-              </div>
-            </div>
+        {/* Optional call-to-action button */}
+        {ctaText &&
+          ctaLink &&
+          (ctaLink.startsWith("http") ? (
+            <a href={ctaLink} target="_blank" rel="noopener noreferrer">
+              <Button variant="primary">{ctaText}</Button>
+            </a>
+          ) : (
+            <Link to={ctaLink}>
+              <Button variant="primary">{ctaText}</Button>
+            </Link>
           ))}
-        </div>
       </div>
 
-      {/* Optional scroll hint */}
+      {/* Scroll hint icon */}
       {showScrollHint && (
-        <button
+        <div
+          className="absolute bottom-6 left-1/2 transform -translate-x-1/2 cursor-pointer text-gray-200 hover:text-white transition-colors"
           onClick={scrollToContent}
-          aria-label="Scroll down"
-          className="absolute bottom-4 text-white/80 animate-bounce"
         >
-          <ChevronDown size={36} />
-        </button>
+          <ChevronDown className="w-8 h-8 animate-bounce" />
+        </div>
       )}
     </section>
   );

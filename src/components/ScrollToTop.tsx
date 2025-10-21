@@ -1,6 +1,6 @@
 // src/components/ScrollToTop.tsx
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -9,7 +9,7 @@ const ScrollToTop: React.FC = () => {
     document.documentElement.scrollTo({
       top: 0,
       left: 0,
-      behavior: 'instant' // change to 'smooth' if you want animated scrolling
+      behavior: "smooth", // change to 'smooth' if you want animated scrolling
     });
   }, [pathname]);
 

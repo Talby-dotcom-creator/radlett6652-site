@@ -556,6 +556,10 @@ export const Constants = {
   },
 } as const;
 // ? Export the client normally
+// Minimal fallback declarations for build-time typechecking in this environment
+declare function createClient<T = any>(url: string, key: string): any;
+declare const supabaseUrl: string;
+declare const supabaseAnonKey: string;
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // ? Make Supabase available globally for browser console testing

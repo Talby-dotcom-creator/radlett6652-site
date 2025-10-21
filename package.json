@@ -4,15 +4,13 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "dev": "vite --port 3001 --strictPort --host 0.0.0.0",
+    "dev": "vite --port 27232 --strictPort --host 0.0.0.0",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "vite preview --port 3001 --host 0.0.0.0",
-    "clean": "powershell -Command \"Get-Process node, esbuild -ErrorAction SilentlyContinue | Stop-Process -Force; if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }; if (Test-Path package-lock.json) { Remove-Item -Force package-lock.json }\""
+    "preview": "vite preview --port 27232 --host 0.0.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.8",
+    "@tailwindcss/typography": "^0.5.19",
     "@tinymce/tinymce-react": "^6.3.0",
     "@tiptap/extension-character-count": "^3.4.4",
     "@tiptap/extension-image": "^3.4.4",
@@ -23,7 +21,7 @@
     "@tiptap/starter-kit": "^3.4.4",
     "date-fns": "^3.6.0",
     "dotenv": "^17.2.3",
-    "framer-motion": "^12.23.22",
+    "framer-motion": "^12.23.24",
     "lucide-react": "^0.344.0",
     "marked": "^16.1.1",
     "node-fetch": "^3.3.2",
@@ -43,6 +41,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "^24.8.1",
     "@types/react": "^18.3.25",
     "@types/react-dom": "^18.3.7",
     "@types/react-helmet": "^6.1.11",

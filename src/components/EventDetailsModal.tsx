@@ -1,65 +1,79 @@
-import React from 'react';
-import { X, Calendar, Clock, MapPin, Lock, Users, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
-import { Event } from '../types';
-import Button from './Button';
+import React from "react";
+import {
+  X,
+  Calendar,
+  Clock,
+  MapPin,
+  Lock,
+  Users,
+  ExternalLink,
+} from "lucide-react";
+import { format } from "date-fns";
+import { LodgeEvent } from "../types";
+import Button from "./Button";
 
 interface EventDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  event: Event | null;
+  event: LodgeEvent | null;
 }
 
-const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, event }) => {
+const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
+  isOpen,
+  onClose,
+  event,
+}) => {
   // Handle escape key press
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
       // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
   if (!isOpen || !event) return null;
 
-  const eventDate = new Date(event.date);
+  const eventDate = new Date(event.event_date);
   const isUpcoming = eventDate > new Date();
   const isPast = eventDate < new Date();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-2xl font-heading font-bold mb-2">{event.title}</h2>
+              <h2 className="text-2xl font-heading font-bold mb-2">
+                {event.title}
+              </h2>
               <div className="flex items-center space-x-4 text-primary-100">
                 <div className="flex items-center">
                   <Calendar size={16} className="mr-2" />
-                  <span>{format(eventDate, 'EEEE, MMMM do, yyyy')}</span>
+                  <span>{format(eventDate, "EEEE, MMMM do, yyyy")}</span>
                 </div>
                 <div className="flex items-center">
                   <Clock size={16} className="mr-2" />
-                  <span>{format(eventDate, 'h:mm a')}</span>
+                  <span>{format(eventDate, "h:mm a")}</span>
                 </div>
               </div>
             </div>
@@ -71,7 +85,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
               <X size={24} />
             </button>
           </div>
-          
+
           {/* Status Badge */}
           <div className="mt-4 flex items-center space-x-3">
             {isUpcoming && (
@@ -86,7 +100,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
                 Past Event
               </span>
             )}
-            {event.isMembers && (
+            {event.is_members_only && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 text-secondary-800">
                 <Lock size={14} className="mr-1" />
                 Members Only
@@ -109,8 +123,13 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const encodedLocation = encodeURIComponent(event.location);
-                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodedLocation}`, '_blank');
+                  const encodedLocation = encodeURIComponent(
+                    event.location || ""
+                  );
+                  window.open(
+                    `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`,
+                    "_blank"
+                  );
                 }}
                 className="flex items-center"
               >
@@ -137,15 +156,23 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
               Important Information
             </h4>
             <div className="text-sm text-blue-700 space-y-2">
-              {event.isMembers ? (
-                <p>• This event is restricted to Lodge members and their guests only</p>
+              {event.is_members_only ? (
+                <p>
+                  • This event is restricted to Lodge members and their guests
+                  only
+                </p>
               ) : (
                 <p>• This event is open to the public - visitors are welcome</p>
               )}
               <p>• Please arrive 15 minutes before the scheduled start time</p>
-              <p>• Smart casual dress code applies unless otherwise specified</p>
+              <p>
+                • Smart casual dress code applies unless otherwise specified
+              </p>
               {isUpcoming && (
-                <p>• For any questions or to confirm attendance, please contact the Lodge Secretary</p>
+                <p>
+                  • For any questions or to confirm attendance, please contact
+                  the Lodge Secretary
+                </p>
               )}
             </div>
           </div>
@@ -153,12 +180,19 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
           {/* Contact Information */}
           {isUpcoming && (
             <div className="bg-neutral-50 rounded-lg p-4">
-              <h4 className="font-medium text-neutral-800 mb-2">Contact Information</h4>
+              <h4 className="font-medium text-neutral-800 mb-2">
+                Contact Information
+              </h4>
               <div className="text-sm text-neutral-600 space-y-1">
-                <p><strong>Email:</strong> mattjohnson56@hotmail.co.uk</p>
-                <p><strong>Phone:</strong> 07590 800657</p>
+                <p>
+                  <strong>Email:</strong> mattjohnson56@hotmail.co.uk
+                </p>
+                <p>
+                  <strong>Phone:</strong> 07590 800657
+                </p>
                 <p className="text-xs text-neutral-500 mt-2">
-                  Please contact us if you have any questions about this event or need special accommodations.
+                  Please contact us if you have any questions about this event
+                  or need special accommodations.
                 </p>
               </div>
             </div>
@@ -170,9 +204,18 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
           <div className="flex items-center justify-between">
             <div className="text-sm text-neutral-500">
               {isUpcoming ? (
-                <span>Event starts in {Math.ceil((eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                <span>
+                  Event starts in{" "}
+                  {Math.ceil(
+                    (eventDate.getTime() - new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )}{" "}
+                  days
+                </span>
               ) : (
-                <span>Event took place on {format(eventDate, 'MMMM do, yyyy')}</span>
+                <span>
+                  Event took place on {format(eventDate, "MMMM do, yyyy")}
+                </span>
               )}
             </div>
             <div className="flex space-x-3">
@@ -180,13 +223,25 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ isOpen, onClose, 
                 Close
               </Button>
               {isUpcoming && (
-                <Button 
+                <Button
                   onClick={() => {
                     // Add to calendar functionality
-                    const startDate = eventDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-                    const endDate = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-                    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
-                    window.open(calendarUrl, '_blank');
+                    const startDate =
+                      eventDate
+                        .toISOString()
+                        .replace(/[-:]/g, "")
+                        .split(".")[0] + "Z";
+                    const endDate =
+                      new Date(eventDate.getTime() + 2 * 60 * 60 * 1000)
+                        .toISOString()
+                        .replace(/[-:]/g, "")
+                        .split(".")[0] + "Z";
+                    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+                      event.title || ""
+                    )}&dates=${startDate}/${endDate}&details=${encodeURIComponent(
+                      event.description || ""
+                    )}&location=${encodeURIComponent(event.location || "")}`;
+                    window.open(calendarUrl, "_blank");
                   }}
                 >
                   Add to Calendar

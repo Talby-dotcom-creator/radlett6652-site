@@ -22,8 +22,13 @@ const MembersPendingPage: React.FC = () => {
 
         // Convert to a key-value map for easier access
         const contentMap: Record<string, string> = {};
-        if (content && content.section_name && content.content) {
-          contentMap[content.section_name] = content.content ?? "";
+        if (Array.isArray(content)) {
+          content.forEach((row) => {
+            if (row && (row as any).section_name) {
+              contentMap[(row as any).section_name] =
+                (row as any).content ?? "";
+            }
+          });
         }
 
         setPageContent(contentMap);

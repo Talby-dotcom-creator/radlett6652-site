@@ -92,9 +92,9 @@ const MembersPage: React.FC = () => {
       console.log("🚀 Starting Supabase data load...");
 
       try {
-        const { documents } = await api.getLodgeDocuments(1, 10);
-        console.log("✅ Documents fetched:", documents);
-        setDocuments(documents || []);
+        const docs = await api.getLodgeDocuments();
+        console.log("✅ Documents fetched:", docs);
+        setDocuments(docs || []);
         setDebugStage("✅ Data loaded successfully");
       } catch (err: any) {
         console.error("❌ Error loading data:", err);
