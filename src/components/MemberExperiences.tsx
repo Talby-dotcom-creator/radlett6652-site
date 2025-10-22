@@ -1,20 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "./Button";
-import SectionHeading from "./SectionHeading";
+import { optimizedApi } from "../lib/optimizedApi";
 import { Testimonial } from "../types";
 
-interface MemberExperiencesProps {
-  testimonials?: Testimonial[];
-  loading?: boolean;
-}
+const MemberExperiences: React.FC = () => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const MemberExperiences: React.FC<MemberExperiencesProps> = ({
-  testimonials = [],
-  loading = false,
-}) => {
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        const data = await optimizedApi.getTestimonials();
+        setTestimonials(data || []);
+      } catch (err) {
+        console.error("Error loading testimonials:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTestimonials();
+  }, []);
+
   return (
     <section className="relative py-20 bg-[#fdfbf5] text-center overflow-hidden">
       {/* 📜 Background Texture */}
@@ -29,17 +39,29 @@ const MemberExperiences: React.FC<MemberExperiencesProps> = ({
       ></div>
 
       <div className="relative z-10 container mx-auto px-4">
-        {/* Heading */}
-        <SectionHeading
-          title="Member Experiences"
-          subtitle="Real reflections from those who found meaning, friendship, and purpose within Freemasonry."
-          centered
-        />
+        {/* ✨ Gold Title at Top with Depth */}
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-heading font-bold mb-14
+                     bg-gradient-to-b from-[#e6d18a] to-[#b4974a] text-transparent bg-clip-text
+                     drop-shadow-[0_3px_3px_rgba(0,0,0,0.3)]"
+          style={{
+            textShadow:
+              "0 1px 1px rgba(255,255,255,0.6), 0 3px 6px rgba(0,0,0,0.25)",
+            letterSpacing: "0.05em",
+          }}
+        >
+          Member Experiences
+        </motion.h2>
 
+        {/* Testimonials */}
         {loading ? (
           <p className="text-neutral-600 mt-8">Loading experiences...</p>
         ) : testimonials.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
             {testimonials.map((t, index) => (
               <motion.div
                 key={t.id || index}
@@ -65,17 +87,15 @@ const MemberExperiences: React.FC<MemberExperiencesProps> = ({
                   <p className="italic text-neutral-800 mb-6">
                     “
                     {t.quote ||
-                      (t as any).message ||
+                      t.content ||
                       "Freemasonry has given me a sense of purpose and belonging."}
                     ”
                   </p>
                   <h4 className="text-lg font-semibold text-primary-700">
                     {t.name || "A Proud Member"}
                   </h4>
-                  {(t as any).role && (
-                    <p className="text-sm text-neutral-600 mt-1">
-                      {(t as any).role}
-                    </p>
+                  {t.role && (
+                    <p className="text-sm text-neutral-600 mt-1">{t.role}</p>
                   )}
                 </div>
               </motion.div>

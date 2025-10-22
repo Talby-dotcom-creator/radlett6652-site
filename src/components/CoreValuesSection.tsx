@@ -33,23 +33,32 @@ const CoreValuesSection: React.FC = () => {
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400/40 to-transparent"></div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
+        {/* Masonic Square & Compasses image */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-3xl md:text-4xl font-bold text-yellow-500 mb-6"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
+          className="flex justify-center mb-10"
         >
-          Our Core Values
-        </motion.h2>
+          <img
+            src="/square-compasses.png"
+            alt="Masonic Square and Compasses"
+            className="w-32 sm:w-40 md:w-48 lg:w-56 xl:w-64 h-auto drop-shadow-lg"
+          />
+        </motion.div>
 
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="text-neutral-600 max-w-2xl mx-auto mb-16 text-base md:text-lg"
+          className="max-w-2xl mx-auto mb-16"
         >
-          Principles that guide every Mason of Radlett Lodge.
-        </motion.p>
+          <p className="text-neutral-700 font-semibold text-base md:text-lg">
+            Principles that guide every Mason.
+          </p>
+          <div className="mt-3 mx-auto w-24 h-0.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 rounded-full"></div>
+        </motion.div>
 
         {/* Core Value Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">

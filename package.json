@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "dev": "vite --port 27232 --strictPort --host 0.0.0.0",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --port 27232 --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.8",

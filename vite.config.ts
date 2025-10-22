@@ -28,7 +28,10 @@ export default defineConfig({
     ],
   },
 
-  base: "./",
+  // Use a relative base only for production builds. During dev we must keep
+  // the base as "/" so the dev server serves module files with correct
+  // MIME types (avoids returning index.html for module requests).
+  base: process.env.NODE_ENV === "production" ? "./" : "/",
 
   server: {
     port: 3001,
