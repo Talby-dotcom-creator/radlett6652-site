@@ -1,14 +1,21 @@
+/// <reference types="vite/client" />
+import { defineConfig, type PluginOption } from "vite";
+import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
+
 export default defineConfig({
   plugins: [
     react(),
-    visualizer({
-      filename: "dist/stats.html",
-      template: "treemap",
-      gzipSize: true,
-      brotliSize: true,
-      open: false,
-    }) as unknown as PluginOption,
-  ],
+    process.env.NODE_ENV === "production"
+      ? undefined
+      : (visualizer({
+          filename: "dist/stats.html",
+          template: "treemap",
+          gzipSize: true,
+          brotliSize: true,
+          open: false,
+        }) as unknown as PluginOption),
+  ].filter(Boolean),
 
   optimizeDeps: {
     include: [
@@ -20,7 +27,6 @@ export default defineConfig({
     ],
   },
 
-  // ✅ Always use an absolute base for Netlify/production
   base: "/",
 
   server: {
