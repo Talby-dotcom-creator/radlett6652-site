@@ -1,8 +1,3 @@
-// vite.config.ts
-import { defineConfig, type PluginOption } from "vite";
-import react from "@vitejs/plugin-react";
-import { visualizer } from "rollup-plugin-visualizer";
-
 export default defineConfig({
   plugins: [
     react(),
@@ -16,9 +11,6 @@ export default defineConfig({
   ],
 
   optimizeDeps: {
-    // Explicitly include core libs so Vite can pre-bundle them and avoid
-    // the "Could not auto-determine entry point" warning. Only include
-    // packages that are actually in package.json.
     include: [
       "react",
       "react-dom",
@@ -28,17 +20,13 @@ export default defineConfig({
     ],
   },
 
-  // Use a relative base only for production builds. During dev we must keep
-  // the base as "/" so the dev server serves module files with correct
-  // MIME types (avoids returning index.html for module requests).
-  base: process.env.NODE_ENV === "production" ? "./" : "/",
+  // ✅ Always use an absolute base for Netlify/production
+  base: "/",
 
   server: {
     port: 3001,
     strictPort: true,
     host: "0.0.0.0",
-    // Do not hard-code `hmr.port` here; letting HMR use the same server port
-    // avoids mismatches when starting Vite on a different CLI port.
   },
 
   build: {
