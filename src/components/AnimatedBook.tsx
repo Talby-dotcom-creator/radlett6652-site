@@ -304,34 +304,31 @@ const AnimatedBook: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* INFO BOX */}
+      {/* INFO BOX — hidden on mobile to prevent overlap */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-        className="mx-auto mb-8 max-w-5xl px-8 py-6 text-center rounded-2xl font-serif text-[clamp(1rem,1vw+0.5rem,1.15rem)] text-yellow-50 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
+        transition={{ duration: 1, ease: "easeOut", delay: 0.1 }}
+        className="hidden md:block mx-auto mb-8 max-w-5xl px-8 py-6 text-center rounded-2xl font-serif text-[clamp(1rem,1vw+0.5rem,1.15rem)] text-yellow-50 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
         style={{
           position: "relative",
           zIndex: 40,
-          // allow clicks to pass through so the book's open button isn't blocked
-          pointerEvents: "none",
-          // moved down 200px as requested (was -500px)
-          marginTop: "-300px",
+          marginTop: "-580px",
           background:
-            "linear-gradient(180deg, rgba(50,35,10,0.85) 0%, rgba(25,15,0,0.9) 100%)",
-          border: "1px solid rgba(255,215,130,0.25)",
+            "linear-gradient(180deg, rgba(60,40,10,0.85) 0%, rgba(30,20,0,0.9) 100%)",
+          border: "1px solid rgba(255,215,130,0.4)",
           boxShadow:
-            "0 0 25px rgba(255,215,130,0.15), 0 0 120px rgba(255,215,130,0.08) inset",
+            "0 0 25px rgba(255,215,130,0.2), 0 0 120px rgba(255,215,130,0.08) inset",
         }}
       >
         <p className="leading-relaxed">
           <span className="text-yellow-300 font-semibold">
             Welcome to Reflections.
           </span>{" "}
-          These short contemplations are written to encourage understanding,
-          mindfulness, and thought. While inspired by Masonic ideals, they
-          invite everyone to pause and consider. A new reflection appears every
-          Monday at 9&nbsp;PM — we hope you’ll return to read more.
+          Here we share short, thought-provoking passages — reflections drawn
+          from life, philosophy, and the wider world. They are written for
+          everyone, not just Freemasons. Each invites you to pause, consider,
+          and reflect. A new piece is published every Monday at 9&nbsp;PM.
         </p>
       </motion.div>
     </div>
