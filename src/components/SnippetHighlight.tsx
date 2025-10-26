@@ -13,7 +13,7 @@ const SnippetHighlight: React.FC = () => {
   useEffect(() => {
     const loadSnippet = async () => {
       try {
-        const snippets = await optimizedApi.getBlogPosts("snippet");
+  const snippets = await optimizedApi.getBlogPosts();
 
         // ✅ tell TypeScript what "s" is
         const featured =

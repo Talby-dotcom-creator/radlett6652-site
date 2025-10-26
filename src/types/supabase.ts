@@ -197,6 +197,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      snippets: {
+        Row: {
+          id: string;
+          title: string;
+          subtitle: string | null;
+          content: string;
+          publish_date: string | null;
+          is_active: boolean | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          subtitle?: string | null;
+          content: string;
+          publish_date?: string | null;
+          is_active?: boolean | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          subtitle?: string | null;
+          content?: string;
+          publish_date?: string | null;
+          is_active?: boolean | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
       member_profiles: {
         Row: {
           contact_email: string | null;

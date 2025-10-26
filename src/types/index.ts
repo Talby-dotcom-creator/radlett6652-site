@@ -42,11 +42,19 @@ export interface CMSBlogPost {
   summary?: string;
   content: string;
   publish_date: string;
-  category: 'news' | 'blog' | 'snippet';
+  category: "news" | "blog" | "snippet";
   tags?: string[];
   is_published: boolean;
   is_members_only?: boolean;
   image_url?: string | null;
+  // Additional optional fields used across the UI
+  featured_image_url?: string | null;
+  reading_time_minutes?: number | null;
+  author_name?: string | null;
+  excerpt?: string | null;
+  published_at?: string | null;
+  // categories may be an object in some CMS exports
+  categories?: { name?: string } | string[] | null;
   created_at?: string;
   updated_at?: string;
 }

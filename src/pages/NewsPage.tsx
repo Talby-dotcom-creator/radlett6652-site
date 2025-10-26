@@ -1,6 +1,7 @@
+// src/pages/NewsPage.tsx
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Newspaper, Calendar, X } from "lucide-react";
+import { Newspaper, Calendar, X, Archive } from "lucide-react";
 import { optimizedApi } from "../lib/optimizedApi";
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -13,13 +14,14 @@ const NewsPage: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = useState<CMSBlogPost | null>(
     null
   );
+  const [showArchive, setShowArchive] = useState(false);
 
   useEffect(() => {
     const loadNews = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await optimizedApi.getBlogPosts("news");
+        const data = await optimizedApi.getBlogPosts();
         setArticles(data);
       } catch (err: any) {
         console.error("❌ Error loading news:", err.message || err);
@@ -44,6 +46,10 @@ const NewsPage: React.FC = () => {
         <p className="text-red-600">{error}</p>
       </main>
     );
+
+  // Split articles: first 6 visible, rest in archive
+  const visibleArticles = articles.slice(0, 6);
+  const archivedArticles = articles.slice(6);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -77,55 +83,121 @@ const NewsPage: React.FC = () => {
               No news articles available right now. Please check back soon!
             </p>
           ) : (
-            <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 mt-10">
-              {articles.map((post, i) => (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="group bg-white border border-neutral-300 hover:border-yellow-400 rounded-2xl overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(255,215,0,0.25)] transition-all duration-300 cursor-pointer"
-                  onClick={() => setSelectedArticle(post)}
-                >
-                  {/* Image - supports portrait & landscape */}
-                  {post.image_url && (
-                    <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-100">
-                      <img
-                        src={post.image_url}
-                        alt={post.title}
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
-                      />
-                    </div>
-                  )}
+            <>
+              <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 mt-10">
+                {visibleArticles.map((post, i) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="group bg-white border border-neutral-300 hover:border-yellow-400 rounded-2xl overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(255,215,0,0.25)] transition-all duration-300 cursor-pointer"
+                    onClick={() => setSelectedArticle(post)}
+                  >
+                    {/* Image */}
+                    {post.image_url && (
+                      <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-100">
+                        <img
+                          src={post.image_url}
+                          alt={post.title}
+                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      </div>
+                    )}
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-primary-700 mb-2 group-hover:text-yellow-600 transition-colors duration-300">
-                      {post.title}
-                    </h3>
-                    <p className="text-neutral-700 line-clamp-3 mb-4">
-                      {post.summary || post.content?.slice(0, 140) + "..."}
-                    </p>
-                    <div className="flex items-center text-sm text-neutral-500">
-                      <Calendar size={16} className="mr-2" />
-                      {post.publish_date
-                        ? new Date(post.publish_date).toLocaleDateString(
-                            "en-GB"
-                          )
-                        : "Undated"}
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-primary-700 mb-2 group-hover:text-yellow-600 transition-colors duration-300">
+                        {post.title}
+                      </h3>
+                      <p className="text-neutral-700 line-clamp-3 mb-4">
+                        {post.summary || post.content?.slice(0, 140) + "..."}
+                      </p>
+                      <div className="flex items-center text-sm text-neutral-500">
+                        <Calendar size={16} className="mr-2" />
+                        {post.publish_date
+                          ? new Date(post.publish_date).toLocaleDateString(
+                              "en-GB"
+                            )
+                          : "Undated"}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* 🟨 Archive Toggle */}
+              {archivedArticles.length > 0 && (
+                <div className="mt-10 bg-white border border-yellow-200 rounded-xl p-6 text-center shadow-sm">
+                  <button
+                    onClick={() => setShowArchive(!showArchive)}
+                    className="inline-flex items-center gap-2 border border-yellow-400 text-yellow-600 hover:bg-yellow-50 font-semibold px-5 py-2 rounded-lg transition"
+                  >
+                    <Archive className="w-4 h-4" />
+                    {showArchive
+                      ? "Hide Lodge News Archive"
+                      : "View Lodge News Archive"}
+                  </button>
+                </div>
+              )}
+
+              {/* 🗞️ Archive Section */}
+              <AnimatePresence>
+                {showArchive && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="overflow-hidden mt-10"
+                  >
+                    <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+                      {archivedArticles.map((post, i) => (
+                        <motion.div
+                          key={post.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="group bg-neutral-50 border border-neutral-200 hover:border-yellow-400 rounded-2xl overflow-hidden shadow-sm hover:shadow-[0_0_15px_rgba(255,215,0,0.2)] transition-all duration-300 cursor-pointer"
+                          onClick={() => setSelectedArticle(post)}
+                        >
+                          {post.image_url && (
+                            <div className="w-full aspect-[16/9] overflow-hidden bg-neutral-100">
+                              <img
+                                src={post.image_url}
+                                alt={post.title}
+                                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                              />
+                            </div>
+                          )}
+                          <div className="p-6">
+                            <h3 className="text-lg font-semibold text-primary-700 mb-2 group-hover:text-yellow-600 transition-colors duration-300">
+                              {post.title}
+                            </h3>
+                            <div className="flex items-center text-sm text-neutral-500">
+                              <Calendar size={16} className="mr-2" />
+                              {post.publish_date
+                                ? new Date(
+                                    post.publish_date
+                                  ).toLocaleDateString("en-GB")
+                                : "Undated"}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
           )}
 
-          {/* 🟦 Tip Box */}
+          {/* 💡 Tip Box */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="mt-16 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 text-center shadow-sm"
+            className="mt-16 bg-blue-50 border border-blue-200 rounded-xl p-6 text-center shadow-sm"
           >
             <p className="text-neutral-700 text-lg font-medium">
               💡 Tip: Click any news card to read the full story in a popup
@@ -133,27 +205,26 @@ const NewsPage: React.FC = () => {
             </p>
           </motion.div>
 
-          {/* ✨ Call-to-Action: Reflections */}
+          {/* ✨ Reflections Section */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="mt-10 bg-gradient-to-r from-yellow-100 to-yellow-200 border border-yellow-300 rounded-xl p-6 text-center shadow-md hover:shadow-lg transition"
+            className="mt-10 bg-[#fefcf7] border border-yellow-200 rounded-xl p-6 text-center shadow-sm"
           >
-            <h3 className="text-xl font-heading font-bold text-yellow-800 mb-2">
+            <h3 className="text-xl font-heading font-bold text-yellow-700 mb-2">
               Reflections & Thought-Provoking Words
             </h3>
             <p className="text-neutral-700 mb-3">
               Visit our <span className="font-semibold">Reflections</span> page
               for short, inspiring thoughts.
             </p>
-            <motion.a
+            <a
               href="/snippets"
-              whileHover={{ scale: 1.05 }}
-              className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-5 py-2 rounded-lg shadow"
+              className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
             >
               Read Reflections →
-            </motion.a>
+            </a>
           </motion.div>
         </div>
       </main>

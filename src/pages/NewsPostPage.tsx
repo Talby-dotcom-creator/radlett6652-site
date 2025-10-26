@@ -19,7 +19,7 @@ const NewsPostPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const data = await optimizedApi.getBlogPosts("news");
+        const data = await optimizedApi.getBlogPosts();
         const found = data.find((p: CMSBlogPost) => p.slug === slug); // ✅ typed p
         if (!found) throw new Error("Post not found");
         setPost(found);

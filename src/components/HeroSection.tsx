@@ -1,17 +1,18 @@
 // src/components/HeroSection.tsx
 import React from "react";
 import { ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
 import Button from "./Button";
 import { Link } from "react-router-dom";
 
 interface HeroSectionProps {
   title: string;
-  subtitle: string;
+  subtitle?: React.ReactNode;
   ctaText?: string;
   ctaLink?: string;
   backgroundImage: string;
   overlayOpacity?: number;
-  verticalPosition?: "top" | "center" | "bottom";
+  verticalPosition?: "top" | "center" | "bottom" | "custom";
   showScrollHint?: boolean;
 }
 
@@ -29,7 +30,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     verticalPosition === "top"
       ? "items-start pt-32 md:pt-40"
       : verticalPosition === "bottom"
-      ? "items-end pb-44 md:pb-52" // ⬅️ Adjusted spacing for nice bottom placement
+      ? "items-end pb-32 md:pb-40"
+      : verticalPosition === "custom"
+      ? "items-center md:translate-y-12 lg:translate-y-20"
       : "items-center";
 
   const scrollToContent = () => {
@@ -41,47 +44,75 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <section
-      className={`relative h-screen flex ${positionClass} justify-center text-center text-white`}
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      className={`relative h-screen flex ${positionClass} justify-center text-center text-white overflow-hidden`}
     >
-      {/* Overlay */}
+      {/* Background image layer */}
       <div
-        className="absolute inset-0"
-        style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` }}
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          transform: "scale(1.02)",
+        }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-3xl px-6">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg bg-clip-text text-transparent bg-gradient-to-r from-[#d4af37] via-[#f8e473] to-[#b98c25] animate-gradient-x">
-          {title}
-        </h1>
-        <p className="text-lg md:text-xl mb-8 drop-shadow-md">{subtitle}</p>
-        {ctaText &&
-          ctaLink &&
-          (ctaLink.startsWith("http") ? (
-            <a href={ctaLink} target="_blank" rel="noopener noreferrer">
-              <Button variant="primary">{ctaText}</Button>
-            </a>
-          ) : (
-            <Link to={ctaLink}>
-              <Button variant="primary">{ctaText}</Button>
-            </Link>
-          ))}
-      </div>
+      {/* Overlay tint */}
+      <div
+        className="absolute inset-0 bg-black"
+        style={{ opacity: overlayOpacity }}
+      />
 
-      {/* Scroll Hint */}
-      {showScrollHint && (
-        <div
-          className="absolute bottom-6 left-1/2 transform -translate-x-1/2 cursor-pointer text-gray-200 hover:text-white transition-colors"
-          onClick={scrollToContent}
+      {/* Foreground content */}
+      <div
+        className={`relative z-10 px-6 md:px-12 ${
+          verticalPosition === "custom"
+            ? "flex flex-col items-center justify-end h-full pb-[20vh] md:pb-[25vh]"
+            : ""
+        }`}
+      >
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-4xl md:text-5xl font-heading font-bold mb-4"
         >
-          <ChevronDown className="w-8 h-8 animate-bounce" />
-        </div>
-      )}
+          {title}
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="text-lg md:text-xl text-neutral-200 max-w-2xl mx-auto"
+        >
+          {subtitle}
+        </motion.p>
+
+        {ctaText && ctaLink && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="mt-8"
+          >
+            <Link to={ctaLink}>
+              <Button variant="primary" size="lg">
+                {ctaText}
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+
+        {showScrollHint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          >
+            <ChevronDown className="w-8 h-8 animate-bounce text-neutral-300" />
+          </motion.div>
+        )}
+      </div>
     </section>
   );
 };

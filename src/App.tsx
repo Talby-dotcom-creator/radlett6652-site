@@ -9,11 +9,13 @@ import EventsPage from "./pages/EventsPage";
 import NewsPage from "./pages/NewsPage";
 import NewsPostPage from "./pages/NewsPostPage";
 import BlogPage from "./pages/BlogPage";
+import PillarsPage from "./pages/PillarsPage";
 import SnippetsPage from "./pages/SnippetsPage";
 import ContactPage from "./pages/ContactPage";
 import MembersPage from "./pages/MembersPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import PillarPostDetail from "./pages/PillarPostDetail";
 
 const App: React.FC = () => {
   return (
@@ -25,12 +27,14 @@ const App: React.FC = () => {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/news" element={<NewsPage />} />
         <Route path="/news/:slug" element={<NewsPostPage />} />
-        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog" element={<PillarsPage />} />
         <Route path="/snippets" element={<SnippetsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/members" element={<MembersPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/pillars" element={<PillarsPage />} />
+        <Route path="/pillars/:slug" element={<PillarPostDetail />} />
       </Routes>
     </Layout>
   );

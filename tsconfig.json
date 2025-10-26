@@ -19,5 +19,6 @@
     "jsx": "react-jsx",
     "types": ["node", "jest"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["**/backup*", "**/src_backup*", "node_modules"]
 }

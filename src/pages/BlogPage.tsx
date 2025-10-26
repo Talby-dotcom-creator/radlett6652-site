@@ -12,7 +12,7 @@ const BlogPage: React.FC = () => {
     const loadBlogs = async () => {
       try {
         // ✅ Fetch only blog category posts
-        const data = await optimizedApi.getBlogPosts("blog");
+        const data = await optimizedApi.getBlogPosts();
 
         // ✅ Type-safe sorting by publish_date (most recent first)
         const sorted = data.sort(

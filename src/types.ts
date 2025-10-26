@@ -9,11 +9,17 @@ export interface CMSBlogPost {
   title: string;
   content?: string | null; // ✅ optional field
   summary?: string | null;
+  excerpt?: string | null;
   author?: string | null;
+  author_name?: string | null;
   category?: "news" | "blog" | "snippet" | string | null;
   image_url?: string | null;
+  featured_image_url?: string | null;
   image?: string | null; // ✅ alias for convenience
   publish_date?: string | null;
+  published_at?: string | null;
+  reading_time_minutes?: number | null;
+  categories?: { name?: string } | string[] | null;
   date?: Date; // ✅ added earlier
   featured?: boolean | null;
   is_published?: boolean | null;

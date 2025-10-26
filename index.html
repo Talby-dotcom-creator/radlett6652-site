@@ -45,6 +45,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://images.pexels.com" />
 
+    <!-- Preload critical book images so they render immediately on the snippets page -->
+    <link rel="preload" as="image" href="/book-open.png" fetchpriority="high" />
+    <link
+      rel="preload"
+      as="image"
+      href="/book-closed-reflections.png"
+      fetchpriority="high"
+    />
+
     <!-- ✅ Fonts (Playfair Display + Open Sans) -->
     <link
       href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap"

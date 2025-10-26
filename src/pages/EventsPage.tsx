@@ -19,7 +19,7 @@ const EventsPage: React.FC = () => {
         const eventData = await optimizedApi.getEvents();
         setEvents(eventData);
         if (eventData.length < 2) {
-          const highlightData = await optimizedApi.getBlogPosts("news");
+          const highlightData = await optimizedApi.getBlogPosts();
           setHighlights(highlightData.slice(0, 3));
         }
       } catch (err) {

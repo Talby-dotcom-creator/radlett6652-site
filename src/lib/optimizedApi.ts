@@ -1,5 +1,6 @@
 // src/lib/optimizedApi.ts
 import { supabase } from "./supabase";
+import type { Database } from "../types/supabase";
 import {
   CMSBlogPost,
   LodgeEvent,
@@ -42,32 +43,114 @@ export const optimizedApi = {
   },
 
   /* ---------------- BLOG POSTS ---------------- */
-  async getBlogPosts(category?: string): Promise<CMSBlogPost[]> {
+  async getBlogPosts(): Promise<CMSBlogPost[]> {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("category", "blog") // ✅ Only fetch rows where category = 'blog'
+      .order("publish_date", { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []) as CMSBlogPost[];
+  },
+
+  async getBlogPostBySlug(slug: string): Promise<CMSBlogPost | null> {
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from("blog_posts")
         .select("*")
-        .eq("is_published", true)
-        .order("publish_date", { ascending: false });
+        .eq("slug", slug)
+        .maybeSingle();
 
-      if (category) query = query.eq("category", category);
+      if (error) handleError(error, "getBlogPostBySlug");
+      if (!data) return null;
 
-      const { data, error } = await query;
-      if (error) handleError(error, "getBlogPosts");
+      // Map to the CMSBlogPost shape used by the app
+      const d: any = data;
+      const post = {
+        ...d,
+        title: d.title ?? "Untitled Post",
+        summary: d.summary ?? d.excerpt ?? "",
+        publish_date: d.publish_date ?? d.published_at ?? d.created_at,
+        image_url: d.image_url ?? d.featured_image_url ?? null,
+        featured_image_url: d.featured_image_url ?? null,
+        reading_time_minutes: d.reading_time_minutes ?? null,
+        author_name: d.author_name ?? d.author ?? null,
+        categories: d.categories ?? null,
+      } as CMSBlogPost;
 
-      return (data ?? []).map((post: any) => ({
-        ...post,
-        title: post.title ?? "Untitled Post",
-        summary: post.summary ?? "",
-        category: post.category ?? "news",
-        publish_date: post.publish_date ?? new Date().toISOString(),
-        is_published: Boolean(post.is_published),
-        is_members_only: Boolean(post.is_members_only),
-        slug: post.slug ?? post.id,
-      }));
+      return post;
     } catch (err: any) {
-      handleError(err, "getBlogPosts");
-      return [];
+      handleError(err, "getBlogPostBySlug");
+      return null;
+    }
+  },
+
+  /* ---------------- LATEST SNIPPET ---------------- */
+  async getLatestSnippet(): Promise<{
+    id: string;
+    title: string;
+    subtitle: string;
+    content: string;
+    publish_date: string | null;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from("snippets") // ✅ correct plural table
+        .select("id, title, subtitle, content, publish_date, is_active")
+        .eq("is_active", true)
+        .order("publish_date", { ascending: false })
+        .limit(1);
+
+      if (error) handleError(error, "getLatestSnippet");
+
+      if (!data || data.length === 0) {
+        console.warn("⚠️ No active snippets found.");
+        return {
+          id: "",
+          title: "No snippet found",
+          subtitle: "Please check back after Monday 9pm",
+          content: "There are currently no active reflections available.",
+          publish_date: null,
+        };
+      }
+
+  // Grab the first row
+  const rows = (data ?? []) as Database["public"]["Tables"]["snippets"]["Row"][];
+  const row = rows[0] || null;
+      return {
+        id: row.id,
+        title: row.title ?? "Untitled Snippet",
+        subtitle: row.subtitle ?? "",
+        content: row.content ?? "",
+        publish_date: row.publish_date ?? null,
+      };
+    } catch (err: any) {
+      handleError(err, "getLatestSnippet");
+      return {
+        id: "",
+        title: "Error loading snippet",
+        subtitle: "",
+        content: "There was a problem fetching the latest reflection.",
+        publish_date: null,
+      };
+    }
+  },
+
+  // Raw fetch (no mapping) — useful when you need the original DB row
+  async getRawBlogPostBySlug(slug: string): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("slug", slug)
+        .single();
+
+      if (error) handleError(error, "getRawBlogPostBySlug");
+      return data ?? null;
+    } catch (err: any) {
+      handleError(err, "getRawBlogPostBySlug");
+      return null;
     }
   },
 
