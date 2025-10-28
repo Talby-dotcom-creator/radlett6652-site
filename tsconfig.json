@@ -20,5 +20,10 @@
     "types": ["node", "jest"]
   },
   "include": ["src"],
-  "exclude": ["**/backup*", "**/src_backup*", "node_modules"]
+  "exclude": [
+    "**/backup*",
+    "**/src_backup*",
+    "**/_restored_cms_171458/**",
+    "node_modules"
+  ]
 }
