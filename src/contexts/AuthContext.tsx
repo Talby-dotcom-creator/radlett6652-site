@@ -3,33 +3,23 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { MemberProfile } from "../types";
-import { api } from "../lib/api";
+import { optimizedApi as api } from "../lib/optimizedApi";
 
 interface AuthContextType {
   user: User | null;
   profile: MemberProfile | null;
   loading: boolean;
-  signOut: () => Promise<void>;
   isAdmin: boolean;
-  error: string | null;
-  refreshProfile: () => Promise<void>;
-  forceRefresh: () => Promise<void>;
-  needsPasswordReset?: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
-  signOut: async () => {},
   isAdmin: false,
-  error: null,
-  refreshProfile: async () => {},
-  forceRefresh: async () => {},
-  needsPasswordReset: false,
+  signOut: async () => {},
 });
-
-export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -37,211 +27,104 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
 
-  const loadProfile = async (currentUser: User) => {
+  // 🚀 Load member profile safely
+  const loadProfile = async (user: User) => {
     try {
-      setProfileLoading(true);
-      setError(null);
-
-      console.log(
-        "🔄 AuthContext: Loading profile for user:",
-        currentUser.email
-      );
-      const startTime = Date.now();
-      const userProfile = await api.getMemberProfile(currentUser.id);
-      const loadTime = Date.now() - startTime;
-
-      console.log(
-        `👤 AuthContext: Profile loaded in ${loadTime}ms:`,
-        userProfile
-          ? {
-              id: userProfile.id,
-              full_name: userProfile.full_name,
-              status: userProfile.status,
-            }
-          : null
-      );
-
-      setProfile(userProfile);
-      if (userProfile) {
-        console.log("🔐 AuthContext: User status:", userProfile.status);
+      console.log("🔍 loadProfile() running for:", user.email);
+      const prof = await api.getMemberProfile(user.id);
+      if (prof) {
+        console.log(
+          "✅ Profile loaded:",
+          prof.full_name,
+          prof.role,
+          prof.status
+        );
+        setProfile(prof);
+      } else {
+        console.warn("⚠️ No profile found for user:", user.id);
+        setProfile(null);
       }
-    } catch (error) {
-      console.error("Error in loadProfile:", error);
-      setError(
-        `Failed to load user profile: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+    } catch (err: any) {
+      console.error("💥 Error loading profile:", err.message);
       setProfile(null);
-    } finally {
-      setProfileLoading(false);
     }
   };
 
-  const refreshProfile = async () => {
-    if (user) {
-      console.log("🔄 AuthContext: Refreshing profile...");
-      await loadProfile(user);
-    }
-  };
-
-  const forceRefresh = async () => {
-    if (user) {
-      console.log(
-        "🔄 AuthContext: Force refreshing profile and clearing cache..."
-      );
-      setProfile(null);
-      await loadProfile(user);
-    }
-  };
-
+  // 🧠 Initialize session once on mount
   useEffect(() => {
-    let mounted = true;
+    console.log("🧠 AuthContext useEffect mounted");
+    let active = true;
 
     const getInitialSession = async () => {
-      try {
-        console.log("🚀 AuthContext: Getting initial session...");
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-
-        if (error) {
-          console.error("Error getting session:", error);
-          setError("Authentication error");
-        } else if (session?.user && mounted) {
-          console.log(
-            "✅ AuthContext: Initial session found for:",
-            session.user.email
-          );
-          setUser(session.user);
-          await loadProfile(session.user);
-
-          if (session.user.user_metadata?.reset_required) {
-            setNeedsPasswordReset(true);
-          }
-        } else {
-          console.log("ℹ️ AuthContext: No initial session found");
-        }
-      } catch (err) {
-        console.error("Unexpected error getting session:", err);
-        setError("Failed to authenticate");
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    getInitialSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
-      if (!mounted) return;
-
-      try {
-        console.log(
-          "🔄 AuthContext: Auth state change:",
-          event,
-          session?.user?.email
-        );
-        setError(null);
-
-        if (event === "SIGNED_IN" && session?.user) {
-          setUser(session.user);
-          await loadProfile(session.user);
-
-          if (session.user.user_metadata?.reset_required) {
-            setNeedsPasswordReset(true);
-          }
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-          setProfile(null);
-          setNeedsPasswordReset(false);
-        } else if (event === "TOKEN_REFRESHED" && session?.user) {
-          setUser(session.user);
-          await loadProfile(session.user);
-        } else if (event === "TOKEN_REFRESHED" && !session) {
-          console.warn(
-            "⚠️ AuthContext: Token refresh failed, redirecting to login"
-          );
-          window.location.href = "/login?expired=1";
-        }
-      } catch (err) {
-        console.error("Error handling auth state change:", err);
-        setError("Authentication error");
-        window.location.href = "/login?expired=1";
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const signOut = async () => {
-    try {
-      console.log("👋 AuthContext: Starting sign out...");
-      setError(null);
-
+      console.log("🚀 Starting getInitialSession()");
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) {
-        console.warn("⚠️ AuthContext: No active session, skipping sign out");
-        setUser(null);
+      if (!active) return;
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        // ✅ Defer async DB calls safely
+        setTimeout(() => {
+          loadProfile(currentUser);
+        }, 0);
+      } else {
         setProfile(null);
-        return;
       }
 
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      setLoading(false);
+    };
 
-      console.log("✅ AuthContext: Sign out successful");
+    getInitialSession();
+
+    // 🔄 Subscribe to auth state changes (with safe async deferral)
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("🔄 onAuthStateChange event:", event, session?.user?.email);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          // ✅ Important: use setTimeout to avoid deadlock
+          setTimeout(() => loadProfile(currentUser), 0);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setProfile(null);
+        }
+
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      console.log("🧹 Cleaning up AuthContext");
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const signOut = async () => {
+    console.log("🚪 Signing out...");
+    try {
+      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
-      setNeedsPasswordReset(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
-      setError("Failed to sign out");
+      console.log("✅ Signed out successfully");
+    } catch (err: any) {
+      console.error("❌ Error signing out:", err.message);
     }
   };
 
-  // Determine admin access — adjust as needed
-  const isAdmin = profile?.status === "active";
-
-  // 🧩 TEMPORARY GUEST MODE — allows site to render when no Supabase session exists
-  const guestMode = !user && !loading;
-  const guestUser = guestMode
-    ? ({ id: "guest-dev", email: "guest@local.dev" } as User)
-    : user;
-
-  if (guestMode) {
-    console.warn(
-      "⚙️ AuthContext: Guest mode active — Supabase session not found."
-    );
-  }
-
-  const contextValue: AuthContextType = {
-    user: guestUser,
-    profile,
-    loading: false, // always false during dev to prevent blocking
-    signOut,
-    isAdmin,
-    error,
-    refreshProfile,
-    forceRefresh,
-    needsPasswordReset,
-  };
+  const isAdmin = profile?.role === "admin";
 
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, profile, loading, isAdmin, signOut }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);

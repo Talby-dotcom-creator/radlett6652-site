@@ -30,9 +30,11 @@ export default defineConfig({
   base: "/",
 
   server: {
-    port: 3001,
+    // Bind to localhost and use a single fixed port to avoid conflicts with other local tools.
+    // Use Vite's default 5173 which is less likely to be occupied on Windows dev machines.
+    port: 5173,
     strictPort: true,
-    host: "0.0.0.0",
+    host: "localhost",
   },
 
   build: {

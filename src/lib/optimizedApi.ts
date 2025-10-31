@@ -115,9 +115,10 @@ export const optimizedApi = {
         };
       }
 
-  // Grab the first row
-  const rows = (data ?? []) as Database["public"]["Tables"]["snippets"]["Row"][];
-  const row = rows[0] || null;
+      // Grab the first row
+      const rows = (data ??
+        []) as Database["public"]["Tables"]["snippets"]["Row"][];
+      const row = rows[0] || null;
       return {
         id: row.id,
         title: row.title ?? "Untitled Snippet",
@@ -164,6 +165,7 @@ export const optimizedApi = {
     return (data ?? []).map((event: any) => ({
       ...event,
       is_members_only: event.is_members_only ?? undefined,
+      is_past_event: event.is_past_event ?? undefined,
     }));
   },
 
@@ -183,6 +185,7 @@ export const optimizedApi = {
       return {
         ...data,
         is_members_only: data.is_members_only ?? undefined,
+        is_past_event: data.is_past_event ?? undefined,
       };
     } catch (err: any) {
       handleError(err, "getNextUpcomingEvent");
@@ -232,20 +235,41 @@ export const optimizedApi = {
     }
   },
 
-  /* ---------------- MEMBER PROFILES ---------------- */
-  async getAllMembers(): Promise<MemberProfile[]> {
-    const { data, error } = await supabase
-      .from("member_profiles")
-      .select("*")
-      .order("full_name");
-    if (error) handleError(error, "getAllMembers");
+  /* ---------------- MEMBER PROFILE (Single) ---------------- */
+  async getMemberProfile(userId: string): Promise<MemberProfile | null> {
+    try {
+      const { data, error } = await supabase
+        .from("member_profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    return (data ?? []).map((m: any) => ({
-      ...m,
-      status: m.status ?? "active",
-      contact_email: m.contact_email ?? "",
-      contact_phone: m.contact_phone ?? "",
-    }));
+      if (error) {
+        console.error("❌ getMemberProfile failed:", error.message);
+        return null;
+      }
+
+      if (!data) {
+        console.warn("⚠️ No member profile found for user:", userId);
+        return null;
+      }
+
+      console.log(
+        "🧭 profile status returned:",
+        data?.status,
+        "role:",
+        data?.role
+      );
+
+      return {
+        ...data,
+        status: data.status ?? "pending",
+        role: data.role ?? "member",
+      } as MemberProfile;
+    } catch (err: any) {
+      console.error("💥 getMemberProfile exception:", err.message);
+      return null;
+    }
   },
 
   /* ---------------- PAGE CONTENT ---------------- */

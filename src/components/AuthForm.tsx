@@ -107,48 +107,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           );
           console.log("User created successfully:", data.user.email);
 
-          // Try to create member profile, but don't fail if database isn't connected
+          // inside AuthContext.tsx
           try {
-            console.log("👤 AuthForm: Attempting to create member profile...");
-            console.log("Attempting to create member profile...");
+            // API currently expects (userId, fullName)
             await api.createMemberProfile(data.user.id, fullName);
-            console.log("✅ AuthForm: Member profile created successfully");
-            console.log(
-              "Member profile created successfully with pending status"
-            );
-
-            // Show prominent success message and redirect to pending page
-            console.log(
-              "🎉 AuthForm: Showing success toast and preparing redirect..."
-            );
             success(
-              "🎉 Account created successfully! Your membership is pending admin approval. Please wait for verification."
+              "🎉 Account created! Your membership is pending approval by the Secretary."
             );
-            console.log("⏰ AuthForm: Setting 4-second redirect timer...");
-            setTimeout(() => {
-              console.log("🔄 AuthForm: Executing redirect to /members");
-              navigate("/members");
-            }, 3000);
+            navigate("/pending");
           } catch (profileError) {
             console.warn(
-              "⚠️ AuthForm: Profile creation failed (likely demo mode):",
+              "⚠️ AuthForm: Could not create member profile:",
               profileError
             );
-            console.warn(
-              "Could not create profile (database not connected):",
-              profileError
-            );
-            // Don't throw error - user can still access demo mode
-            console.log("🎉 AuthForm: Showing fallback success toast...");
             success(
-              "🎉 Account created successfully! Your membership is pending approval."
+              "🎉 Account created! Your membership is pending approval by the Secretary."
             );
-
-            // Switch to sign-in mode and pre-fill the email
-            console.log("🔄 AuthForm: Switching to sign-in mode");
-            setMode("signin");
-            setPassword("");
-            setFullName("");
+            navigate("/pending");
           }
         } else {
           console.warn("⚠️ AuthForm: No user returned from signup");

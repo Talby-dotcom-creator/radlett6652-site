@@ -1,11 +1,20 @@
 // src/types/index.ts
-
 export interface MemberProfile {
-  user_id: string;
+  id: string;
+  user_id: string; // Supabase Auth user.id
   full_name: string;
-  email: string;
-  status?: string;
-  created_at?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  lodge_rank?: string | null;
+  grand_lodge_rank?: string | null;
+  address?: string | null;
+  date_joined?: string | null;
+  role?: "member" | "admin";
+  status?: "active" | "pending" | "inactive";
+  email_verified?: boolean | null;
+  avatar_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface LodgeDocument {
