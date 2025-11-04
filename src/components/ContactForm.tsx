@@ -184,14 +184,15 @@ const ContactForm: React.FC = () => {
           onChange={handleChange}
           required
           disabled={formStatus === "submitting"}
-          className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 
+             text-black bg-white focus:ring-2 focus:ring-[#FFD700] 
+             focus:border-[#FFD700] transition-all"
         >
-          <option value="">Please select</option>
-          <option value="general">General Inquiry</option>
-          <option value="membership">Membership Information</option>
-          <option value="events">Events Information</option>
-          <option value="visiting">Visiting the Lodge</option>
-          <option value="other">Other</option>
+          <option value="">Select a subject</option>
+          <option value="membership">Membership Enquiry</option>
+          <option value="events">Events</option>
+          <option value="charity">Charity</option>
+          <option value="general">General Enquiry</option>
         </select>
       </div>
 
@@ -211,7 +212,15 @@ const ContactForm: React.FC = () => {
           rows={5}
           required
           disabled={formStatus === "submitting"}
-          className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
+          // Request that Grammarly (and similar editors) do not activate on this field
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-enable-grammarly="false"
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 
+             text-black bg-white placeholder-gray-400 
+             focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] 
+             transition-all"
+          placeholder="Your message"
         />
       </div>
 

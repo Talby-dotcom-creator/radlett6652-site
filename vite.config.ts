@@ -33,7 +33,9 @@ export default defineConfig({
     // Bind to localhost and use a single fixed port to avoid conflicts with other local tools.
     // Use Vite's default 5173 which is less likely to be occupied on Windows dev machines.
     port: 5173,
-    strictPort: true,
+    // Allow Vite to fall back to the next free port if 5173 is occupied.
+    // This prevents immediate failures when other dev tools briefly hold 5173.
+    strictPort: false,
     host: "localhost",
   },
 

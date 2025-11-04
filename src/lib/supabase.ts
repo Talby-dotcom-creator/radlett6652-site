@@ -1,10 +1,8 @@
-// supabase.ts
-
 import { createClient } from "@supabase/supabase-js";
-import { Database } from "../types/supabase";
-import { getSupabaseEnv } from "./getSupabaseEnv";
+import type { Database } from "../types/supabase";
 
-const { url, anonKey } = getSupabaseEnv();
-const supabase = createClient<Database>(url ?? "", anonKey ?? "");
-
-export { supabase };
+// 👇 Attach our Database type definition
+export const supabase = createClient<Database>(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);

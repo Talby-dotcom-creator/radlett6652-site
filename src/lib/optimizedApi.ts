@@ -25,7 +25,7 @@ const handleError = (error: any, context: string) => {
 /* ------------------------------------------------------
  * Unified Optimized API Layer
  * ---------------------------------------------------- */
-export const optimizedApi = {
+export const optimizedApi: any = {
   /* ---------------- CONNECTION TEST ---------------- */
   async checkConnection() {
     try {
@@ -43,17 +43,27 @@ export const optimizedApi = {
   },
 
   /* ---------------- BLOG POSTS ---------------- */
-  async getBlogPosts(): Promise<CMSBlogPost[]> {
-    const { data, error } = await supabase
+  async getBlogPosts(
+    category: "blog" | "news" | "snippet" | null = null
+  ): Promise<CMSBlogPost[]> {
+    let query = supabase
       .from("blog_posts")
       .select("*")
-      .eq("category", "blog") // ✅ Only fetch rows where category = 'blog'
+      .eq("is_published", true)
       .order("publish_date", { ascending: false });
 
-    if (error) throw error;
+    if (category) query = query.eq("category", category);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("❌ getBlogPosts error:", error);
+      return [];
+    }
+
+    console.log("✅ getBlogPosts fetched:", data?.length, "posts");
     return (data ?? []) as CMSBlogPost[];
   },
-
   async getBlogPostBySlug(slug: string): Promise<CMSBlogPost | null> {
     try {
       const { data, error } = await supabase
@@ -96,7 +106,7 @@ export const optimizedApi = {
   }> {
     try {
       const { data, error } = await supabase
-        .from("snippets") // ✅ correct plural table
+        .from("snippets" as any) // table not present in typed Database; cast to any for flexibility
         .select("id, title, subtitle, content, publish_date, is_active")
         .eq("is_active", true)
         .order("publish_date", { ascending: false })
@@ -116,8 +126,7 @@ export const optimizedApi = {
       }
 
       // Grab the first row
-      const rows = (data ??
-        []) as Database["public"]["Tables"]["snippets"]["Row"][];
+      const rows = (data ?? []) as any[];
       const row = rows[0] || null;
       return {
         id: row.id,
@@ -372,3 +381,143 @@ export const getPublicUrl = (path: string | null): string | null => {
   const { data } = supabase.storage.from("cms-media").getPublicUrl(path);
   return data?.publicUrl || null;
 };
+
+// ---------------------------------------------------------
+// ✅ Supabase Optimized API – unified export for your app
+// ---------------------------------------------------------
+
+/**
+ * 📰 Get all published blog posts or news/snippet content.
+ * You can pass a category filter such as "blog", "news", or "snippet".
+ */
+export const getBlogPosts = async (
+  category: "blog" | "news" | "snippet" | null = null
+) => {
+  let query = supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("is_published", true)
+    .order("publish_date", { ascending: false });
+
+  if (category) query = query.eq("category", category);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * 🎉 Get lodge events.
+ */
+export const getEvents = async () => {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .order("event_date", { ascending: true });
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * 💬 Get testimonials.
+ */
+export const getTestimonials = async () => {
+  const { data, error } = await supabase
+    .from("testimonials")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * 📄 Get static page content (About, Join, etc.)
+ */
+export const getPageContent = async (pageName: string) => {
+  const { data, error } = await supabase
+    .from("page_content")
+    .select("content")
+    .eq("page_name", pageName)
+    .single();
+  if (error) throw error;
+  return data?.content ?? "";
+};
+
+/**
+ * 🧑‍🤝‍🧑 Get lodge members (admin-only table)
+ */
+export const getMembers = async () => {
+  const { data, error } = await supabase
+    .from("member_profiles")
+    .select("*")
+    .order("full_name");
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * 📚 Get lodge documents
+ */
+export const getDocuments = async () => {
+  const { data, error } = await supabase
+    .from("lodge_documents")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * 🗓️ Get meeting minutes
+ */
+export const getMeetingMinutes = async () => {
+  const { data, error } = await supabase
+    .from("meeting_minutes")
+    .select("*")
+    .order("meeting_date", { ascending: false });
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * ⚙️ Get site-wide settings (for footer, SEO, etc.)
+ */
+export const getSiteSettings = async () => {
+  const { data, error } = await supabase.from("site_settings").select("*");
+  if (error) throw error;
+  return data;
+};
+/**
+ * 🕯️ Get a single blog post by its slug
+ */
+export const getBlogPostBySlug = async (slug: string) => {
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+// ---------------------------------------------------------
+// ✅ Central Export Object
+// ---------------------------------------------------------
+// Merge these helpers into the existing `optimizedApi` object so callers can
+// use either the named exports or the central `optimizedApi` export.
+Object.assign(optimizedApi, {
+  getPublicUrl,
+  getBlogPostBySlug,
+  getBlogPosts,
+  getEvents,
+  getTestimonials,
+  getPageContent,
+  getMembers,
+  // alias for historical callers
+  getAllMembers: getMembers,
+  getDocuments,
+  getMeetingMinutes,
+  getSiteSettings,
+});

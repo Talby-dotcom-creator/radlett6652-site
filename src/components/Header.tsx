@@ -1,3 +1,4 @@
+// src/components/Header.tsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LogIn } from "lucide-react";
@@ -5,42 +6,19 @@ import { useAuth } from "../contexts/AuthContext";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
   const { user } = useAuth();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setScrolled(currentScrollY > 20);
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsHidden(true);
-      } else if (currentScrollY < lastScrollY || currentScrollY <= 50) {
-        setIsHidden(false);
-      }
-      setLastScrollY(currentScrollY);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  // ✅ Always Oxford Blue — no scroll or transparency logic
+  const headerClass =
+    "fixed top-0 left-0 right-0 z-50 bg-[#0A174E] text-neutral-50 shadow-md py-4 md:py-5 transition-all duration-300 ease-in-out";
 
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
 
-  // Detect if current page is NOT the homepage
-  const isHomePage = location.pathname === "/";
-
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-        scrolled || !isHomePage
-          ? "bg-[#0A174E]/95 backdrop-blur-md shadow-md py-4 md:py-5"
-          : "bg-transparent py-6 md:py-10"
-      } ${isHidden ? "-translate-y-full" : "translate-y-0"}`}
-    >
+    <header className={headerClass}>
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <div className="w-6 md:w-10" />
 
@@ -65,16 +43,17 @@ const Header: React.FC = () => {
           <NavLink to="/news" active={location.pathname === "/news"}>
             News
           </NavLink>
-          <NavLink to="/blog" active={location.pathname === "/blog"}>
-            Blog
-          </NavLink>
           <NavLink to="/snippets" active={location.pathname === "/snippets"}>
             Snippets
+          </NavLink>
+          <NavLink to="/blog" active={location.pathname === "/blog"}>
+            The Pillars
           </NavLink>
           <NavLink to="/contact" active={location.pathname === "/contact"}>
             Contact
           </NavLink>
 
+          {/* ✅ Members Area (no logout button) */}
           {!user && (
             <Link
               to="/login"
@@ -115,7 +94,7 @@ const Header: React.FC = () => {
       {isMenuOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden absolute top-full left-0 right-0 bg-[#0A174E]/95 backdrop-blur-md shadow-md py-4 px-4 animate-fadeIn"
+          className="md:hidden absolute top-full left-0 right-0 bg-[#0A174E] shadow-md py-4 px-4 animate-fadeIn"
           role="navigation"
           aria-label="Mobile navigation"
         >
@@ -126,8 +105,8 @@ const Header: React.FC = () => {
               { to: "/join", label: "Join Us" },
               { to: "/events", label: "Events" },
               { to: "/news", label: "News" },
-              { to: "/blog", label: "Blog" },
               { to: "/snippets", label: "Snippets" },
+              { to: "/blog", label: "The Pillars" },
               { to: "/contact", label: "Contact" },
             ].map((item) => (
               <MobileNavLink
@@ -138,6 +117,8 @@ const Header: React.FC = () => {
                 {item.label}
               </MobileNavLink>
             ))}
+
+            {/* ✅ Members Link for Mobile */}
             {!user ? (
               <MobileNavLink
                 to="/login"
@@ -162,7 +143,7 @@ const Header: React.FC = () => {
   );
 };
 
-// Reusable link styles
+// 🔗 Reusable Link Components
 interface NavLinkProps {
   to: string;
   active: boolean;

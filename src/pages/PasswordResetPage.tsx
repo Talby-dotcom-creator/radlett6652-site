@@ -59,7 +59,7 @@ const PasswordResetPage: React.FC = () => {
       // 2. Update the needs_password_reset flag in the member_profiles table
       if (user && profile) {
         await api.updateMemberProfile(user.id, { needs_password_reset: false });
-        await refreshProfile(); // Refresh auth context profile
+        await refreshProfile?.(); // Refresh auth context profile
       }
 
       success("Your password has been successfully updated!");

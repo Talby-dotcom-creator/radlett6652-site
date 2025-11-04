@@ -159,48 +159,8 @@ const AnimatedBook: React.FC = () => {
 
             {/* Open Book Button */}
             <motion.button
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                console.log(
-                  "AnimatedBook: inline open click, isOpen before:",
-                  isOpen
-                );
-                if (!isOpen) setIsOpen(true);
-              }}
-              className="absolute z-50 font-serif text-lg md:text-xl text-yellow-100 tracking-wide"
-              style={{
-                bottom: "calc(41% - 160px)",
-                left: "55%",
-                transform: "translateX(-50%) rotateX(22deg) rotateZ(-12deg)",
-                transformOrigin: "50% 50%",
-                padding: "1rem 3rem",
-                borderRadius: "12px",
-                background:
-                  "radial-gradient(circle at 50% 0%, rgba(255,215,130,0.3) 0%, rgba(0,0,0,0) 70%), rgba(50,30,0,0.7)",
-                border: "1px solid rgba(255,215,130,0.5)",
-                boxShadow:
-                  "0 0 30px rgba(255,215,130,0.4), 0 10px 25px rgba(0,0,0,0.9)",
-                textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-                letterSpacing: "0.08em",
-                fontWeight: 500,
-                minHeight: "70px",
-                minWidth: "220px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                pointerEvents: "auto",
-                cursor: "pointer",
-              }}
-              whileHover={{
-                scale: 1.04,
-                boxShadow:
-                  "0 0 50px rgba(255,215,130,0.8), 0 20px 50px rgba(0,0,0,0.95)",
-              }}
-              whileTap={{
-                scale: 0.97,
-                boxShadow:
-                  "0 0 25px rgba(255,215,130,0.6), 0 12px 30px rgba(0,0,0,0.9)",
-              }}
+              onClick={() => setIsOpen(true)}
+              className="absolute bottom-[calc(8%+350px)] px-5 py-2 text-sm font-semibold bg-[#FFD700] text-[#0A174E] rounded-full shadow-md hover:bg-[#f4c430] hover:scale-105 transition-all duration-300"
             >
               Open the Book
             </motion.button>
@@ -300,37 +260,27 @@ const AnimatedBook: React.FC = () => {
             >
               <p>{rightPageText}</p>
             </div>
+            {/* INFO BOX – now anchored inside the book */}
+            {isOpen && (
+              <motion.div
+                key="snippetText"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                className="
+                  absolute left-1/2 transform -translate-x-1/2
+                  top-[48%] sm:top-[46%] md:top-[44%]
+                  w-[90%] max-w-md text-center px-4
+                "
+              >
+                <p className="text-base sm:text-lg md:text-xl text-white leading-relaxed drop-shadow-md animate-gentle-fade"></p>
+              </motion.div>
+            )}
           </motion.div>
         </motion.div>
       </div>
 
-      {/* INFO BOX — hidden on mobile to prevent overlap */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: "easeOut", delay: 0.1 }}
-        className="hidden md:block mx-auto mb-8 max-w-5xl px-8 py-6 text-center rounded-2xl font-serif text-[clamp(1rem,1vw+0.5rem,1.15rem)] text-yellow-50 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
-        style={{
-          position: "relative",
-          zIndex: 40,
-          marginTop: "-580px",
-          background:
-            "linear-gradient(180deg, rgba(60,40,10,0.85) 0%, rgba(30,20,0,0.9) 100%)",
-          border: "1px solid rgba(255,215,130,0.4)",
-          boxShadow:
-            "0 0 25px rgba(255,215,130,0.2), 0 0 120px rgba(255,215,130,0.08) inset",
-        }}
-      >
-        <p className="leading-relaxed">
-          <span className="text-yellow-300 font-semibold">
-            Welcome to Reflections.
-          </span>{" "}
-          Here we share short, thought-provoking passages — reflections drawn
-          from life, philosophy, and the wider world. They are written for
-          everyone, not just Freemasons. Each invites you to pause, consider,
-          and reflect. A new piece is published every Monday at 9&nbsp;PM.
-        </p>
-      </motion.div>
+      {/* Old standalone INFO BOX removed — anchors now inside the open book */}
     </div>
   );
 };

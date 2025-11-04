@@ -44,20 +44,27 @@ const HomePage: React.FC = () => {
             : Promise.resolve([]),
         ]);
 
-        const sortedEvents = eventsData.sort((a, b) => {
-          const ta = a?.event_date ? new Date(a.event_date).getTime() : 0;
-          const tb = b?.event_date ? new Date(b.event_date).getTime() : 0;
-          return ta - tb;
-        });
+        const sortedEvents = (eventsData as Event[]).sort(
+          (a: Event, b: Event) => {
+            const ta = a?.event_date ? new Date(a.event_date).getTime() : 0;
+            const tb = b?.event_date ? new Date(b.event_date).getTime() : 0;
+            return ta - tb;
+          }
+        );
 
-        const sortedNews = newsData.sort((a, b) => {
-          const ta = a?.publish_date ? new Date(a.publish_date).getTime() : 0;
-          const tb = b?.publish_date ? new Date(b.publish_date).getTime() : 0;
-          return tb - ta;
-        });
+        const sortedNews = (newsData as CMSBlogPost[]).sort(
+          (a: CMSBlogPost, b: CMSBlogPost) => {
+            const ta = a?.publish_date ? new Date(a.publish_date).getTime() : 0;
+            const tb = b?.publish_date ? new Date(b.publish_date).getTime() : 0;
+            return tb - ta;
+          }
+        );
 
-        const sortedTestimonials = (testimonialsData || []).sort(
-          (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+        const sortedTestimonials = (
+          (testimonialsData as Testimonial[]) || []
+        ).sort(
+          (a: Testimonial, b: Testimonial) =>
+            (a.sort_order ?? 0) - (b.sort_order ?? 0)
         );
 
         setEvents(sortedEvents);
@@ -251,9 +258,6 @@ const HomePage: React.FC = () => {
                       news={{
                         ...n,
                         summary: n.summary ?? "",
-                        date: n.publish_date
-                          ? new Date(n.publish_date)
-                          : new Date(),
                       }}
                       onOpen={(post) => setSelectedNews(post)}
                     />

@@ -28,7 +28,7 @@ const SetupAdminPage: React.FC = () => {
       setError(null);
 
       await setupAdminProfile();
-      await refreshProfile();
+      await refreshProfile?.();
 
       setSuccess(true);
 

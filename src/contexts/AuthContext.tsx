@@ -10,7 +10,10 @@ interface AuthContextType {
   profile: MemberProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  needsPasswordReset?: boolean;
   signOut: () => Promise<void>;
+  refreshProfile?: () => Promise<void>;
+  forceRefresh?: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   isAdmin: false,
+  needsPasswordReset: false,
   signOut: async () => {},
 });
 
@@ -27,12 +31,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
 
-  // 🚀 Load member profile safely
+  // ---------------------------------------------------------------------------
+  // 🔍 Load member profile from Supabase
+  // ---------------------------------------------------------------------------
   const loadProfile = async (user: User) => {
     try {
       console.log("🔍 loadProfile() running for:", user.email);
       const prof = await api.getMemberProfile(user.id);
+
       if (prof) {
         console.log(
           "✅ Profile loaded:",
@@ -51,77 +59,131 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // ---------------------------------------------------------------------------
   // 🧠 Initialize session once on mount
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     console.log("🧠 AuthContext useEffect mounted");
-    let active = true;
+    let isMounted = true;
 
     const getInitialSession = async () => {
-      console.log("🚀 Starting getInitialSession()");
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        console.log("🚀 Starting getInitialSession()");
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (!active) return;
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
+        if (error) throw error;
 
-      if (currentUser) {
-        // ✅ Defer async DB calls safely
-        setTimeout(() => {
-          loadProfile(currentUser);
-        }, 0);
-      } else {
-        setProfile(null);
-      }
+        if (!isMounted) return;
 
-      setLoading(false);
-    };
-
-    getInitialSession();
-
-    // 🔄 Subscribe to auth state changes (with safe async deferral)
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("🔄 onAuthStateChange event:", event, session?.user?.email);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          // ✅ Important: use setTimeout to avoid deadlock
-          setTimeout(() => loadProfile(currentUser), 0);
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-          setProfile(null);
-        }
+          // ✅ Detect temporary password state
+          const pwReset = !!currentUser?.app_metadata?.provider_token;
+          setNeedsPasswordReset(pwReset);
 
+          // ✅ Load the profile asynchronously
+          setTimeout(() => loadProfile(currentUser), 0);
+        } else {
+          setProfile(null);
+          setNeedsPasswordReset(false);
+        }
+      } catch (err: any) {
+        console.error("❌ Error in getInitialSession:", err.message);
+        setUser(null);
+        setProfile(null);
+        setNeedsPasswordReset(false);
+      } finally {
         setLoading(false);
       }
-    );
+    };
+
+    getInitialSession();
+
+    // -------------------------------------------------------------------------
+    // 🔄 Subscribe to auth state changes
+    // -------------------------------------------------------------------------
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("🔄 onAuthStateChange event:", event, session?.user?.email);
+
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const pwReset = event === "PASSWORD_RECOVERY";
+        setNeedsPasswordReset(pwReset);
+        setTimeout(() => loadProfile(currentUser), 0);
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
+        setProfile(null);
+        setNeedsPasswordReset(false);
+      }
+
+      setLoading(false);
+    });
 
     return () => {
       console.log("🧹 Cleaning up AuthContext");
-      active = false;
-      listener.subscription.unsubscribe();
+      isMounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // 🚪 Sign out logic
+  // ---------------------------------------------------------------------------
   const signOut = async () => {
     console.log("🚪 Signing out...");
     try {
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
+      setNeedsPasswordReset(false);
       console.log("✅ Signed out successfully");
     } catch (err: any) {
       console.error("❌ Error signing out:", err.message);
     }
   };
 
+  // Allow manual profile refresh from callers (used in some admin/dev pages)
+  const refreshProfile = async () => {
+    if (user) {
+      await loadProfile(user);
+    }
+  };
+
+  // Force a reload cycle (sets loading and re-fetches profile if possible)
+  const forceRefresh = () => {
+    setLoading(true);
+    if (user) {
+      loadProfile(user).finally(() => setLoading(false));
+    } else {
+      setProfile(null);
+      setLoading(false);
+    }
+  };
+
   const isAdmin = profile?.role === "admin";
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isAdmin, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isAdmin,
+        needsPasswordReset,
+        signOut,
+        refreshProfile,
+        forceRefresh,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

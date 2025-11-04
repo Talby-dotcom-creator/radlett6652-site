@@ -1,124 +1,104 @@
 // src/types.ts
-
-/* ------------------------------------------------------------------
- * 🔷 CMS Core Types — unified model for blog, events, officers, etc.
- * ------------------------------------------------------------------ */
+// Lightweight, central project types used across the app.
+// This file intentionally exports the CMS-friendly interfaces (blog, events,
+// officers, documents, members, etc.) and re-exports the generated
+// Supabase Database type for places that need it.
 
 export interface CMSBlogPost {
   id: string;
   title: string;
-  content?: string | null; // ✅ optional field
+  content: string;
   summary?: string | null;
-  excerpt?: string | null;
+
+  // 👇 restored legacy compatibility fields
+  excerpt?: string | null; // used in PillarsPage & older blog posts
+  slug?: string | null; // used for route paths (/pillars/:slug)
+
   author?: string | null;
-  author_name?: string | null;
-  category?: "news" | "blog" | "snippet" | string | null;
+  category?: "news" | "blog" | "snippet";
   image_url?: string | null;
   featured_image_url?: string | null;
-  image?: string | null; // ✅ alias for convenience
+  // optional subcategory name used in the Pillars UI
+  subcategory_name?: string | null;
   publish_date?: string | null;
-  published_at?: string | null;
-  reading_time_minutes?: number | null;
-  categories?: { name?: string } | string[] | null;
-  date?: Date; // ✅ added earlier
   featured?: boolean | null;
   is_published?: boolean | null;
+  author_name?: string | null;
+  reading_time_minutes?: number | null;
   is_members_only?: boolean | null;
-  isMembers?: boolean | null; // ✅ add this camelCase alias
   view_count?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
-  slug?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Events
- * ------------------------------------------------------------------ */
-export interface LodgeEvent {
+export interface Event {
   id: string;
   title: string;
   description?: string | null;
   event_date: string;
+  event_time?: string | null;
   location?: string | null;
   image_url?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
-  is_members_only?: boolean;
-  // legacy alias used across older code/backups
-  date?: string | null;
-  // optional helper used in admin UI
-  is_past_event?: boolean;
+
+  // ✅ These two are in Supabase and used by optimizedApi.ts
+  is_members_only?: boolean | null;
+  is_past_event?: boolean | null; // optional helper used in the UI
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Officers
- * ------------------------------------------------------------------ */
 export interface Officer {
   id: string;
   position: string;
   name: string;
-  // older backups used full_name and different image fields
-  full_name?: string;
   image_url?: string | null;
-  image?: string | null;
-  photo_path?: string | null;
-  is_active?: boolean | null;
   sort_order?: number | null;
+  // legacy/alternate fields
+  full_name?: string;
+  is_active?: boolean;
+  image?: string;
   created_at?: string | null;
   updated_at?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Testimonials
- * ------------------------------------------------------------------ */
 export interface Testimonial {
   id: string;
   name: string;
   content: string;
   image_url?: string | null;
   sort_order?: number | null;
-  is_published?: boolean | null;
-  quote?: string;
-  role?: string;
-  // older forms stored member_name instead of name
+  // legacy/alternate fields used in some places
   member_name?: string | null;
+  is_published?: boolean | null;
+  quote?: string | null;
+  role?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Lodge Documents
- * ------------------------------------------------------------------ */
 export interface LodgeDocument {
   id: string;
   title: string;
   description?: string | null;
   category: string;
   file_url: string;
-  // some components reference `url`
-  url?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  // alternate/legacy field name seen across the codebase
+  url?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Meeting Minutes
- * ------------------------------------------------------------------ */
 export interface MeetingMinutes {
   id: string;
   title: string;
   meeting_date: string;
   file_url: string;
-  // legacy alias
-  document_url?: string | null;
   created_at?: string | null;
-  // Allow minutes to include text content in the CMS
+  // some places use `content` or `document_url`
   content?: string | null;
+  document_url?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Member Profiles
- * ------------------------------------------------------------------ */
 export interface MemberProfile {
   id: string;
   user_id: string;
@@ -128,34 +108,28 @@ export interface MemberProfile {
   address?: string | null;
   join_date?: string | null;
   position?: string | null;
-  // allow other role strings coming from DB migrations
-  role: "member" | "admin" | string;
+  role: "member" | "admin";
   status?: "active" | "pending" | "inactive";
   notes?: string | null;
   email_verified?: boolean | null;
   grand_lodge_rank?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
-  // optional legacy flags
+  // additional optional flags used in UI/forms
   share_contact_info?: boolean | null;
   needs_password_reset?: boolean | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Page Content
- * ------------------------------------------------------------------ */
 export interface PageContent {
   id: string;
   page_name: string;
   content: string;
-  section_name: string;
-  content_type?: string | null;
   updated_at?: string | null;
+  // fields used by admin UI and forms
+  section_name?: string | null;
+  content_type?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 FAQ Items
- * ------------------------------------------------------------------ */
 export interface FAQItem {
   id: string;
   question: string;
@@ -166,39 +140,25 @@ export interface FAQItem {
   updated_at?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Site Settings
- * ------------------------------------------------------------------ */
 export interface SiteSetting {
   id: string;
   setting_key: string;
   setting_value: string;
   updated_at?: string | null;
-  // older UI expects these optional fields
+  // optional metadata used by the CMS UI
   setting_type?: string | null;
   description?: string | null;
 }
 
-/* ------------------------------------------------------------------
- * 🔷 Generic Utilities
- * ------------------------------------------------------------------ */
-export type Nullable<T> = T | null;
-export type Maybe<T> = T | null | undefined;
+// Small aliases and re-exports for backwards compatibility with older code.
+export type { CMSBlogPost as CMSNewsArticle, CMSBlogPost as CMSSnippet };
+export type { Event as CMSEvent, Officer as CMSOfficer };
+export type { FAQItem as CMSFAQItem, PageContent as CMSPageContent };
+export type { SiteSetting as CMSSiteSetting };
 
-/* ------------------------------------------------------------------
- * 🔷 Re-export groups
- * ------------------------------------------------------------------ */
-export interface CMSEvent {
-  id: string;
-  title: string;
-  date: string;
-  description?: string;
-  image_url?: string;
-  is_members_only?: boolean;
-}
+// Backwards-compatible alias used in several places
+export type LodgeEvent = Event;
 
-// Alias for the CMS blog post shape when used as a news article in the UI
-export type NewsArticle = CMSBlogPost;
-
-// Backwards compatibility: older files import `Event` instead of `LodgeEvent`
-export type Event = LodgeEvent;
+// Re-export the generated Supabase Database type so modules can import it
+// from `src/types` (convenience only).
+export type { Database } from "./types/supabase";

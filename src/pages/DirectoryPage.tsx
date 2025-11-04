@@ -29,8 +29,8 @@ const DirectoryPage: React.FC = () => {
       try {
         const data = await optimizedApi.getAllMembers();
         // Filter to only show active members
-        const activeMembers = data.filter(
-          (member) => member.status === "active"
+        const activeMembers = (data as MemberProfile[]).filter(
+          (member: MemberProfile) => member.status === "active"
         );
         setMembers(activeMembers);
       } catch (err) {

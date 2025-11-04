@@ -1,6 +1,6 @@
 // src/App.tsx
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 
 // Public pages
@@ -10,7 +10,6 @@ import JoinPage from "./pages/JoinPage";
 import EventsPage from "./pages/EventsPage";
 import NewsPage from "./pages/NewsPage";
 import NewsPostPage from "./pages/NewsPostPage";
-import BlogPage from "./pages/BlogPage";
 import PillarsPage from "./pages/PillarsPage";
 import PillarPostDetail from "./pages/PillarPostDetail";
 import SnippetsPage from "./pages/SnippetsPage";
@@ -32,7 +31,6 @@ import DevDebugPage from "./pages/DevDebugPage";
 
 // Route guards
 import ProtectedRoute from "./ProtectedRoute";
-// (Optional: import AdminRoute if you later add admin-only logic)
 
 // ---------------------------------------------------------
 // Application Routes
@@ -48,13 +46,20 @@ const App: React.FC = () => {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/news" element={<NewsPage />} />
         <Route path="/news/:slug" element={<NewsPostPage />} />
-        <Route path="/blog" element={<BlogPage />} />
+        {/* ---------------- THE PILLARS (BLOG) ---------------- */}
+        <Route path="/blog" element={<PillarsPage />} />
+        <Route path="/blog/:slug" element={<PillarPostDetail />} />
+
+        {/* ✅ Optional: redirect old /pillars URLs to /blog for SEO safety */}
+        <Route path="/pillars" element={<Navigate to="/blog" replace />} />
+        <Route
+          path="/pillars/:slug"
+          element={<Navigate to="/blog" replace />}
+        />
         <Route path="/snippets" element={<SnippetsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/pillars" element={<PillarsPage />} />
-        <Route path="/pillars/:slug" element={<PillarPostDetail />} />
 
         {/* ---------------- AUTH ROUTES ---------------- */}
         <Route path="/login" element={<LoginPage />} />
@@ -79,8 +84,6 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-
-        {/* Optional admin approval subpage */}
         <Route
           path="/admin/approvals"
           element={
@@ -91,9 +94,7 @@ const App: React.FC = () => {
         />
 
         {/* ---------------- DEV DEBUG PAGE ---------------- */}
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        {typeof import.meta !== "undefined" && import.meta.env?.DEV && (
+        {import.meta.env.DEV && (
           <Route path="/dev-debug" element={<DevDebugPage />} />
         )}
       </Routes>

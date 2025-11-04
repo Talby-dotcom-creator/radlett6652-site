@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -194,36 +194,6 @@ export type Database = {
           meeting_date?: string;
           title?: string;
           updated_at?: string | null;
-        };
-        Relationships: [];
-      };
-      snippets: {
-        Row: {
-          id: string;
-          title: string;
-          subtitle: string | null;
-          content: string;
-          publish_date: string | null;
-          is_active: boolean | null;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          subtitle?: string | null;
-          content: string;
-          publish_date?: string | null;
-          is_active?: boolean | null;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          subtitle?: string | null;
-          content?: string;
-          publish_date?: string | null;
-          is_active?: boolean | null;
-          created_at?: string | null;
         };
         Relationships: [];
       };
@@ -585,22 +555,6 @@ export const Constants = {
     Enums: {},
   },
 } as const;
-// ? Export the client normally
-// Minimal fallback declarations for build-time typechecking in this environment
-declare function createClient<T = any>(url: string, key: string): any;
-declare const supabaseUrl: string;
-declare const supabaseAnonKey: string;
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
-
-// ? Make Supabase available globally for browser console testing
-declare global {
-  interface Window {
-    supabase: typeof supabase;
-  }
-}
-
-if (typeof window !== "undefined") {
-  // Attach Supabase client to the global window object
-  (window as any).supabase = supabase;
-  console.log("?? window.supabase is now available for testing.");
-}
+// Note: runtime client creation (createClient / global attach) does not belong
+// in the generated types file. Keep this file for type declarations only.
+// Create and export the Supabase client from a runtime module (e.g. `src/lib/supabase.ts`).

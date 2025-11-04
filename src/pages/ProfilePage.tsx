@@ -1,15 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
-import { MemberProfile } from '../types';
-import ProfileForm from '../components/ProfileForm';
-import SectionHeading from '../components/SectionHeading';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { User, Shield, Calendar, Award, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { api } from "../lib/api";
+import { MemberProfile } from "../types";
+import ProfileForm from "../components/ProfileForm";
+import SectionHeading from "../components/SectionHeading";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { User, Shield, Calendar, Award, AlertTriangle } from "lucide-react";
 
 const ProfilePage: React.FC = () => {
-  const { user, profile: authProfile, refreshProfile, needsPasswordReset } = useAuth();
+  const {
+    user,
+    profile: authProfile,
+    refreshProfile,
+    needsPasswordReset,
+  } = useAuth();
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -19,35 +24,35 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
-      
+
       try {
         setError(null);
-        
+
         // Try to get profile from auth context first
         if (authProfile) {
           setProfile(authProfile);
           setLoading(false);
           return;
         }
-        
+
         // Fallback to API call
         const data = await api.getMemberProfile(user.id);
         setProfile(data);
       } catch (err) {
-        console.error('Error loading profile:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load profile');
-        
+        console.error("Error loading profile:", err);
+        setError(err instanceof Error ? err.message : "Failed to load profile");
+
         // Create a basic profile from user data if none exists
         if (user) {
           setProfile({
-            id: 'temp-profile',
+            id: "temp-profile",
             user_id: user.id,
-            full_name: user.email?.split('@')[0] || 'Member',
+            full_name: user.email?.split("@")[0] || "Member",
             position: undefined,
-            role: 'member',
-            join_date: new Date().toISOString().split('T')[0],
+            role: "member",
+            join_date: new Date().toISOString().split("T")[0],
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           });
         }
       } finally {
@@ -61,7 +66,7 @@ const ProfilePage: React.FC = () => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   // Redirect to password reset if needed
   if (needsPasswordReset) {
     return <Navigate to="/password-reset" replace />;
@@ -69,24 +74,24 @@ const ProfilePage: React.FC = () => {
 
   const handleUpdateProfile = async (data: Partial<MemberProfile>) => {
     if (!user || !profile) return;
-    
+
     try {
       setUpdating(true);
       setError(null);
       setSuccess(null);
-      
+
       const updated = await api.updateMemberProfile(user.id, data);
       setProfile(updated);
-      setSuccess('Profile updated successfully!');
-      
+      setSuccess("Profile updated successfully!");
+
       // Refresh the auth context profile
-      await refreshProfile();
-      
+      await refreshProfile?.();
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error updating profile:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      console.error("Error updating profile:", err);
+      setError(err instanceof Error ? err.message : "Failed to update profile");
     } finally {
       setUpdating(false);
     }
@@ -144,17 +149,19 @@ const ProfilePage: React.FC = () => {
                   <User className="w-10 h-10 text-primary-600" />
                 </div>
                 <h3 className="text-xl font-heading font-semibold text-primary-600">
-                  {profile?.full_name || 'Member'}
+                  {profile?.full_name || "Member"}
                 </h3>
                 {profile?.position && (
                   <p className="text-neutral-600 mt-1">{profile.position}</p>
                 )}
-                <span className={`inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full ${
-                  profile?.role === 'admin' 
-                    ? 'bg-secondary-100 text-secondary-700 border border-secondary-200' 
-                    : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
-                }`}>
-                  {profile?.role === 'admin' ? 'Administrator' : 'Member'}
+                <span
+                  className={`inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full ${
+                    profile?.role === "admin"
+                      ? "bg-secondary-100 text-secondary-700 border border-secondary-200"
+                      : "bg-neutral-100 text-neutral-600 border border-neutral-200"
+                  }`}
+                >
+                  {profile?.role === "admin" ? "Administrator" : "Member"}
                 </span>
               </div>
 
@@ -162,10 +169,14 @@ const ProfilePage: React.FC = () => {
                 <div className="flex items-center justify-between py-3 border-b border-neutral-100">
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 text-neutral-500 mr-2" />
-                    <span className="text-sm text-neutral-600">Member Since</span>
+                    <span className="text-sm text-neutral-600">
+                      Member Since
+                    </span>
                   </div>
                   <span className="text-sm font-medium text-neutral-900">
-                    {profile?.join_date ? new Date(profile.join_date).getFullYear() : 'N/A'}
+                    {profile?.join_date
+                      ? new Date(profile.join_date).getFullYear()
+                      : "N/A"}
                   </span>
                 </div>
 
@@ -174,15 +185,21 @@ const ProfilePage: React.FC = () => {
                     <Shield className="w-4 h-4 text-neutral-500 mr-2" />
                     <span className="text-sm text-neutral-600">Status</span>
                   </div>
-                  <span className="text-sm font-medium text-green-600">Active</span>
+                  <span className="text-sm font-medium text-green-600">
+                    Active
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between py-3 border-b border-neutral-100">
                   <div className="flex items-center">
                     <Award className="w-4 h-4 text-neutral-500 mr-2" />
-                    <span className="text-sm text-neutral-600">Lodge Number</span>
+                    <span className="text-sm text-neutral-600">
+                      Lodge Number
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-neutral-900">6652</span>
+                  <span className="text-sm font-medium text-neutral-900">
+                    6652
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between py-3">
@@ -199,10 +216,13 @@ const ProfilePage: React.FC = () => {
 
             {/* Quick Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-              <h4 className="font-medium text-blue-800 mb-2">Profile Information</h4>
+              <h4 className="font-medium text-blue-800 mb-2">
+                Profile Information
+              </h4>
               <p className="text-sm text-blue-700">
-                Your profile information is visible to other Lodge members. The position field 
-                should reflect your current Masonic rank or office within the Lodge.
+                Your profile information is visible to other Lodge members. The
+                position field should reflect your current Masonic rank or
+                office within the Lodge.
               </p>
             </div>
           </div>
@@ -213,10 +233,10 @@ const ProfilePage: React.FC = () => {
               <h3 className="text-xl font-heading font-semibold text-primary-600 mb-6">
                 Edit Profile Information
               </h3>
-              
+
               {profile && (
-                <ProfileForm 
-                  profile={profile} 
+                <ProfileForm
+                  profile={profile}
                   onSubmit={handleUpdateProfile}
                   isUpdating={updating}
                 />

@@ -25,8 +25,11 @@ const JoinPage: React.FC = () => {
           optimizedApi.getFAQItems &&
           (await optimizedApi.getFAQItems().catch(() => []));
         const publishedFAQs = (faqData || [])
-          .filter((faq) => faq.is_published !== false)
-          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          .filter((faq: FAQItem) => faq.is_published !== false)
+          .sort(
+            (a: FAQItem, b: FAQItem) =>
+              (a.sort_order ?? 0) - (b.sort_order ?? 0)
+          );
 
         setFaqs(publishedFAQs);
       } catch (err) {

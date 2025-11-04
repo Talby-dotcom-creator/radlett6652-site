@@ -21,8 +21,9 @@ const NewsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await optimizedApi.getBlogPosts();
-        setArticles(data);
+        // Only fetch items in the "news" category
+        const data = await optimizedApi.getBlogPosts("news");
+        setArticles(data || []);
       } catch (err: any) {
         console.error("❌ Error loading news:", err.message || err);
         setError("Could not load news articles. Please try again later.");
@@ -65,17 +66,10 @@ const NewsPage: React.FC = () => {
       <main className="flex-grow py-16 px-6 md:px-12 lg:px-20 bg-white">
         <div className="max-w-6xl mx-auto">
           {/* Heading */}
-          <motion.h2
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl font-heading font-bold text-center mb-8 bg-gradient-to-r from-yellow-500 via-yellow-400 to-yellow-300 bg-clip-text text-transparent"
-          >
-            <div className="flex justify-center items-center gap-3">
-              <Newspaper size={36} className="text-yellow-500" />
-              Latest News
-            </div>
-          </motion.h2>
+          <h2 className="text-4xl font-serif font-bold text-[#FFD700] mb-12 flex items-center justify-center gap-3 drop-shadow-[1px_1px_0px_rgba(50,50,50,0.9)]">
+            <Newspaper className="text-[#FFD700] w-8 h-8 drop-shadow-[1px_1px_0px_rgba(50,50,50,0.9)]" />
+            Lodge News
+          </h2>
 
           {/* Cards Grid */}
           {articles.length === 0 ? (

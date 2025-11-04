@@ -25,7 +25,7 @@ const DevDebugPage: React.FC = () => {
       if (!target) throw new Error("Could not determine profile id/user_id");
       await api.updateMemberProfile(target, { status: "active" });
       setPromoteResult("Promoted to active (dev)");
-      await forceRefresh();
+      await forceRefresh?.();
     } catch (err: any) {
       setPromoteResult(`Error: ${err?.message || String(err)}`);
     } finally {
@@ -48,7 +48,7 @@ const DevDebugPage: React.FC = () => {
         role: "admin",
       });
       setPromoteResult("Promoted to admin (dev)");
-      await forceRefresh();
+      await forceRefresh?.();
     } catch (err: any) {
       setPromoteResult(`Error: ${err?.message || String(err)}`);
     } finally {
@@ -75,8 +75,8 @@ const DevDebugPage: React.FC = () => {
       </section>
 
       <div className="flex gap-3">
-        <Button onClick={refreshProfile}>Refresh profile</Button>
-        <Button onClick={forceRefresh}>Force refresh</Button>
+        <Button onClick={() => refreshProfile?.()}>Refresh profile</Button>
+        <Button onClick={() => forceRefresh?.()}>Force refresh</Button>
         <Button
           onClick={promoteToActive}
           disabled={promoteLoading}
@@ -105,7 +105,7 @@ const DevDebugPage: React.FC = () => {
               await api.createMemberProfile(user.id, name);
               // make it pending to match app semantics
               await api.updateMemberProfile(user.id, { status: "pending" });
-              await forceRefresh();
+              await forceRefresh?.();
             } catch (err: any) {
               // eslint-disable-next-line no-console
               console.error("DevDebug: create profile error", err);

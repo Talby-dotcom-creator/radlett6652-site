@@ -45,6 +45,8 @@ module.exports = {
         "masonic-gold": "#FCA311",
         "masonic-navy": "#002147",
         "oxford-blue": "#002147",
+        // Additional named color
+        gold: "#FFD700",
       },
 
       fontFamily: {
@@ -61,6 +63,11 @@ module.exports = {
 
       backdropBlur: {
         xs: "2px",
+      },
+
+      // Custom drop shadows
+      dropShadow: {
+        "gold-heading": "1px 1px 0px rgba(50,50,50,0.9)",
       },
 
       keyframes: {
