@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { LodgeEvent } from "../../types";
 import Button from "../Button";
-import MediaManager from "./MediaManager";
+import MediaManagerModal from "../media/MediaManagerModal";
 import { Image, X } from "lucide-react";
+import QuillEditor from "../QuillEditor";
 
 interface EventFormProps {
   onSubmit: (
@@ -38,6 +39,7 @@ const EventForm: React.FC<EventFormProps> = ({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<EventFormValues>({
     defaultValues: {
@@ -101,14 +103,16 @@ const EventForm: React.FC<EventFormProps> = ({
           >
             Description
           </label>
-          <textarea
-            id="description"
-            {...register("description", {
-              required: "Description is required",
-            })}
-            rows={4}
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+
+          <QuillEditor
+            value={watch("description")}
+            onChange={(html: string) =>
+              setValue("description", html, { shouldDirty: true })
+            }
+            placeholder="Describe the event..."
+            showSnippets={true}
           />
+
           {errors.description && (
             <p className="mt-1 text-sm text-red-600">
               {errors.description.message as string}
@@ -275,10 +279,11 @@ const EventForm: React.FC<EventFormProps> = ({
       </form>
 
       {/* Media Manager Modal */}
-      <MediaManager
+      <MediaManagerModal
         isOpen={showMediaManager}
         onClose={() => setShowMediaManager(false)}
-        onSelectMedia={handleMediaSelect}
+        onSelect={handleMediaSelect}
+        defaultFolder="events"
       />
     </>
   );

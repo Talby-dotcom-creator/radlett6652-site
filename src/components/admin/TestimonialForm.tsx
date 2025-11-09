@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Testimonial } from "../../types";
 import Button from "../Button";
-import MediaManager from "../cms/MediaManager"; // ✅ fixed path
+import MediaManagerModal from "../media/MediaManagerModal";
 import { Image, X } from "lucide-react";
 
 interface TestimonialFormProps {
@@ -225,10 +225,11 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
       </form>
 
       {/* Media Manager Modal */}
-      <MediaManager
+      <MediaManagerModal
         isOpen={showMediaManager}
         onClose={() => setShowMediaManager(false)}
-        onSelectMedia={handleMediaSelect}
+        onSelect={handleMediaSelect}
+        defaultFolder="testimonials"
       />
     </>
   );

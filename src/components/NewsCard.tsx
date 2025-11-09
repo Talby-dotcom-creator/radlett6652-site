@@ -31,9 +31,10 @@ const NewsCard: React.FC<NewsCardProps> = ({ news, onOpen }) => {
         </h3>
         <p className="text-sm text-neutral-500 mb-2">{date}</p>
         {news.summary && (
-          <p className="text-neutral-700 text-sm mb-3 line-clamp-3">
-            {news.summary}
-          </p>
+          <div
+            className="prose prose-invert max-w-none line-clamp-4"
+            dangerouslySetInnerHTML={{ __html: news.summary ?? "" }}
+          />
         )}
         {onOpen ? (
           <button

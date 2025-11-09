@@ -140,14 +140,14 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
           </div>
 
           {/* Description */}
-          <div className="mb-6">
-            <h3 className="text-lg font-heading font-semibold text-primary-600 mb-3">
-              Event Details
-            </h3>
-            <div className="prose max-w-none text-neutral-700">
-              <p className="leading-relaxed">{event.description}</p>
+          {event.description && (
+            <div className="mt-4">
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: event.description ?? "" }}
+              />
             </div>
-          </div>
+          )}
 
           {/* Additional Information */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">

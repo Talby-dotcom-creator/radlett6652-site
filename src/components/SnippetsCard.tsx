@@ -27,11 +27,11 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
           {snippet.date.toLocaleDateString("en-GB")}
         </p>
 
-        {/* Preview */}
-        <p className="text-neutral-700 flex-grow mb-4 line-clamp-3">
-          {snippet.summary ||
-            snippet.content.substring(0, 120) + "..."}
-        </p>
+        {/* Preview (render HTML) */}
+        <div
+          className="prose prose-invert max-w-none mt-4"
+          dangerouslySetInnerHTML={{ __html: snippet.content }}
+        />
 
         {/* Tags */}
         {snippet.tags && snippet.tags.length > 0 && (

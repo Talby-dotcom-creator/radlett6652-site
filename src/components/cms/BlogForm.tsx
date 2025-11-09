@@ -1,6 +1,6 @@
 // src/components/cms/BlogForm.tsx
 import React, { useState } from "react";
-import RichTextEditor from "../RichTextEditor";
+import QuillEditor from "../QuillEditor";
 import Button from "../Button";
 
 export interface BlogFormValues {
@@ -19,7 +19,11 @@ export interface BlogFormProps {
   onCancel?: () => void; // 👈 added so CMSAdminPage compiles
 }
 
-const BlogForm: React.FC<BlogFormProps> = ({ initialValues, onSubmit, onCancel }) => {
+const BlogForm: React.FC<BlogFormProps> = ({
+  initialValues,
+  onSubmit,
+  onCancel,
+}) => {
   const [formValues, setFormValues] = useState<BlogFormValues>({
     title: initialValues?.title || "",
     content: initialValues?.content || "",
@@ -67,9 +71,9 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialValues, onSubmit, onCancel }
       {/* Content */}
       <div>
         <label className="block text-sm font-medium">Content</label>
-        <RichTextEditor
+        <QuillEditor
           value={formValues.content}
-          onChange={(html) => handleChange("content", html)}
+          onChange={(html: string) => handleChange("content", html)}
           placeholder="Write your article..."
         />
       </div>
@@ -91,7 +95,9 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialValues, onSubmit, onCancel }
 
       {/* Tags */}
       <div>
-        <label className="block text-sm font-medium">Tags (comma-separated)</label>
+        <label className="block text-sm font-medium">
+          Tags (comma-separated)
+        </label>
         <input
           type="text"
           value={formValues.tags?.join(", ") || ""}

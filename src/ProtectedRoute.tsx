@@ -1,17 +1,23 @@
 // src/ProtectedRoute.tsx
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import LoadingSpinner from "./LoadingSpinner";
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiredRole?: "admin" | "member";
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
+  requiredRole,
 }) => {
   const { user, profile, loading } = useAuth();
+  const location = useLocation();
 
-  // 🕒 Show spinner only while loading initial auth/profile
+  // 🕒 Wait for authentication and profile load
   if (loading) {
-    console.log("⏳ Waiting for auth to finish loading...");
     return (
       <div className="flex justify-center items-center h-screen">
         <LoadingSpinner />
@@ -22,28 +28,38 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     );
   }
 
-  // 🚫 No user session -> login
+  // 🚫 No user session
   if (!user) {
-    console.warn("🔒 No user session, redirecting to /login");
-    return <Navigate to="/login" replace />;
+    console.warn("🔒 No user session — redirecting to /login");
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // ⚠️ Logged in but no profile or not active -> pending
+  // ⚠️ Profile missing or inactive
   if (!profile || profile.status !== "active") {
     console.warn(
-      `🚫 Profile pending/inactive (${profile?.status}) — redirecting to /pending`
+      `⚠️ Inactive profile (${profile?.status}) — redirecting to /pending`
     );
     return <Navigate to="/pending" replace />;
   }
 
-  // ✅ Authenticated & active
+  // 🚫 Role mismatch, but admins can access member routes
+  if (requiredRole && profile.role !== requiredRole) {
+    if (requiredRole === "member" && profile.role === "admin") {
+      console.log("👑 Admin override: accessing member route");
+    } else {
+      console.warn(
+        `🚫 Access denied — required: ${requiredRole}, user: ${profile.role}`
+      );
+      return <Navigate to="/members" replace />;
+    }
+  }
+
+  // ✅ Access granted
   console.log(`✅ Access granted for ${profile.full_name} (${profile.role})`);
 
   return (
     <>
       {children}
-
-      {/* 🧩 DEV MODE DEBUG BANNER */}
       {import.meta.env.DEV && (
         <div className="fixed bottom-0 left-0 right-0 bg-neutral-900 text-neutral-100 text-sm py-2 px-4 opacity-80">
           <div className="flex justify-between items-center">

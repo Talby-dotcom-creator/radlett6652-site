@@ -11,7 +11,7 @@ import DashboardCard from "../components/DashboardCard";
 import ProfileSummaryCard from "../components/dashboard/ProfileSummaryCard";
 import RecentUpdatesCard from "../components/dashboard/RecentUpdatesCard";
 import RecentDocumentsCard from "../components/dashboard/RecentDocumentsCard";
-import QuickActionsCard from "../components/dashboard/QuickActionsCard";
+import QuickActionCard from "../components/dashboard/QuickActionCard";
 import {
   FileText,
   Clock,
@@ -25,6 +25,8 @@ import {
   Filter,
   X,
   ExternalLink,
+  Settings,
+  Calendar,
 } from "lucide-react";
 
 const demoDocuments: LodgeDocument[] = [
@@ -233,6 +235,13 @@ const MembersPage: React.FC = () => {
       return;
     }
 
+    // Normalize category names to match the category list
+    const normaliseCategory = (c: string) =>
+      (c || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[\s-]+/g, "_");
+
     const loadData = async () => {
       try {
         setError(null);
@@ -259,7 +268,12 @@ const MembersPage: React.FC = () => {
             api.getMeetingMinutes(),
           ]);
 
-          setAllDocuments(documentsData);
+          setAllDocuments(
+            documentsData.map((d: LodgeDocument) => ({
+              ...d,
+              category: normaliseCategory(d.category),
+            }))
+          );
           setMinutes(minutesData);
           setUsingDemoData(false);
         } catch (dbError) {
@@ -289,6 +303,20 @@ const MembersPage: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, [user, authLoading, dataLoaded]);
+
+  // Auto-select categories that contain documents
+  useEffect(() => {
+    if (allDocuments.length > 0 && selectedCategories.length === 0) {
+      const categoriesWithDocs = DOCUMENT_CATEGORIES.map((c) => c.key).filter(
+        (key) => allDocuments.some((d) => d.category === key)
+      );
+
+      // Default to summons if nothing else
+      setSelectedCategories(
+        categoriesWithDocs.length ? categoriesWithDocs : ["summons"]
+      );
+    }
+  }, [allDocuments]);
 
   // Calculate filtered and paginated documents
   // Type guard and helpers to satisfy TypeScript for union types
@@ -380,12 +408,25 @@ const MembersPage: React.FC = () => {
     }
   };
 
-  const handleCategoryToggle = (categoryKey: string) => {
+  const handleCategoryToggle = (
+    categoryKey: string,
+    additive: boolean = false
+  ) => {
     setSelectedCategories((prev) => {
       if (prev.includes(categoryKey)) {
+        // If clicking the only selected category, keep it selected
+        if (prev.length === 1) {
+          return prev;
+        }
+        // Otherwise, deselect it
         return prev.filter((cat) => cat !== categoryKey);
       } else {
-        return [...prev, categoryKey];
+        // If additive mode (Ctrl/Cmd held), add to selection
+        if (additive) {
+          return [...prev, categoryKey];
+        }
+        // Otherwise, replace selection with just this category
+        return [categoryKey];
       }
     });
   };
@@ -469,7 +510,14 @@ const MembersPage: React.FC = () => {
           </div>
           <div className="flex items-center space-x-2 ml-4">
             <a
-              href={isMinute ? (doc as any).document_url || "#" : doc.url}
+              href={
+                isMinute
+                  ? (doc as any).document_url ||
+                    (doc as any).file_url ||
+                    (doc as any).url ||
+                    "#"
+                  : (doc as any).file_url || (doc as any).url || "#"
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-neutral-500 hover:text-primary-600 transition-colors"
@@ -556,6 +604,9 @@ const MembersPage: React.FC = () => {
 
               {/* Category Selection */}
               <div className="space-y-3">
+                <p className="text-xs text-neutral-500 mb-3">
+                  Click to select. Hold Ctrl/Cmd to select multiple.
+                </p>
                 {DOCUMENT_CATEGORIES.map((category) => {
                   const count = getCategoryCount(category.key);
                   const IconComponent = category.icon;
@@ -568,11 +619,18 @@ const MembersPage: React.FC = () => {
                           ? "border-secondary-500 bg-secondary-50"
                           : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
                       }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleCategoryToggle(
+                          category.key,
+                          e.ctrlKey || e.metaKey
+                        );
+                      }}
                     >
                       <input
                         type="checkbox"
                         checked={selectedCategories.includes(category.key)}
-                        onChange={() => handleCategoryToggle(category.key)}
+                        onChange={() => {}}
                         className="sr-only"
                       />
                       <div
@@ -633,17 +691,11 @@ const MembersPage: React.FC = () => {
           {/* Main Content Area */}
           <div className="lg:col-span-3">
             {/* Dashboard Overview Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
               {/* Profile Summary Card */}
               <ProfileSummaryCard
                 profile={userProfile}
                 userEmail={user?.email}
-              />
-
-              {/* Recent Updates Card */}
-              <RecentUpdatesCard
-                minutes={minutes}
-                onViewAllMinutes={() => setSelectedCategories(["minutes"])}
               />
 
               {/* Recent Documents Card */}
@@ -659,13 +711,52 @@ const MembersPage: React.FC = () => {
                 }
               />
 
-              {/* Quick Actions Card - spans full width on mobile, single column on larger screens */}
-              <div className="md:col-span-2 lg:col-span-3">
-                <QuickActionsCard
-                  isAdmin={isAdmin || userProfile?.role === "admin"}
-                  onSelectMinutes={() => setSelectedCategories(["minutes"])}
-                />
-              </div>
+              {/* Quick Actions */}
+              <section className="md:col-span-2 lg:col-span-2">
+                <h2 className="text-xl font-semibold text-primary-700 mb-3">
+                  Quick Actions
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <QuickActionCard
+                    icon={<Settings className="w-5 h-5 text-white" />}
+                    label="Update Profile"
+                    description="Review and update your membership details"
+                    onClick={() => navigate("/members/profile")}
+                  />
+
+                  <QuickActionCard
+                    icon={<Users className="w-5 h-5 text-white" />}
+                    label="Member Directory"
+                    description="Find and connect with lodge members"
+                    onClick={() => navigate("/members/directory")}
+                  />
+
+                  <QuickActionCard
+                    icon={<Calendar className="w-5 h-5 text-white" />}
+                    label="Lodge Calendar"
+                    description="View meetings and lodge events"
+                    onClick={() => navigate("/events")}
+                  />
+
+                  <QuickActionCard
+                    icon={<BookOpen className="w-5 h-5 text-white" />}
+                    label="Meeting Minutes"
+                    description="View past minutes from lodge meetings"
+                    onClick={() => navigate("/members/meeting-minutes")}
+                  />
+
+                  {(isAdmin || userProfile?.role === "admin") && (
+                    <QuickActionCard
+                      icon={<Settings className="w-5 h-5 text-[#0B1831]" />}
+                      label="Admin Dashboard"
+                      description="Manage lodge content and administration"
+                      admin
+                      onClick={() => navigate("/admin")}
+                    />
+                  )}
+                </div>
+              </section>
             </div>
 
             {/* Document Browser Section */}

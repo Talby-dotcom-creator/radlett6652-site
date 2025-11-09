@@ -58,7 +58,7 @@ const NewsPage: React.FC = () => {
       <HeroSection
         title="Lodge News"
         subtitle="Stories, updates, and reflections from Radlett Lodge No. 6652"
-        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/Radlett%20news%20and%20events_1753695345519_vp0q3d.webp"
+        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/banners/news-hero.webp"
         overlayOpacity={0.25}
         verticalPosition="bottom"
       />

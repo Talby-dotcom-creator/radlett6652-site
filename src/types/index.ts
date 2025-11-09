@@ -38,11 +38,16 @@ export interface MeetingMinutes {
 export interface Event {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   event_date: string;
-  is_members_only?: boolean;
+  location: string;
+  is_members_only: boolean;
   is_past_event?: boolean;
+  image_url?: string; // ✅ REQUIRED
+  is_public?: boolean; // ✅ You have this in DB
+  event_time?: string | null; // ✅ Your UI checks this
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface CMSBlogPost {

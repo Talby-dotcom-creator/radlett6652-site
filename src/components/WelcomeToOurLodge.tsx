@@ -41,7 +41,7 @@ const WelcomeToOurLodge: React.FC = () => {
           style={{ animation: "subtleZoom 22s ease-in-out infinite" }}
         >
           <img
-            src="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/radlett-%20lodge-%20outside.jpg"
+            src="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/banners/radlett-lodge.webp"
             alt="Radlett Masonic Centre"
             className="w-full h-auto object-cover"
           />

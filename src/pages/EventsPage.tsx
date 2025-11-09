@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, MapPin, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "framer-motion";
-import { supabase } from "../lib/supabase";
+import { optimizedApi } from "../lib/optimizedApi";
 import { Event } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SEOHead from "../components/SEOHead";
@@ -16,11 +16,12 @@ const EventsPage: React.FC = () => {
   useEffect(() => {
     const loadEvents = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("event_date", { ascending: true });
-      if (!error && data) setEvents(data);
+      try {
+        const data = await optimizedApi.getEvents();
+        setEvents(data || []);
+      } catch (err) {
+        console.error("loadEvents error:", err);
+      }
       setLoading(false);
     };
     loadEvents();
@@ -158,10 +159,14 @@ const EventsPage: React.FC = () => {
               </div>
 
               {/* Description */}
-              <p className="mt-4 text-gray-300 text-sm leading-relaxed line-clamp-3">
-                {event.description ||
-                  "Join us for this special event at Radlett Masonic Centre."}
-              </p>
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    event.description ||
+                    "Join us for this special event at Radlett Masonic Centre.",
+                }}
+              />
             </motion.div>
           ))}
         </section>
@@ -284,10 +289,14 @@ const EventsPage: React.FC = () => {
               </p>
             )}
 
-            <p className="text-gray-200 leading-relaxed">
-              {selectedEvent.description ||
-                "Details for this event will be announced soon."}
-            </p>
+            <div
+              className="prose prose-invert max-w-none"
+              dangerouslySetInnerHTML={{
+                __html:
+                  selectedEvent.description ||
+                  "Details for this event will be announced soon.",
+              }}
+            />
           </motion.div>
         </div>
       )}

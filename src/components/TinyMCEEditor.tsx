@@ -1,49 +1,25 @@
 // src/components/TinyMCEEditor.tsx
 import React from "react";
-import { Editor } from "@tinymce/tinymce-react";
+import QuillEditor from "./QuillEditor";
 
 interface TinyMCEEditorProps {
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
 }
 
-const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({ value, onChange }) => {
-  const apiKey = import.meta.env.VITE_TINYMCE_API_KEY;
-
+// Backwards-compatible wrapper: re-use RichTextEditor implementation
+const TinyMCEEditor: React.FC<TinyMCEEditorProps> = ({
+  value,
+  onChange,
+  placeholder,
+}) => {
   return (
     <div className="rounded-md overflow-hidden border border-neutral-200">
-      <Editor
-        apiKey={apiKey}
+      <QuillEditor
         value={value}
-        init={{
-          height: 400,
-          menubar: false,
-          branding: false,
-          plugins: [
-            "advlist",
-            "autolink",
-            "lists",
-            "link",
-            "charmap",
-            "preview",
-            "anchor",
-            "searchreplace",
-            "visualblocks",
-            "code",
-            "fullscreen",
-            "insertdatetime",
-            "table",
-            "help",
-            "wordcount",
-          ],
-          toolbar:
-            "undo redo | blocks | bold italic forecolor | " +
-            "alignleft aligncenter alignright alignjustify | " +
-            "bullist numlist outdent indent | removeformat | help",
-          content_style:
-            "body { font-family:Open Sans,Arial,sans-serif; font-size:16px; line-height:1.6; }",
-        }}
-        onEditorChange={(content) => onChange(content)}
+        onChange={onChange}
+        placeholder={placeholder}
       />
     </div>
   );

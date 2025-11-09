@@ -34,17 +34,16 @@ export interface CMSBlogPost {
 export interface Event {
   id: string;
   title: string;
-  description?: string | null;
+  description: string;
   event_date: string;
-  event_time?: string | null;
-  location?: string | null;
-  image_url?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-
-  // ✅ These two are in Supabase and used by optimizedApi.ts
-  is_members_only?: boolean | null;
-  is_past_event?: boolean | null; // optional helper used in the UI
+  location: string;
+  is_members_only: boolean;
+  is_past_event?: boolean;
+  image_url?: string; // ✅ REQUIRED
+  is_public?: boolean; // ✅ in your DB row
+  event_time?: string | null; // ✅ your UI reads this
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Officer {
@@ -136,6 +135,7 @@ export interface FAQItem {
   answer: string;
   sort_order?: number | null;
   is_published?: boolean | null;
+  is_visible?: boolean | null;
   created_at?: string | null;
   updated_at?: string | null;
 }

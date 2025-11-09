@@ -1,9 +1,9 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface AdminRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
@@ -21,7 +21,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   }
 
   // If not an active admin → send back to members dashboard
-  if (profile?.role !== 'admin' || profile?.status !== 'active') {
+  if (profile?.role !== "admin" || profile?.status !== "active") {
     console.warn("🚫 AdminRoute: User not an active admin");
     return <Navigate to="/members" replace />;
   }

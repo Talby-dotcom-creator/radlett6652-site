@@ -1,47 +1,62 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Officer } from '../../types';
-import Button from '../Button';
-import MediaManager from './MediaManager';
-import { Image, X } from 'lucide-react';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Officer } from "../../types";
+import Button from "../Button";
+import MediaManagerModal from "../media/MediaManagerModal";
+import { Image, X } from "lucide-react";
 
 interface OfficerFormProps {
-  onSubmit: (data: Omit<Officer, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSubmit: (
+    data: Omit<Officer, "id" | "created_at" | "updated_at">
+  ) => Promise<void>;
   onCancel: () => void;
   initialData?: Partial<Officer>;
 }
 
-const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialData }) => {
+const OfficerForm: React.FC<OfficerFormProps> = ({
+  onSubmit,
+  onCancel,
+  initialData,
+}) => {
   const [showMediaManager, setShowMediaManager] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState(initialData?.image_url || '');
+  const [selectedImageUrl, setSelectedImageUrl] = useState(
+    initialData?.image_url || ""
+  );
 
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
     defaultValues: {
-      position: initialData?.position || '',
-      full_name: initialData?.full_name || '',
-      image_url: initialData?.image_url || '',
+      position: initialData?.position || "",
+      full_name: initialData?.full_name || "",
+      image_url: initialData?.image_url || "",
       sort_order: initialData?.sort_order || 0,
-      is_active: initialData?.is_active !== undefined ? initialData.is_active : true
-    }
+      is_active:
+        initialData?.is_active !== undefined ? initialData.is_active : true,
+    },
   });
 
-  const watchedImageUrl = watch('image_url');
+  const watchedImageUrl = watch("image_url");
 
   const handleMediaSelect = (url: string) => {
     setSelectedImageUrl(url);
-    setValue('image_url', url, { shouldDirty: true });
+    setValue("image_url", url, { shouldDirty: true });
     setShowMediaManager(false);
   };
 
   const handleClearImage = () => {
-    setSelectedImageUrl('');
-    setValue('image_url', '', { shouldDirty: true });
+    setSelectedImageUrl("");
+    setValue("image_url", "", { shouldDirty: true });
   };
 
   const handleFormSubmit = async (data: any) => {
     await onSubmit({
       ...data,
-      image_url: selectedImageUrl || data.image_url
+      image_url: selectedImageUrl || data.image_url,
     });
   };
 
@@ -49,36 +64,49 @@ const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialDa
     <>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div>
-          <label htmlFor="position" className="block text-sm font-medium text-primary-600">
+          <label
+            htmlFor="position"
+            className="block text-sm font-medium text-primary-600"
+          >
             Position
           </label>
           <input
             id="position"
-            {...register('position', { required: 'Position is required' })}
+            {...register("position", { required: "Position is required" })}
             className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
             placeholder="e.g., Worshipful Master, Senior Warden"
           />
           {errors.position && (
-            <p className="mt-1 text-sm text-red-600">{errors.position.message as string}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.position.message as string}
+            </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="full_name" className="block text-sm font-medium text-primary-600">
+          <label
+            htmlFor="full_name"
+            className="block text-sm font-medium text-primary-600"
+          >
             Full Name
           </label>
           <input
             id="full_name"
-            {...register('full_name', { required: 'Full name is required' })}
+            {...register("full_name", { required: "Full name is required" })}
             className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
           />
           {errors.full_name && (
-            <p className="mt-1 text-sm text-red-600">{errors.full_name.message as string}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.full_name.message as string}
+            </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="image_url" className="block text-sm font-medium text-primary-600">
+          <label
+            htmlFor="image_url"
+            className="block text-sm font-medium text-primary-600"
+          >
             Officer Photo
           </label>
           <div className="mt-1 space-y-3">
@@ -87,11 +115,11 @@ const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialDa
               <input
                 id="image_url"
                 type="url"
-                {...register('image_url')}
+                {...register("image_url")}
                 value={selectedImageUrl}
                 onChange={(e) => {
                   setSelectedImageUrl(e.target.value);
-                  setValue('image_url', e.target.value, { shouldDirty: true });
+                  setValue("image_url", e.target.value, { shouldDirty: true });
                 }}
                 className="flex-1 rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
                 placeholder="https://example.com/photo.jpg or use Media Manager"
@@ -120,14 +148,16 @@ const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialDa
             {/* Image Preview */}
             {selectedImageUrl && (
               <div className="mt-3">
-                <p className="text-sm font-medium text-neutral-700 mb-2">Preview:</p>
+                <p className="text-sm font-medium text-neutral-700 mb-2">
+                  Preview:
+                </p>
                 <div className="relative inline-block">
                   <img
                     src={selectedImageUrl}
                     alt="Officer preview"
                     className="w-24 h-24 object-cover rounded-lg border border-neutral-200"
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                   <button
@@ -143,24 +173,29 @@ const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialDa
             )}
 
             <p className="text-xs text-neutral-500">
-              You can paste an image URL directly or use the Media Manager to upload/select images.
+              You can paste an image URL directly or use the Media Manager to
+              upload/select images.
             </p>
           </div>
         </div>
 
         <div>
-          <label htmlFor="sort_order" className="block text-sm font-medium text-primary-600">
+          <label
+            htmlFor="sort_order"
+            className="block text-sm font-medium text-primary-600"
+          >
             Sort Order
           </label>
           <input
             id="sort_order"
             type="number"
-            {...register('sort_order', { valueAsNumber: true })}
+            {...register("sort_order", { valueAsNumber: true })}
             className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
             placeholder="0"
           />
           <p className="mt-1 text-xs text-neutral-500">
-            Lower numbers appear first. Use 1, 2, 3, etc. to control the display order.
+            Lower numbers appear first. Use 1, 2, 3, etc. to control the display
+            order.
           </p>
         </div>
 
@@ -168,10 +203,13 @@ const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialDa
           <input
             id="is_active"
             type="checkbox"
-            {...register('is_active')}
+            {...register("is_active")}
             className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-neutral-300 rounded"
           />
-          <label htmlFor="is_active" className="ml-2 block text-sm text-neutral-700">
+          <label
+            htmlFor="is_active"
+            className="ml-2 block text-sm text-neutral-700"
+          >
             Active Officer (visible on website)
           </label>
         </div>
@@ -181,16 +219,17 @@ const OfficerForm: React.FC<OfficerFormProps> = ({ onSubmit, onCancel, initialDa
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Officer'}
+            {isSubmitting ? "Saving..." : "Save Officer"}
           </Button>
         </div>
       </form>
 
       {/* Media Manager Modal */}
-      <MediaManager
+      <MediaManagerModal
         isOpen={showMediaManager}
         onClose={() => setShowMediaManager(false)}
-        onSelectMedia={handleMediaSelect}
+        onSelect={handleMediaSelect}
+        defaultFolder="officers"
       />
     </>
   );

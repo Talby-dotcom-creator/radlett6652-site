@@ -12,6 +12,7 @@ interface PillarCardProps {
     author?: string;
     category?: string;
     readingTime?: number;
+    slug?: string | null;
   };
 }
 
@@ -73,7 +74,7 @@ const PillarCard: React.FC<PillarCardProps> = ({ pillar }) => {
             </span>
           )}
           <Link
-            to={`/pillars/${pillar.id}`}
+            to={`/blog/${pillar.slug || pillar.id}`}
             className="text-amber-700 font-semibold hover:text-amber-900 transition-colors duration-300 flex items-center gap-1"
           >
             Read Article →

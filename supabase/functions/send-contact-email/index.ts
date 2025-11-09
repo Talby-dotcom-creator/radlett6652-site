@@ -8,7 +8,8 @@ Deno.serve(async (req) => {
       headers: {
         "Access-Control-Allow-Origin": "*", // you can replace * with your domain for tighter security
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        "Access-Control-Allow-Headers":
+          "authorization, x-client-info, apikey, content-type",
       },
     });
   }
@@ -34,18 +35,24 @@ Deno.serve(async (req) => {
 
     // --- Environment variables ---
     const resendKey = Deno.env.get("RESEND_API_KEY") || "";
-    const sender = Deno.env.get("EMAIL_SENDER_ADDRESS") ?? "contact@radlettfreemasons.org.uk";
-    const recipient = Deno.env.get("EMAIL_RECIPIENT_ADDRESS") ?? "radlettlodge6652@gmail.com";
+    const sender =
+      Deno.env.get("EMAIL_SENDER_ADDRESS") ?? "onboarding@resend.dev";
+    const recipient =
+      Deno.env.get("EMAIL_RECIPIENT_ADDRESS") ?? "radlettlodge6652@gmail.com";
 
     // --- Build HTML email ---
     const html = `
-      <h2>📩 New Contact Form Submission</h2>
+      <h2>📩 New Contact Form Submission - Radlett Lodge 6652</h2>
       <p><strong>Name:</strong> ${name}</p>
       <p><strong>Email:</strong> ${email}</p>
       <p><strong>Phone:</strong> ${phone || "N/A"}</p>
       <p><strong>Subject:</strong> ${subject}</p>
       <p><strong>Message:</strong><br/>${message}</p>
-      <p><strong>Interested in Membership:</strong> ${interested ? "Yes" : "No"}</p>
+      <p><strong>Interested in Membership:</strong> ${
+        interested ? "Yes" : "No"
+      }</p>
+      <hr>
+      <p style="color: #666; font-size: 12px;">Reply to: ${email}</p>
     `;
 
     // --- Send with Resend ---
@@ -67,13 +74,16 @@ Deno.serve(async (req) => {
     console.log("📤 Resend response:", result);
 
     if (!resp.ok) {
-      return new Response(JSON.stringify({ error: "Failed to send email", details: result }), {
-        status: resp.status,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
+      return new Response(
+        JSON.stringify({ error: "Failed to send email", details: result }),
+        {
+          status: resp.status,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        }
+      );
     }
 
     return new Response(JSON.stringify({ success: true, id: result.id }), {

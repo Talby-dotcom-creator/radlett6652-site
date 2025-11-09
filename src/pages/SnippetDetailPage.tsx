@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SnippetsManager from "../components/admin/SnippetsManager";
 
 const SnippetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +20,7 @@ const SnippetDetailPage: React.FC = () => {
         if (!id) return;
 
         // ✅ getBlogPosts fetches all posts — so we filter locally
-  const data = await optimizedApi.getBlogPosts();
+        const data = await optimizedApi.getBlogPosts();
         const found =
           Array.isArray(data) && data.length > 0
             ? data.find((p) => p.id === id)

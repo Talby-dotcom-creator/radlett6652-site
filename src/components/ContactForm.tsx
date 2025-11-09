@@ -51,7 +51,7 @@ const ContactForm: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://neoquuejwgcqueqlcbwj.functions.supabase.co/send-contact-email",
+        "https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import TinyMCEEditor from "../components/TinyMCEEditor";
+import QuillEditor from "../components/QuillEditor";
 import { CMSBlogPost } from "../types";
 
 const BlogAdminPage: React.FC = () => {
@@ -195,9 +195,12 @@ const BlogAdminPage: React.FC = () => {
             disabled={loading}
           />
 
-          <TinyMCEEditor
+          <QuillEditor
             value={form.content}
-            onChange={(html: string) => setForm({ ...form, content: html })}
+            onChange={(html: string) =>
+              setForm((s) => ({ ...s, content: html }))
+            }
+            placeholder="Write your article…"
           />
 
           <div className="flex gap-3 mt-4">

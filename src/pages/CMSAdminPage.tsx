@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { cmsApi } from "../lib/cmsApi";
+import { supabase } from "../lib/supabase";
 import {
-  LodgeEvent,
   CMSBlogPost,
   Officer,
   Testimonial,
@@ -11,8 +11,10 @@ import {
   SiteSetting,
   PageContent,
 } from "../types";
+import type { LodgeEvent } from "../types";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
+import MediaManager from "../components/MediaManager";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Toast from "../components/Toast";
 import { useToast } from "../hooks/useToast";
@@ -35,7 +37,11 @@ import {
   CheckSquare,
   Square,
   LogOut,
+  BookOpen,
+  Columns3,
+  FolderOpen,
 } from "lucide-react";
+import SnippetsManager from "../components/admin/SnippetsManager";
 
 // Import all the forms
 import EventForm from "../components/cms/EventForm";
@@ -47,14 +53,22 @@ import SiteSettingsForm from "../components/cms/SiteSettingsForm";
 import PageContentForm from "../components/cms/PageContentForm";
 import BulkActions from "../components/cms/BulkActions";
 import ContentPreview from "../components/cms/ContentPreview";
-import MediaManager from "../components/cms/MediaManager";
+import ContentPreviewModal from "../components/ContentPreviewModal";
+// media manager (use top-level MediaManager from components/MediaManager)
 import ContentScheduler from "../components/cms/ContentScheduler";
+import ResourceForm from "../components/ResourceForm";
+import { optimizedApi } from "../lib/optimizedApi";
+
+// Quick runtime marker to help debug lazy-loading in dev
+console.log("✅ CMSAdminPage loaded");
 
 type TabType =
   | "events"
   | "news"
   | "officers"
   | "testimonials"
+  | "snippets"
+  | "resources"
   | "faq"
   | "settings"
   | "pages"
@@ -248,6 +262,7 @@ const CMSAdminPage: React.FC = () => {
   // Data states
   const [events, setEvents] = useState<LodgeEvent[]>([]);
   const [news, setNews] = useState<CMSBlogPost[]>([]);
+  const [snippets, setSnippets] = useState<CMSBlogPost[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
@@ -259,9 +274,16 @@ const CMSAdminPage: React.FC = () => {
   const [showNewsForm, setShowNewsForm] = useState(false);
   const [showOfficerForm, setShowOfficerForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+  const [showSnippetForm, setShowSnippetForm] = useState(false);
+  const [editingSnippet, setEditingSnippet] = useState<CMSBlogPost | null>(
+    null
+  );
   const [showFAQForm, setShowFAQForm] = useState(false);
   const [showSettingsForm, setShowSettingsForm] = useState(false);
   const [showPageContentForm, setShowPageContentForm] = useState(false);
+  const [resources, setResources] = useState<any[]>([]);
+  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [editingResource, setEditingResource] = useState<any | null>(null);
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [showContentScheduler, setShowContentScheduler] = useState(false);
 
@@ -284,12 +306,13 @@ const CMSAdminPage: React.FC = () => {
   );
   const [selectedFAQs, setSelectedFAQs] = useState<string[]>([]);
 
-  // Preview states
-  const [previewContent, setPreviewContent] = useState<any>(null);
-  const [previewType, setPreviewType] = useState<
-    "event" | "news" | "officer" | "testimonial" | "faq" | "page_content"
-  >("event");
+  // Preview states (consolidated into previewItem + showPreview)
   const [showPreview, setShowPreview] = useState(false);
+  const [previewItem, setPreviewItem] = useState<{
+    title?: string;
+    content?: string;
+    image_url?: string | null;
+  } | null>(null);
 
   // Scheduler states
   const [schedulingContent, setSchedulingContent] = useState<any>(null);
@@ -307,21 +330,36 @@ const CMSAdminPage: React.FC = () => {
     onConfirm: () => {},
   });
 
+  // Count state variables for dashboard navigation
+  const [eventCount, setEventCount] = useState(0);
+  const [newsCount, setNewsCount] = useState(0);
+  const [officerCount, setOfficerCount] = useState(0);
+  const [testimonialCount, setTestimonialCount] = useState(0);
+  const [snippetCount, setSnippetCount] = useState(0);
+  const [pillarCount, setPillarCount] = useState(0);
+  const [faqCount, setFaqCount] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
+  const [documentCount, setDocumentCount] = useState(0);
+  const [minutesCount, setMinutesCount] = useState(0);
+  const [mediaCount, setMediaCount] = useState(0);
+
   // Memoize counts to prevent recalculation
   const counts = useMemo(
     () => ({
-      events: events.length,
-      news: news.length,
-      officers: officers.length,
-      testimonials: testimonials.length,
-      faq: faqItems.length,
-      pages: pageContent.length,
+      events: eventCount || events.length,
+      news: newsCount || news.length,
+      officers: officerCount || officers.length,
+      testimonials: testimonialCount || testimonials.length,
+      snippets: snippetCount || snippets.length,
+      faq: faqCount || faqItems.length,
+      pages: pageCount || pageContent.length,
     }),
     [
       events.length,
       news.length,
       officers.length,
       testimonials.length,
+      snippets.length,
       faqItems.length,
       pageContent.length,
     ]
@@ -347,81 +385,105 @@ const CMSAdminPage: React.FC = () => {
   }, [signOut, showError]);
 
   // Event handlers with useCallback
-  const handleEventSubmit = useCallback(
-    async (eventData: Omit<LodgeEvent, "id" | "created_at" | "updated_at">) => {
-      try {
-        if (usingDemoData) {
-          const newEvent: LodgeEvent = {
-            ...eventData,
-            id: `demo-${Date.now()}`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
+  const handleEventSubmit = async (
+    data: Omit<LodgeEvent, "id" | "created_at" | "updated_at">
+  ) => {
+    if (editingEvent?.id) {
+      await optimizedApi.updateEvent(editingEvent.id, data);
+    } else {
+      await optimizedApi.createEvent(data);
+    }
 
-          if (editingEvent) {
-            setEvents((prev) =>
-              prev.map((e) =>
-                e.id === editingEvent.id
-                  ? { ...newEvent, id: editingEvent.id }
-                  : e
-              )
-            );
-            success("Event updated successfully (demo mode)");
-          } else {
-            setEvents((prev) => [...prev, newEvent]);
-            success("Event created successfully (demo mode)");
-          }
-        } else {
-          if (editingEvent) {
-            await cmsApi.updateEvent(editingEvent.id, eventData);
-            success("Event updated successfully");
-          } else {
-            await cmsApi.createEvent(eventData);
-            success("Event created successfully");
-          }
+    await loadEvents();
+    setShowEventForm(false);
+    setEditingEvent(null);
+  };
 
-          const updatedEvents = await cmsApi.getEvents();
-          setEvents(updatedEvents);
+  const handleDeleteEvent = async (id: string) => {
+    const ok = confirm("Delete this event?");
+    if (!ok) return;
+    try {
+      await optimizedApi.deleteEvent(id);
+      await loadEvents();
+      success("Event deleted successfully");
+    } catch (err) {
+      console.error("Failed to delete event:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete event");
+      showError("Failed to delete event");
+    }
+  };
+
+  // Loader for events (fetch from optimizedApi)
+  const loadEvents = async () => {
+    try {
+      const list = await optimizedApi.getEvents();
+      setEvents(list || []);
+    } catch (err) {
+      console.error("Failed to load events:", err);
+      setError(err instanceof Error ? err.message : "Failed to load events");
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+    // Intentionally run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load counts for all dashboard navigation buttons
+  useEffect(() => {
+    const loadCounts = async () => {
+      const tables = [
+        { name: "events_v2", setter: setEventCount },
+        { name: "news_articles", setter: setNewsCount },
+        { name: "officers", setter: setOfficerCount },
+        { name: "testimonials", setter: setTestimonialCount },
+        { name: "snippets", setter: setSnippetCount },
+        { name: "faq_items", setter: setFaqCount },
+        { name: "pages", setter: setPageCount },
+        { name: "lodge_documents", setter: setDocumentCount },
+        { name: "meeting_minutes", setter: setMinutesCount },
+      ];
+
+      for (const { name, setter } of tables) {
+        try {
+          const { count } = await supabase
+            .from(name as any)
+            .select("*", { count: "exact", head: true });
+          setter(count || 0);
+        } catch (err) {
+          console.error(`Failed to load count for ${name}:`, err);
+          setter(0);
         }
-
-        setShowEventForm(false);
-        setEditingEvent(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        showError("Failed to save event");
       }
-    },
-    [usingDemoData, editingEvent, success, showError]
-  );
 
-  const handleDeleteEvent = useCallback(
-    async (id: string) => {
-      setConfirmDialog({
-        isOpen: true,
-        title: "Delete Event",
-        message:
-          "Are you sure you want to delete this event? This action cannot be undone.",
-        onConfirm: async () => {
-          try {
-            if (usingDemoData) {
-              setEvents((prev) => prev.filter((e) => e.id !== id));
-              success("Event deleted successfully (demo mode)");
-            } else {
-              await cmsApi.deleteEvent(id);
-              const updatedEvents = await cmsApi.getEvents();
-              setEvents(updatedEvents);
-              success("Event deleted successfully");
-            }
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            showError("Failed to delete event");
-          }
-          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-        },
-      });
-    },
-    [usingDemoData, success, showError]
-  );
+      // Count Pillars (blog posts with category='blog')
+      try {
+        const { count } = await supabase
+          .from("blog_posts")
+          .select("*", { count: "exact", head: true })
+          .eq("category", "blog");
+        setPillarCount(count || 0);
+      } catch (err) {
+        console.error("Failed to load pillars count:", err);
+        setPillarCount(0);
+      }
+
+      // Count media files in cms-media bucket
+      try {
+        const { data } = await supabase.storage
+          .from("cms-media")
+          .list("", { limit: 5000 });
+        setMediaCount((data || []).length);
+      } catch (err) {
+        console.error("Failed to load media count:", err);
+        setMediaCount(0);
+      }
+    };
+
+    loadCounts();
+  }, []);
+
   const handleNewsSubmit = useCallback(
     async (newsData: Omit<CMSBlogPost, "id" | "created_at" | "updated_at">) => {
       try {
@@ -759,6 +821,7 @@ const CMSAdminPage: React.FC = () => {
         const [
           eventsData,
           newsData,
+          snippetsData,
           officersData,
           testimonialsData,
           faqData,
@@ -767,6 +830,7 @@ const CMSAdminPage: React.FC = () => {
         ] = await Promise.all([
           cmsApi.getEvents(),
           cmsApi.getNewsArticles(),
+          cmsApi.getBlogPosts("snippet"),
           cmsApi.getOfficers(),
           cmsApi.getTestimonials(),
           cmsApi.getFAQItems(),
@@ -776,6 +840,7 @@ const CMSAdminPage: React.FC = () => {
 
         setEvents(eventsData);
         setNews(newsData);
+        setSnippets(snippetsData || []);
         setOfficers(officersData);
         setTestimonials(testimonialsData);
         setFaqItems(faqData);
@@ -822,6 +887,61 @@ const CMSAdminPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // ✅ Load all resources from Supabase
+  useEffect(() => {
+    const loadResources = async () => {
+      try {
+        const all = await optimizedApi.getResources();
+        setResources(all);
+      } catch (err) {
+        console.error("Failed to load resources:", err);
+      }
+    };
+    loadResources();
+  }, []);
+
+  // ✅ Handle creating or updating a resource
+  const handleResourceSubmit = useCallback(
+    async (data: any) => {
+      try {
+        const {
+          title,
+          category,
+          description,
+          content,
+          file_url,
+          publish_date,
+        } = data;
+        const payload = {
+          title,
+          category,
+          description,
+          content,
+          file_url,
+          publish_date: publish_date || new Date().toISOString().slice(0, 10),
+        };
+
+        if (editingResource) {
+          await optimizedApi.updateResource(editingResource.id, payload);
+          success("Resource updated successfully!");
+        } else {
+          await optimizedApi.createResource(payload);
+          success("Resource created successfully!");
+        }
+
+        // Refresh
+        const all = await optimizedApi.getResources();
+        setResources(all);
+        setShowResourceForm(false);
+        setEditingResource(null);
+      } catch (err) {
+        console.error("❌ Resource save error:", err);
+        showError("Failed to save resource.");
+      }
+    },
+    [editingResource, success, showError]
+  );
 
   // Officer handlers with useCallback
   const handleOfficerSubmit = useCallback(
@@ -1041,15 +1161,68 @@ const CMSAdminPage: React.FC = () => {
     [usingDemoData, success, showError]
   );
 
-  // Preview handlers with useCallback
-  const handlePreview = useCallback(
-    (content: any, type: typeof previewType) => {
-      setPreviewContent(content);
-      setPreviewType(type);
-      setShowPreview(true);
-    },
-    []
-  );
+  // Preview handlers with useCallback - build an HTML preview for any content type
+  const handlePreview = useCallback((content: any, type: string) => {
+    let title: string | undefined = undefined;
+    let html: string | undefined = undefined;
+    let image_url: string | null | undefined = undefined;
+
+    switch (type) {
+      case "event":
+        title = content.title;
+        html = `
+          <h3>${content.title || "Event"}</h3>
+          <p><strong>Date:</strong> ${
+            content.event_date
+              ? new Date(content.event_date).toLocaleString()
+              : ""
+          }</p>
+          <p><strong>Location:</strong> ${content.location || ""}</p>
+          <div>${content.description || ""}</div>
+        `;
+        image_url = content.image_url ?? null;
+        break;
+      case "news":
+      case "blog":
+      case "snippet":
+        title = content.title;
+        html = `${content.summary ? `<p>${content.summary}</p>` : ""}${
+          content.content || ""
+        }`;
+        image_url = content.image_url ?? null;
+        break;
+      case "officer":
+        title = content.full_name || content.name;
+        html = `
+          <p><strong>Position:</strong> ${content.position || ""}</p>
+          <div>${content.description || ""}</div>
+        `;
+        image_url = content.image_url ?? null;
+        break;
+      case "testimonial":
+        title = content.name;
+        html = `<blockquote>${content.content || ""}</blockquote>`;
+        image_url = content.image_url ?? null;
+        break;
+      case "faq":
+        title = content.question;
+        html = `<p>${content.answer || ""}</p>`;
+        image_url = null;
+        break;
+      case "page_content":
+        title = `${content.page_name} / ${content.section_name}`;
+        html = content.content || "";
+        image_url = null;
+        break;
+      default:
+        title = content.title || "Preview";
+        html = content.content || JSON.stringify(content);
+        image_url = content.image_url ?? null;
+    }
+
+    setPreviewItem({ title, content: html, image_url });
+    setShowPreview(true);
+  }, []);
 
   // Scheduler handlers with useCallback
   const handleScheduleContent = useCallback((content: any) => {
@@ -1106,31 +1279,30 @@ const CMSAdminPage: React.FC = () => {
   return (
     <div className="min-h-screen pb-20 bg-white">
       <div className="container mx-auto px-4 md:px-6">
-        {/* Header with Sign Out */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-heading font-bold text-primary-600 mb-2">
-              Content Management System
-            </h1>
-            <p className="text-neutral-600">
-              Manage all website content from this central dashboard
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            className="flex items-center"
+        <div className="flex justify-between items-center mb-6">
+          {/* Left side: Back to Members Area */}
+          <button
+            onClick={() => navigate("/members")}
+            className="bg-oxford-blue text-white hover:bg-blue-800 transition px-4 py-2 rounded-md text-sm font-medium shadow-sm"
           >
-            <LogOut size={16} className="mr-2" />
-            {isSigningOut ? "Signing Out..." : "Sign Out"}
-          </Button>
+            ← Back to Members Area
+          </button>
+
+          {/* Right side: Sign Out */}
+          <button
+            onClick={handleSignOut}
+            className="bg-red-600 hover:bg-red-700 text-white transition px-4 py-2 rounded-md text-sm font-medium shadow-sm"
+          >
+            Sign Out
+          </button>
         </div>
 
         {/* Demo Data Notice */}
         {usingDemoData && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
+              {/* Snippets Tab (removed from demo notice) */}
+
               <Database className="w-5 h-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
                 <h3 className="font-medium text-blue-800 mb-1">Demo Mode</h3>
@@ -1159,72 +1331,114 @@ const CMSAdminPage: React.FC = () => {
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          <Button
-            variant={activeTab === "events" ? "primary" : "outline"}
-            onClick={() => setActiveTab("events")}
-            className="flex items-center"
-          >
-            <Calendar size={18} className="mr-2" />
-            Events ({counts.events})
-          </Button>
-          <Button
-            variant={activeTab === "news" ? "primary" : "outline"}
-            onClick={() => setActiveTab("news")}
-            className="flex items-center"
-          >
-            <Newspaper size={18} className="mr-2" />
-            News ({counts.news})
-          </Button>
-          <Button
-            variant={activeTab === "officers" ? "primary" : "outline"}
-            onClick={() => setActiveTab("officers")}
-            className="flex items-center"
-          >
-            <Users size={18} className="mr-2" />
-            Officers ({counts.officers})
-          </Button>
-          <Button
-            variant={activeTab === "testimonials" ? "primary" : "outline"}
-            onClick={() => setActiveTab("testimonials")}
-            className="flex items-center"
-          >
-            <MessageSquare size={18} className="mr-2" />
-            Testimonials ({counts.testimonials})
-          </Button>
-          <Button
-            variant={activeTab === "faq" ? "primary" : "outline"}
-            onClick={() => setActiveTab("faq")}
-            className="flex items-center"
-          >
-            <HelpCircle size={18} className="mr-2" />
-            FAQ ({counts.faq})
-          </Button>
-          <Button
-            variant={activeTab === "pages" ? "primary" : "outline"}
-            onClick={() => setActiveTab("pages")}
-            className="flex items-center"
-          >
-            <FileText size={18} className="mr-2" />
-            Pages ({counts.pages})
-          </Button>
-          <Button
-            variant={activeTab === "media" ? "primary" : "outline"}
-            onClick={() => setActiveTab("media")}
-            className="flex items-center"
-          >
-            <Image size={18} className="mr-2" />
-            Media
-          </Button>
-          <Button
-            variant={activeTab === "settings" ? "primary" : "outline"}
-            onClick={() => setActiveTab("settings")}
-            className="flex items-center"
-          >
-            <Settings size={18} className="mr-2" />
-            Settings
-          </Button>
+        {/* Dashboard Navigation */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          {/* Helper component for dashboard buttons */}
+          {(() => {
+            const DashboardButton = ({
+              icon,
+              label,
+              onClick,
+              isActive = false,
+            }: {
+              icon: React.ReactNode;
+              label: string;
+              onClick: () => void;
+              isActive?: boolean;
+            }) => (
+              <button
+                onClick={onClick}
+                className={`px-4 py-2 rounded-xl border flex items-center gap-2 transition ${
+                  isActive
+                    ? "border-[#BFA76F] bg-[#BFA76F]/10 text-[#0B1831] font-medium"
+                    : "border-[#BFA76F]/40 text-[#0B1831] hover:bg-[#BFA76F]/10"
+                }`}
+              >
+                {icon}
+                {label}
+              </button>
+            );
+
+            return (
+              <>
+                <DashboardButton
+                  icon={<Calendar className="w-4 h-4" />}
+                  label={`Events (${counts.events})`}
+                  onClick={() => setActiveTab("events")}
+                  isActive={activeTab === "events"}
+                />
+                <DashboardButton
+                  icon={<Newspaper className="w-4 h-4" />}
+                  label={`News (${counts.news})`}
+                  onClick={() => setActiveTab("news")}
+                  isActive={activeTab === "news"}
+                />
+                <DashboardButton
+                  icon={<Users className="w-4 h-4" />}
+                  label={`Officers (${counts.officers})`}
+                  onClick={() => setActiveTab("officers")}
+                  isActive={activeTab === "officers"}
+                />
+                <DashboardButton
+                  icon={<MessageSquare className="w-4 h-4" />}
+                  label={`Testimonials (${counts.testimonials})`}
+                  onClick={() => setActiveTab("testimonials")}
+                  isActive={activeTab === "testimonials"}
+                />
+                <DashboardButton
+                  icon={<BookOpen className="w-4 h-4" />}
+                  label={`Snippets (${counts.snippets})`}
+                  onClick={() => setActiveTab("snippets")}
+                  isActive={activeTab === "snippets"}
+                />
+                <DashboardButton
+                  icon={<Columns3 className="w-4 h-4" />}
+                  label={`Pillars (${pillarCount})`}
+                  onClick={() => navigate("/admin/pillars")}
+                />
+                <DashboardButton
+                  icon={<HelpCircle className="w-4 h-4" />}
+                  label={`FAQ (${counts.faq})`}
+                  onClick={() => setActiveTab("faq")}
+                  isActive={activeTab === "faq"}
+                />
+                <DashboardButton
+                  icon={<FileText className="w-4 h-4" />}
+                  label={`Pages (${counts.pages})`}
+                  onClick={() => setActiveTab("pages")}
+                  isActive={activeTab === "pages"}
+                />
+                <DashboardButton
+                  icon={<FolderOpen className="w-4 h-4" />}
+                  label="Resources"
+                  onClick={() => setActiveTab("resources")}
+                  isActive={activeTab === "resources"}
+                />
+                <DashboardButton
+                  icon={<Image className="w-4 h-4" />}
+                  label={`Media (${mediaCount})`}
+                  onClick={() => setActiveTab("media")}
+                  isActive={activeTab === "media"}
+                />
+                <DashboardButton
+                  icon={<FileText className="w-4 h-4" />}
+                  label={`Lodge Documents (${documentCount})`}
+                  onClick={() => navigate("/admin/documents")}
+                />
+                <DashboardButton
+                  icon={<Clock className="w-4 h-4" />}
+                  label={`Minutes (${minutesCount})`}
+                  onClick={() => navigate("/admin/minutes")}
+                />
+                <DashboardButton
+                  icon={<Settings className="w-4 h-4" />}
+                  label="Settings"
+                  onClick={() => setActiveTab("settings")}
+                  isActive={activeTab === "settings"}
+                />
+              </>
+            );
+          })()}
         </div>
 
         {/* Officers Tab */}
@@ -1234,15 +1448,10 @@ const CMSAdminPage: React.FC = () => {
               <h2 className="text-xl font-heading font-semibold text-primary-600">
                 Officers Management ({officers.length})
               </h2>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMediaManager(true)}
-                  className="flex items-center"
-                >
-                  <Image size={18} className="mr-2" />
-                  Media
-                </Button>
+              <div className="flex justify-end gap-3 mb-4">
+                <MediaManager
+                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
+                />
                 <Button
                   onClick={() => setShowOfficerForm(true)}
                   className="flex items-center"
@@ -1393,15 +1602,10 @@ const CMSAdminPage: React.FC = () => {
               <h2 className="text-xl font-heading font-semibold text-primary-600">
                 Events Management ({events.length})
               </h2>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMediaManager(true)}
-                  className="flex items-center"
-                >
-                  <Image size={18} className="mr-2" />
-                  Media
-                </Button>
+              <div className="flex justify-end gap-3 mb-4">
+                <MediaManager
+                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
+                />
                 <Button
                   onClick={() => setShowEventForm(true)}
                   className="flex items-center"
@@ -1497,9 +1701,12 @@ const CMSAdminPage: React.FC = () => {
                             <span className="mx-2">•</span>
                             <span>Location: {event.location}</span>
                           </div>
-                          <p className="text-sm text-neutral-600 line-clamp-2">
-                            {event.description}
-                          </p>
+                          <div
+                            className="prose prose-invert max-w-none"
+                            dangerouslySetInnerHTML={{
+                              __html: event.description ?? "",
+                            }}
+                          />
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
@@ -1552,15 +1759,10 @@ const CMSAdminPage: React.FC = () => {
               <h2 className="text-xl font-heading font-semibold text-primary-600">
                 News Management ({news.length})
               </h2>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMediaManager(true)}
-                  className="flex items-center"
-                >
-                  <Image size={18} className="mr-2" />
-                  Media
-                </Button>
+              <div className="flex justify-end gap-3 mb-4">
+                <MediaManager
+                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
+                />
                 <Button
                   onClick={() => setShowNewsForm(true)}
                   className="flex items-center"
@@ -1711,21 +1913,85 @@ const CMSAdminPage: React.FC = () => {
         )}
 
         {/* Testimonials Tab */}
+        {activeTab === "resources" && (
+          <div>
+            <h2 className="text-xl font-heading font-semibold text-[#BFA76F] mb-4">
+              Member Resources
+            </h2>
+            <p className="text-sm text-neutral-300 mb-6">
+              Manage Byelaws, Forms, Ritual, and other lodge documents.
+            </p>
+
+            {!showResourceForm && (
+              <Button
+                variant="primary"
+                onClick={() => setShowResourceForm(true)}
+              >
+                + Add Resource
+              </Button>
+            )}
+
+            {showResourceForm && (
+              <ResourceForm
+                onSubmit={handleResourceSubmit}
+                onCancel={() => setShowResourceForm(false)}
+                initialData={editingResource || undefined}
+              />
+            )}
+
+            <div className="mt-6 space-y-4">
+              {resources.map((r) => (
+                <div
+                  key={r.id}
+                  className="bg-[#0B1831] border border-[#BFA76F]/30 rounded-lg p-4 text-white"
+                >
+                  <h3 className="text-lg font-semibold text-[#D8C48C]">
+                    {r.title}
+                  </h3>
+                  <p className="text-sm text-neutral-400">
+                    Category: {r.category} | Publish:{" "}
+                    {r.publish_date
+                      ? new Date(r.publish_date).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                  {r.file_url && (
+                    <a
+                      href={r.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#BFA76F] hover:underline block mt-1"
+                    >
+                      View File
+                    </a>
+                  )}
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingResource(r);
+                        setShowResourceForm(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {activeTab === "testimonials" && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-heading font-semibold text-primary-600">
                 Testimonials Management ({testimonials.length})
               </h2>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMediaManager(true)}
-                  className="flex items-center"
-                >
-                  <Image size={18} className="mr-2" />
-                  Media
-                </Button>
+              <div className="flex justify-end gap-3 mb-4">
+                <MediaManager
+                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
+                />
                 <Button
                   onClick={() => setShowTestimonialForm(true)}
                   className="flex items-center"
@@ -1866,6 +2132,169 @@ const CMSAdminPage: React.FC = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Snippets Tab */}
+        {activeTab === "snippets" && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-heading font-semibold text-primary-600">
+                Snippets Management ({snippets.length})
+              </h2>
+              <Button
+                onClick={() => setShowSnippetForm(true)}
+                className="flex items-center"
+              >
+                <Plus size={18} className="mr-2" />
+                Add Snippet
+              </Button>
+            </div>
+
+            {showSnippetForm && (
+              <div className="bg-neutral-50 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-primary-600 mb-4">
+                  {editingSnippet ? "Edit Snippet" : "Add New Snippet"}
+                </h3>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget as HTMLFormElement;
+                    const title = (
+                      form.elements.namedItem("title") as HTMLInputElement
+                    ).value;
+                    const summary = (
+                      form.elements.namedItem("summary") as HTMLInputElement
+                    ).value;
+                    const content = (
+                      form.elements.namedItem("content") as HTMLTextAreaElement
+                    ).value;
+                    const image_url = (
+                      form.elements.namedItem("image_url") as HTMLInputElement
+                    ).value;
+                    const is_published = (
+                      form.elements.namedItem(
+                        "is_published"
+                      ) as HTMLInputElement
+                    ).checked;
+
+                    const newSnippet: CMSBlogPost = {
+                      id: editingSnippet
+                        ? editingSnippet.id
+                        : `demo-${Date.now()}`,
+                      title,
+                      summary,
+                      content,
+                      image_url,
+                      is_published,
+                      publish_date: new Date().toISOString(),
+                      is_members_only: false,
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    } as CMSBlogPost;
+
+                    if (editingSnippet) {
+                      setSnippets((prev) =>
+                        prev.map((s) =>
+                          s.id === editingSnippet.id ? newSnippet : s
+                        )
+                      );
+                    } else {
+                      setSnippets((prev) => [...prev, newSnippet]);
+                    }
+
+                    setShowSnippetForm(false);
+                    setEditingSnippet(null);
+                  }}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        required
+                        defaultValue={editingSnippet?.title || ""}
+                        className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700">
+                        Summary
+                      </label>
+                      <input
+                        type="text"
+                        name="summary"
+                        required
+                        defaultValue={editingSnippet?.summary || ""}
+                        className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700">
+                        Content
+                      </label>
+                      <textarea
+                        name="content"
+                        rows={6}
+                        defaultValue={editingSnippet?.content || ""}
+                        className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700">
+                        Image URL
+                      </label>
+                      <input
+                        type="url"
+                        name="image_url"
+                        defaultValue={editingSnippet?.image_url || ""}
+                        className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="is_published"
+                        defaultChecked={editingSnippet?.is_published || false}
+                      />
+                      <label className="text-sm text-neutral-700">
+                        Published
+                      </label>
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowSnippetForm(false);
+                          setEditingSnippet(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit">Save Snippet</Button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <SnippetsManager
+              snippets={snippets}
+              onRefresh={loadData}
+              onPreview={(item) => {
+                setPreviewItem(item);
+                setShowPreview(true);
+              }}
+            />
           </div>
         )}
 
@@ -2106,13 +2535,6 @@ const CMSAdminPage: React.FC = () => {
               <h2 className="text-xl font-heading font-semibold text-primary-600">
                 Media Manager
               </h2>
-              <Button
-                onClick={() => setShowMediaManager(true)}
-                className="flex items-center"
-              >
-                <Image size={18} className="mr-2" />
-                Open Media Manager
-              </Button>
             </div>
 
             <div className="bg-neutral-50 rounded-lg p-8 text-center">
@@ -2124,13 +2546,11 @@ const CMSAdminPage: React.FC = () => {
                 The Media Manager allows you to upload, organize, and manage all
                 images and documents used throughout the website.
               </p>
-              <Button
-                onClick={() => setShowMediaManager(true)}
-                className="flex items-center mx-auto"
-              >
-                <Image size={18} className="mr-2" />
-                Open Media Manager
-              </Button>
+              <div className="mx-auto">
+                <MediaManager
+                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -2259,6 +2679,7 @@ const CMSAdminPage: React.FC = () => {
           activeTab !== "events" &&
           activeTab !== "news" &&
           activeTab !== "testimonials" &&
+          activeTab !== "snippets" &&
           activeTab !== "faq" &&
           activeTab !== "pages" &&
           activeTab !== "media" &&
@@ -2278,11 +2699,12 @@ const CMSAdminPage: React.FC = () => {
       </div>
 
       {/* Modals */}
-      <ContentPreview
+      <ContentPreviewModal
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
-        content={previewContent || null}
-        contentType={previewType}
+        title={previewItem?.title}
+        htmlContent={previewItem?.content}
+        imageUrl={previewItem?.image_url}
       />
 
       <MediaManager
@@ -2329,6 +2751,13 @@ const CMSAdminPage: React.FC = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
+      <ContentPreviewModal
+        isOpen={!!previewItem}
+        onClose={() => setPreviewItem(null)}
+        title={previewItem?.title}
+        htmlContent={previewItem?.content}
+        imageUrl={previewItem?.image_url}
+      />
     </div>
   );
 };

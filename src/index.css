@@ -2,6 +2,55 @@
    🌟 Tailwind Core Imports (MUST COME FIRST)
    ----------------------------------------------------- */
 @tailwind base;
+
+/* -----------------------------------------------------
+   🎬 Media Manager Modal Animation
+   ----------------------------------------------------- */
+@keyframes fadeScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* === Media Manager Enhancements === */
+.media-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3;
+}
+
+.media-card {
+  @apply relative bg-[#1B294B] rounded-lg p-2 border border-[#BFA76F]/20 
+         hover:border-[#BFA76F]/60 transition-all cursor-pointer shadow-md;
+}
+
+.media-card img {
+  @apply w-full h-32 object-cover rounded-md shadow-sm;
+}
+
+.media-card:hover img {
+  @apply opacity-90;
+}
+
+.media-insert-btn {
+  @apply absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 
+         transition-opacity duration-200;
+}
+
+.media-filename {
+  @apply text-xs truncate w-full text-center text-neutral-300 mt-1;
+}
+
+.media-toolbar {
+  @apply flex justify-between items-center mb-3;
+}
+
+.media-pagination {
+  @apply flex justify-between items-center mt-4 text-neutral-400;
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -365,6 +414,105 @@ main {
   @apply bg-white/80 backdrop-blur-sm border border-secondary-100 rounded-2xl shadow-soft hover:shadow-gold transition-all duration-300;
 }
 
+/* -----------------------------------------------------------
+   ✅ GLOBAL QUILL STYLING — RADLETT BLUE & GOLD THEME
+----------------------------------------------------------- */
+
+.ql-container {
+  font-family: Helvetica, Arial, sans-serif;
+  background-color: #0b1635 !important; /* Oxford blue */
+  color: #f5f5f5 !important;
+  border: 1px solid #bfa76f !important; /* gold border */
+  border-radius: 6px;
+  min-height: 250px;
+  padding: 12px;
+}
+
+.ql-editor {
+  min-height: 200px;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* Header styles */
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3 {
+  font-family: "Playfair Display", serif;
+  color: #d4af37 !important;
+}
+
+/* Links */
+.ql-editor a {
+  color: #d4af37 !important;
+  text-decoration: underline;
+}
+
+/* Blockquotes */
+.ql-editor blockquote {
+  border-left: 3px solid #d4af37 !important;
+  padding-left: 1rem;
+  color: #e6e6e6;
+}
+
+/* Lists */
+.ql-editor ul,
+.ql-editor ol {
+  margin-left: 1.5rem;
+}
+
+/* Toolbar styling */
+.ql-toolbar {
+  background: #0b1635 !important;
+  border: 1px solid #bfa76f !important;
+  border-bottom: none !important;
+}
+
+.ql-toolbar button svg {
+  color: #d4af37 !important;
+}
+
+.ql-toolbar button.ql-active svg {
+  color: #ffffff !important;
+}
+
+.ql-container.ql-snow {
+  border-top: none !important;
+}
+
+/* Make images inside editor responsive */
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* -----------------------------------------------------------
+   🔧 QUILL EDITOR TEXT COLOR OVERRIDE
+   Ensures black text, white background, blue links for readability
+----------------------------------------------------------- */
+/* Quill Editor Text Color Override */
+.ql-editor {
+  color: #000 !important; /* Force black text */
+}
+
+.ql-editor p,
+.ql-editor span,
+.ql-editor li {
+  color: #000 !important;
+}
+
+/* Remove inherited background colours */
+.ql-container,
+.ql-editor {
+  background: #ffffff !important;
+}
+
+/* Remove Oxford blue link colours if inherited */
+.ql-editor a {
+  color: #1a0dab !important;
+}
+
 /* Optional: Add smooth lift hover */
 .radlett-card:hover {
   transform: translateY(-4px);
@@ -373,4 +521,77 @@ main {
 /* Optional: Apply consistent padding for card bodies */
 .radlett-card-content {
   @apply p-6;
+}
+
+/* -----------------------------------------------------
+   📝 Quill Editor Styling
+   ----------------------------------------------------- */
+
+/* Quill toolbar background override */
+.ql-toolbar.ql-snow {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important; /* stronger border */
+}
+
+/* Quill editor container border matches toolbar */
+.ql-container.ql-snow {
+  border: 1px solid #d1d5db !important;
+}
+
+/* Quill editor content area */
+.ql-editor {
+  background-color: #ffffff !important;
+  color: #111 !important;
+}
+
+/* -----------------------------------------------------
+   📦 Content Callout Boxes (Admin Snippets)
+   ----------------------------------------------------- */
+
+/* Golden Callout Box - For key points and important information */
+.callout-box {
+  border-left: 4px solid #bfa76f;
+  background: #faf8f3;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+
+.callout-box h3 {
+  color: #0b1831;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.callout-box p {
+  margin: 0;
+  color: #374151;
+}
+
+/* Warning/Alert Box - For notes and important warnings */
+.alert-box {
+  border-left: 4px solid #d97706;
+  background: #fff7ed;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+
+.alert-box strong {
+  color: #92400e;
+}
+
+/* Info Box - For informational content */
+.info-box {
+  border-left: 4px solid #3b82f6;
+  background: #eff6ff;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+
+.info-box p {
+  margin: 0;
+  color: #1e40af;
 }

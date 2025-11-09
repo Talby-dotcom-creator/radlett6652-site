@@ -44,7 +44,7 @@ const ContactPage: React.FC = () => {
       <HeroSection
         title="Contact Radlett Lodge"
         subtitle="Get in touch with us for inquiries about Freemasonry or joining our Lodge"
-        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/images%20/contact-6652.png"
+        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/banners/contact-6652.png"
         overlayOpacity={0.25}
         verticalPosition="bottom"
       />

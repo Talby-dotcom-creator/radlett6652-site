@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { cmsApi } from "../../lib/cmsApi";
 import LoadingSpinner from "../LoadingSpinner";
 import Button from "../Button";
@@ -21,6 +22,7 @@ const CMSPageOverview: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadPages = async () => {
@@ -98,32 +100,44 @@ const CMSPageOverview: React.FC = () => {
   // List view
   if (!activePage) {
     return (
-      <div className="border rounded-lg divide-y divide-neutral-200 bg-white shadow-sm">
-        {pages.map((p) => (
-          <div
-            key={p.page_name}
-            className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3"
+      <div>
+        <div className="flex justify-end mb-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/admin/pillars")}
           >
-            <div>
-              <h3 className="font-semibold text-primary-700 capitalize">
-                {p.page_name.replace(/-/g, " ")}
-              </h3>
-              <p className="text-sm text-neutral-600">
-                {p.section_count} sections:{" "}
-                <span className="text-neutral-500">
-                  {p.sections.join(", ")}
-                </span>
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openPage(p.page_name)}
+            Open Pillars Editor
+          </Button>
+        </div>
+
+        <div className="border rounded-lg divide-y divide-neutral-200 bg-white shadow-sm">
+          {pages.map((p) => (
+            <div
+              key={p.page_name}
+              className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3"
             >
-              View / Edit
-            </Button>
-          </div>
-        ))}
+              <div>
+                <h3 className="font-semibold text-primary-700 capitalize">
+                  {p.page_name.replace(/-/g, " ")}
+                </h3>
+                <p className="text-sm text-neutral-600">
+                  {p.section_count} sections:{" "}
+                  <span className="text-neutral-500">
+                    {p.sections.join(", ")}
+                  </span>
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openPage(p.page_name)}
+              >
+                View / Edit
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

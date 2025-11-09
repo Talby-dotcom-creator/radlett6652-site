@@ -212,9 +212,10 @@ export const cmsApi = {
   /* ---------------- FAQ ITEMS ---------------- */
   async getFAQItems(): Promise<FAQItem[]> {
     const { data, error } = await supabase
-      .from("faq_items")
+      .from("faq_items") // ✅ correct table name
       .select("*")
       .order("sort_order");
+
     if (error) handleError(error, "getFAQItems");
     return data ?? [];
   },
@@ -321,28 +322,34 @@ export const cmsApi = {
 
   /* ---------------- FAQ CRUD ---------------- */
   async createFAQItem(item: Omit<FAQItem, "id" | "created_at" | "updated_at">) {
-    const { data: ret, error } = await supabase
-      .from("faq_items")
+    const { data, error } = await supabase
+      .from("faq_items") // ✅ correct table name
       .insert(item as any)
       .select()
       .single();
+
     if (error) handleError(error, "createFAQItem");
-    return ret;
+    return data;
   },
 
   async updateFAQItem(id: string, updates: Partial<FAQItem>) {
-    const { data: ret, error } = await supabase
-      .from("faq_items")
+    const { data, error } = await supabase
+      .from("faq_items") // ✅ correct table name
       .update(updates as any)
       .eq("id", id)
       .select()
       .single();
+
     if (error) handleError(error, "updateFAQItem");
-    return ret;
+    return data;
   },
 
   async deleteFAQItem(id: string) {
-    const { error } = await supabase.from("faq_items").delete().eq("id", id);
+    const { error } = await supabase
+      .from("faq_items") // ✅ correct table name
+      .delete()
+      .eq("id", id);
+
     if (error) handleError(error, "deleteFAQItem");
   },
 
@@ -448,6 +455,28 @@ export const cmsApi = {
       .single();
     if (error) handleError(error, "updateSiteSetting");
     return data;
+  },
+
+  /* ---------------- PAGE SECTIONS ---------------- */
+  async getPageSection(
+    page_name: string,
+    section_name: string
+  ): Promise<{ content: string; content_type: "html" | "text" } | null> {
+    try {
+      const { data, error } = await supabase
+        .from("page_content")
+        .select("content, content_type")
+        .eq("page_name", page_name)
+        .eq("section_name", section_name)
+        .maybeSingle(); // ✅ Allow 0 or 1 rows safely
+
+      if (error) handleError(error, "getPageSection");
+
+      return data ? (data as any) : null;
+    } catch (err: any) {
+      handleError(err, "getPageSection");
+      return null;
+    }
   },
 };
 

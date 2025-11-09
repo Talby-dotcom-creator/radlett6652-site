@@ -1,0 +1,43 @@
+/* Quill Editor Overrides - White Theme with Legible Icons */
+/* Ensure white toolbar + stronger borders and legible icons */
+
+.ql-toolbar.ql-snow {
+  background: #fff;
+  border-color: #d1d5db;
+}
+
+.ql-container.ql-snow {
+  border-color: #d1d5db;
+}
+
+.ql-picker,
+.ql-picker-label {
+  color: #111;
+}
+
+.ql-stroke {
+  stroke: #111 !important;
+}
+
+.ql-fill {
+  fill: #111 !important;
+}
+
+.ql-editor {
+  color: #111;
+}
+
+.ql-snow .ql-picker-options {
+  background: #fff;
+  border-color: #e5e7eb;
+}
+
+.ql-snow .ql-tooltip {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #111;
+}
+
+.ql-snow .ql-formats button {
+  padding: 6px 8px;
+}

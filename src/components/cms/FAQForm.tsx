@@ -1,86 +1,130 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { FAQItem } from '../../types';
-import Button from '../Button';
+// src/components/cms/FAQForm.tsx
+import React from "react";
+import { useForm } from "react-hook-form";
+import { FAQItem } from "../../types";
+import Button from "../Button";
+import QuillEditor from "../QuillEditor"; // use central QuillEditor component
 
 interface FAQFormProps {
-  onSubmit: (data: Omit<FAQItem, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSubmit: (
+    data: Omit<FAQItem, "id" | "created_at" | "updated_at">
+  ) => Promise<void>;
   onCancel: () => void;
   initialData?: Partial<FAQItem>;
 }
 
-const FAQForm: React.FC<FAQFormProps> = ({ onSubmit, onCancel, initialData }) => {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+const FAQForm: React.FC<FAQFormProps> = ({
+  onSubmit,
+  onCancel,
+  initialData,
+}) => {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
     defaultValues: {
-      question: initialData?.question || '',
-      answer: initialData?.answer || '',
+      question: initialData?.question || "",
+      answer: initialData?.answer || "",
       sort_order: initialData?.sort_order || 0,
-      is_published: initialData?.is_published !== undefined ? initialData.is_published : true
-    }
+      is_published:
+        initialData?.is_published !== undefined
+          ? initialData.is_published
+          : true,
+    },
   });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* ✅ Question */}
       <div>
-        <label htmlFor="question" className="block text-sm font-medium text-primary-600">
+        <label
+          htmlFor="question"
+          className="block text-sm font-medium text-primary-600"
+        >
           Question
         </label>
         <input
           id="question"
-          {...register('question', { required: 'Question is required' })}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+          {...register("question", { required: "Question is required" })}
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2
+          focus:border-secondary-500 focus:ring-secondary-500"
         />
         {errors.question && (
-          <p className="mt-1 text-sm text-red-600">{errors.question.message as string}</p>
+          <p className="mt-1 text-sm text-red-600">
+            {errors.question.message as string}
+          </p>
         )}
       </div>
 
+      {/* ✅ Answer (QUILL replaces textarea) */}
       <div>
-        <label htmlFor="answer" className="block text-sm font-medium text-primary-600">
+        <label
+          htmlFor="answer"
+          className="block text-sm font-medium text-primary-600"
+        >
           Answer
         </label>
-        <textarea
-          id="answer"
-          {...register('answer', { required: 'Answer is required' })}
-          rows={4}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+
+        <QuillEditor
+          value={watch("answer")}
+          onChange={(html: string) =>
+            setValue("answer", html, { shouldDirty: true })
+          }
+          placeholder="Write the answer here..."
         />
+
         {errors.answer && (
-          <p className="mt-1 text-sm text-red-600">{errors.answer.message as string}</p>
+          <p className="mt-1 text-sm text-red-600">
+            {errors.answer.message as string}
+          </p>
         )}
       </div>
 
+      {/* ✅ Sort Order */}
       <div>
-        <label htmlFor="sort_order" className="block text-sm font-medium text-primary-600">
+        <label
+          htmlFor="sort_order"
+          className="block text-sm font-medium text-primary-600"
+        >
           Sort Order
         </label>
         <input
           id="sort_order"
           type="number"
-          {...register('sort_order', { valueAsNumber: true })}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+          {...register("sort_order", { valueAsNumber: true })}
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2
+          focus:border-secondary-500 focus:ring-secondary-500"
           placeholder="0"
         />
       </div>
 
+      {/* ✅ Publish toggle */}
       <div className="flex items-center">
         <input
           id="is_published"
           type="checkbox"
-          {...register('is_published')}
-          className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-neutral-300 rounded"
+          {...register("is_published")}
+          className="h-4 w-4 text-secondary-600
+          focus:ring-secondary-500 border-neutral-300 rounded"
         />
-        <label htmlFor="is_published" className="ml-2 block text-sm text-neutral-700">
+        <label
+          htmlFor="is_published"
+          className="ml-2 block text-sm text-neutral-700"
+        >
           Published
         </label>
       </div>
 
+      {/* ✅ Buttons */}
       <div className="flex justify-end space-x-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save FAQ'}
+          {isSubmitting ? "Saving..." : "Save FAQ"}
         </Button>
       </div>
     </form>

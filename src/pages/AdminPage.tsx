@@ -1,5 +1,6 @@
 // src/pages/AdminPage.tsx
 import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { optimizedApi as api } from "../lib/optimizedApi";
 import {
   LodgeDocument,
@@ -13,9 +14,12 @@ import { usePagination } from "../hooks/usePagination";
 import PaginationControls from "../components/PaginationControls";
 import TestimonialForm from "../components/admin/TestimonialForm";
 import Button from "../components/Button";
+import { FileText, Clock } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 const AdminPage: React.FC = () => {
   const toast = useToast();
+  const navigate = useNavigate();
 
   // ✅ Pagination hooks
   const [documentsState, documentsActions] = usePagination({
@@ -30,6 +34,10 @@ const AdminPage: React.FC = () => {
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Counts for dashboard buttons
+  const [docCount, setDocCount] = useState(0);
+  const [minuteCount, setMinuteCount] = useState(0);
 
   // ✅ UI state for testimonials
   const [showForm, setShowForm] = useState(false);
@@ -86,6 +94,24 @@ const AdminPage: React.FC = () => {
     loadTestimonials();
   }, []);
 
+  /* -------------------- COUNTS FOR DASHBOARD -------------------- */
+  useEffect(() => {
+    const loadCounts = async () => {
+      const { count: dCount } = await supabase
+        .from("lodge_documents")
+        .select("*", { count: "exact", head: true });
+
+      const { count: mCount } = await supabase
+        .from("meeting_minutes")
+        .select("*", { count: "exact", head: true });
+
+      setDocCount(dCount || 0);
+      setMinuteCount(mCount || 0);
+    };
+
+    loadCounts();
+  }, []);
+
   const handleSaveTestimonial = async (
     data: Omit<Testimonial, "id" | "created_at" | "updated_at">
   ) => {
@@ -106,6 +132,34 @@ const AdminPage: React.FC = () => {
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-6">Admin Dashboard</h1>
+
+      {/* Quick Access Buttons */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <NavLink
+          to="/admin/pillars"
+          className="px-4 py-2 rounded-xl border border-[#BFA76F]/40 text-[#0B1831] hover:bg-[#BFA76F]/10 flex items-center gap-2"
+        >
+          The Pillars
+        </NavLink>
+
+        {/* Lodge Documents */}
+        <button
+          onClick={() => navigate("/admin/documents")}
+          className="px-4 py-2 rounded-xl border border-[#BFA76F]/40 text-[#0B1831] hover:bg-[#BFA76F]/10 flex items-center gap-2"
+        >
+          <FileText className="w-4 h-4" />
+          Lodge Documents ({docCount})
+        </button>
+
+        {/* Meeting Minutes */}
+        <button
+          onClick={() => navigate("/admin/minutes")}
+          className="px-4 py-2 rounded-xl border border-[#BFA76F]/40 text-[#0B1831] hover:bg-[#BFA76F]/10 flex items-center gap-2"
+        >
+          <Clock className="w-4 h-4" />
+          Minutes ({minuteCount})
+        </button>
+      </div>
 
       {loading ? (
         <LoadingSpinner />

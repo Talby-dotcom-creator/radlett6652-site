@@ -32,9 +32,10 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           </p>
         )}
         {event.description && (
-          <p className="text-neutral-700 text-sm mb-4 line-clamp-3">
-            {event.description}
-          </p>
+          <div
+            className="prose prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: event.description ?? "" }}
+          />
         )}
         <Link
           to="/events"

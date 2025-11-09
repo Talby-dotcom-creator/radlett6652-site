@@ -197,6 +197,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      member_resources: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          category: string | null;
+          file_url: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          category?: string | null;
+          file_url?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string | null;
+          category?: string | null;
+          file_url?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       member_profiles: {
         Row: {
           contact_email: string | null;
@@ -319,6 +349,39 @@ export type Database = {
           id?: string;
           page_name?: string;
           section_name?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      snippets: {
+        Row: {
+          content: string;
+          created_at: string | null;
+          id: string;
+          is_active: boolean | null;
+          publish_date: string | null;
+          subtitle: string | null;
+          title: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          content: string;
+          created_at?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          publish_date?: string | null;
+          subtitle?: string | null;
+          title: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          content?: string;
+          created_at?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          publish_date?: string | null;
+          subtitle?: string | null;
+          title?: string;
           updated_at?: string | null;
         };
         Relationships: [];

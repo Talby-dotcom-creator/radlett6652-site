@@ -1,133 +1,161 @@
 // src/components/RichTextEditor.tsx
-import React from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import CharacterCount from "@tiptap/extension-character-count";
+import React, { useRef, useState, useEffect } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
-import "./RichTextEditor.css";
+import { uploadMedia } from "../lib/supabaseUpload";
+import MediaManager from "./MediaManager";
+import Button from "./Button";
 
-export interface RichTextEditorProps {
-  value: string;
-  onChange: (html: string) => void;
+interface RichTextEditorProps {
+  name?: string;
+  initialValue?: string;
+  value?: string;
   placeholder?: string;
-  maxLength?: number; // ✅ optional character limit
+  onChange?: (content: string) => void;
+  height?: number;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
+  name,
+  initialValue = "",
   value,
+  placeholder = "Start typing here...",
   onChange,
-  placeholder,
-  maxLength = 2000, // default limit
+  height = 350,
 }) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: placeholder || "Start typing here...",
-      }),
-      CharacterCount.configure({ limit: maxLength }),
-    ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-  });
+  const [showMediaManager, setShowMediaManager] = useState(false);
+  const quillRef = useRef<any>(null);
 
-  if (!editor) return null;
+  /* ✅ Force Left-to-Right typing */
+  useEffect(() => {
+    const forceLTR = () => {
+      const editor = document.querySelector(".ql-editor") as HTMLElement;
+      if (editor) {
+        editor.style.direction = "ltr";
+        editor.style.textAlign = "left";
+        editor.setAttribute("dir", "ltr");
+      }
+    };
+    forceLTR();
+    const interval = setInterval(forceLTR, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ✅ Toolbar: handle image upload (paste / drag-drop) */
+  const handleImageUpload = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*,application/pdf";
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      try {
+        const url = await uploadMedia(file, "cms-media");
+        const editor = quillRef.current?.getEditor();
+        if (editor) {
+          const range = editor.getSelection(true);
+
+          if (file.name.toLowerCase().endsWith(".pdf")) {
+            editor.insertEmbed(
+              range.index,
+              "text",
+              `📄 PDF: ${file.name}\n${url}\n`
+            );
+          } else {
+            editor.insertEmbed(range.index, "image", url);
+          }
+        }
+      } catch (err) {
+        alert("Upload failed");
+      }
+    };
+
+    input.click();
+  };
+
+  /* ✅ Insert media selected from MediaManager */
+  const handleMediaSelect = (url: string) => {
+    const editor = quillRef.current?.getEditor();
+    if (editor) {
+      const range = editor.getSelection(true);
+
+      if (url.toLowerCase().endsWith(".pdf")) {
+        editor.insertEmbed(range.index, "text", `📄 PDF File\n${url}\n`);
+      } else {
+        editor.insertEmbed(range.index, "image", url);
+      }
+    }
+    setShowMediaManager(false);
+  };
+
+  /* ✅ Quill toolbar setup */
+  const modules = {
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, false] }],
+        [{ font: [] }],
+        [{ size: [] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ align: [] }],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["blockquote", "code-block"],
+        ["link", "image"],
+        ["clean"],
+      ],
+      handlers: {
+        image: handleImageUpload,
+      },
+    },
+  };
+
+  // Workaround: cast ReactQuill to any so we can attach a ref in JSX without
+  // fighting the ReactQuillProps typing.
+  const ReactQuillAny: any = ReactQuill;
 
   return (
-    <div className="rich-text-editor">
-      {/* Toolbar */}
-      <div className="toolbar">
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={editor.isActive("bold") ? "active" : ""}
+    <div className="relative border border-neutral-300 rounded-md bg-white">
+      {/* ✅ Media Library Button */}
+      <div className="flex justify-end p-2 bg-[#0B1831]/80">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowMediaManager(true)}
         >
-          B
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={editor.isActive("italic") ? "active" : ""}
-        >
-          I
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={editor.isActive("strike") ? "active" : ""}
-        >
-          S
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          className={editor.isActive("heading", { level: 2 }) ? "active" : ""}
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editor.isActive("bulletList") ? "active" : ""}
-        >
-          • List
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editor.isActive("orderedList") ? "active" : ""}
-        >
-          1. List
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={editor.isActive("blockquote") ? "active" : ""}
-        >
-          ❝
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        >
-          ―
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().setCodeBlock().run()}
-          className={editor.isActive("codeBlock") ? "active" : ""}
-        >
-          {"</>"}
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().undo().run()}
-        >
-          ↺
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().redo().run()}
-        >
-          ↻
-        </button>
+          📁 Insert from Media Library
+        </Button>
       </div>
 
-      {/* Editor */}
-      <EditorContent editor={editor} className="editor-content" />
+      {/* ✅ React Quill Editor */}
+      <ReactQuillAny
+        ref={quillRef}
+        value={value ?? initialValue}
+        modules={modules}
+        placeholder={placeholder}
+        onChange={(content: string) => onChange?.(content)}
+        style={{ height: height, background: "white" }}
+      />
 
-      {/* Character Count */}
-      <div className="char-counter">
-        {editor.storage.characterCount.characters()}/{maxLength} characters
-      </div>
+      {/* ✅ Hidden form input */}
+      <textarea name={name || undefined} defaultValue={initialValue} hidden />
+
+      {/* ✅ Media Manager Modal */}
+      {showMediaManager && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-[#0B1831] border border-[#BFA76F]/40 rounded-xl shadow-2xl p-4 max-w-4xl w-full mx-4">
+            <MediaManager
+              isOpen={true}
+              onClose={() => setShowMediaManager(false)}
+              onSelectMedia={handleMediaSelect}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default RichTextEditor;
-// src/components/RichTextEditor.tsx

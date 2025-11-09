@@ -7,7 +7,7 @@ import SectionHeading from "../components/SectionHeading";
 import Button from "../components/Button";
 import FaqItem from "../components/FaqItem";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { optimizedApi } from "../lib/optimizedApi";
+import { cmsApi } from "../lib/cmsApi";
 import { FAQItem } from "../types";
 
 const JoinPage: React.FC = () => {
@@ -21,9 +21,7 @@ const JoinPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const faqData =
-          optimizedApi.getFAQItems &&
-          (await optimizedApi.getFAQItems().catch(() => []));
+        const faqData = await cmsApi.getFAQItems();
         const publishedFAQs = (faqData || [])
           .filter((faq: FAQItem) => faq.is_published !== false)
           .sort(
@@ -55,7 +53,7 @@ const JoinPage: React.FC = () => {
       <HeroSection
         title="Join Radlett Lodge No. 6652"
         subtitle="Begin your journey into Freemasonry with our welcoming community"
-        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/square%20and%20compassess_1753698024921_8fjcl0.jpg"
+        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/banners/Join-us.png"
       />
 
       {/* INTRODUCTION */}
@@ -253,7 +251,7 @@ const JoinPage: React.FC = () => {
       {/* FAQs */}
 
       {/* FAQs */}
-      <section className="py-20 bg-white">
+      <section id="faq" className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-6">
           <SectionHeading
             title="Frequently Asked Questions"

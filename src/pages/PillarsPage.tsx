@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import { Calendar, Clock, ArrowRight, Columns3, Search } from "lucide-react";
+import { getPublicUrl } from "../lib/optimizedApi";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "../components/SEOHead"; // ✅ Added SEO component
 
@@ -22,7 +23,50 @@ interface BlogPost {
   slug?: string | null;
 }
 
-export default function PillarsPage() {
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: any }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, info: any) {
+    console.error("ErrorBoundary caught:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <div className="max-w-2xl text-center">
+            <h2 className="text-2xl font-semibold mb-4">
+              Something went wrong
+            </h2>
+            <p className="text-sm text-stone-600 mb-4">
+              An unexpected error occurred while rendering this page. Check the
+              browser console for details.
+            </p>
+            <button
+              className="px-4 py-2 bg-amber-600 text-white rounded"
+              onClick={() => location.reload()}
+            >
+              Reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children as any;
+  }
+}
+
+function PillarsPageInner() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [featuredPost, setFeaturedPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,7 +239,10 @@ export default function PillarsPage() {
                 <div className="relative bg-stone-800">
                   {featuredPost.image_url ? (
                     <img
-                      src={featuredPost.image_url}
+                      src={
+                        getPublicUrl(featuredPost.image_url) ||
+                        featuredPost.image_url
+                      }
                       alt={featuredPost.title ?? ""}
                       className="w-full h-full object-cover"
                     />
@@ -253,7 +300,7 @@ export default function PillarsPage() {
                 >
                   {p.image_url ? (
                     <img
-                      src={p.image_url}
+                      src={getPublicUrl(p.image_url) || p.image_url}
                       alt={p.title ?? ""}
                       className="w-full h-48 object-cover rounded-t-xl"
                     />
@@ -333,5 +380,13 @@ export default function PillarsPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function PillarsPage() {
+  return (
+    <ErrorBoundary>
+      <PillarsPageInner />
+    </ErrorBoundary>
   );
 }
