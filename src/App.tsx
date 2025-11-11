@@ -11,6 +11,7 @@ import EventsPage from "./pages/EventsPage";
 import NewsPage from "./pages/NewsPage";
 import NewsPostPage from "./pages/NewsPostPage";
 import PillarsPage from "./pages/PillarsPage";
+import PillarsArchivePage from "./pages/PillarsArchivePage";
 import PillarPostDetail from "./pages/PillarPostDetail";
 import SnippetsPage from "./pages/SnippetsPage";
 import ContactPage from "./pages/ContactPage";
@@ -31,6 +32,7 @@ import AdminApprovalPage from "./pages/AdminApprovalPage";
 import PillarsAdminPage from "./pages/admin/PillarsAdminPage";
 import MinutesAdminPage from "./pages/admin/MinutesAdminPage";
 import DocumentsAdminPage from "./pages/admin/DocumentsAdminPage";
+import SnippetsAdminPage from "./pages/admin/SnippetsAdminPage";
 
 // Developer utility
 import DevDebugPage from "./pages/DevDebugPage";
@@ -65,6 +67,7 @@ const App: React.FC = () => {
                 path="/pillars"
                 element={<Navigate to="/blog" replace />}
               />
+              <Route path="/pillars/archive" element={<PillarsArchivePage />} />
               <Route
                 path="/pillars/:slug"
                 element={<Navigate to="/blog" replace />}
@@ -168,6 +171,15 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute requiredRole="admin">
             <DocumentsAdminPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/snippets"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <SnippetsAdminPage />
           </ProtectedRoute>
         }
       />

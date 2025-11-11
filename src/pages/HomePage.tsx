@@ -173,7 +173,7 @@ const HomePage: React.FC = () => {
           className="animate-fadeIn grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mt-40"
           style={{ animationDelay: "0.7s" }}
         >
-          <div className="bg-primary-900/40 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
+          <div className="bg-primary-900/60 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
             <Calendar className="w-6 h-6 text-secondary-400 mb-2" />
             <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
               Founded
@@ -181,7 +181,7 @@ const HomePage: React.FC = () => {
             <p className="text-neutral-300 text-sm">1948</p>
           </div>
 
-          <div className="bg-primary-900/40 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
+          <div className="bg-primary-900/60 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
             <Users className="w-6 h-6 text-secondary-400 mb-2" />
             <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
               Active Members
@@ -189,7 +189,7 @@ const HomePage: React.FC = () => {
             <p className="text-neutral-300 text-sm">40+</p>
           </div>
 
-          <div className="bg-primary-900/40 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
+          <div className="bg-primary-900/60 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
             <Heart className="w-6 h-6 text-secondary-400 mb-2" />
             <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
               Charity Raised

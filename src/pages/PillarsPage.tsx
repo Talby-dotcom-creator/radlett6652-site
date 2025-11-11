@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { Calendar, Clock, ArrowRight, Columns3, Search } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  ArrowRight,
+  Columns3,
+  Search,
+  Archive,
+  Sparkles,
+  BookOpen,
+} from "lucide-react";
 import { getPublicUrl } from "../lib/optimizedApi";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "../components/SEOHead"; // ✅ Added SEO component
@@ -72,7 +81,10 @@ function PillarsPageInner() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
+
+  const RECENT_POSTS_LIMIT = 7; // Show only 7 most recent posts
 
   useEffect(() => {
     fetchPosts();
@@ -80,12 +92,27 @@ function PillarsPageInner() {
 
   async function fetchPosts() {
     setLoading(true);
+
+    // First, get total count
+    const { count } = await supabase
+      .from("blog_posts")
+      .select("*", { count: "exact", head: true })
+      .eq("category", "blog")
+      .eq("is_published", true);
+
+    if (count) setTotalCount(count);
+
     let query = supabase
       .from("blog_posts")
       .select("*")
       .eq("category", "blog")
       .eq("is_published", true)
       .order("publish_date", { ascending: false });
+
+    // If no filters are applied, limit to recent posts
+    if (!selectedCategory && !searchQuery) {
+      query = query.limit(RECENT_POSTS_LIMIT);
+    }
 
     if (selectedCategory) query = query.eq("subcategory", selectedCategory);
 
@@ -126,8 +153,15 @@ function PillarsPageInner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-800"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="relative"
+        >
+          <div className="w-16 h-16 border-4 border-amber-500/30 border-t-amber-500 rounded-full"></div>
+          <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-amber-400" />
+        </motion.div>
       </div>
     );
   }
@@ -140,243 +174,526 @@ function PillarsPageInner() {
         description="Insights, reflections, and stories from members of Radlett Lodge No. 6652, exploring the values, history, and community of Freemasonry."
       />
 
-      <div className="bg-white min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* 🕯️ Header */}
-          <div className="text-center mb-12 relative">
-            <div className="absolute inset-0 flex justify-center opacity-5">
-              <Columns3 className="w-64 h-64" />
-            </div>
-            <div className="relative">
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
-                className="text-6xl md:text-7xl font-serif font-bold text-center tracking-[0.25em]
-               select-none relative overflow-hidden"
+      {/* Animated Background */}
+      <div className="relative min-h-screen overflow-hidden">
+        {/* Premium Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
+
+        {/* Faded Columns/Pillars Background */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+          <Columns3 className="w-[600px] h-[600px] text-amber-400" />
+        </div>
+
+        {/* Floating Particles */}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -100, 0],
+                opacity: [0, 1, 0],
+                scale: [0, 1.5, 0],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 4,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Content Container */}
+        <div className="relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            {/* 🕯️ Epic Header */}
+            <div className="text-center mb-16 relative">
+              {/* Glowing Pillar Icon Background */}
+              <motion.div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.05, 0.1, 0.05],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
-                <span className="text-[#0A174E]">The </span>
-                <motion.span
-                  className="bg-gradient-to-r from-[#b8860b] via-[#ffcc33] to-[#ffd700]
-                 text-transparent bg-clip-text relative inline-block"
-                  animate={{
-                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  style={{
-                    backgroundSize: "200% auto",
-                  }}
-                >
-                  Pillars
-                </motion.span>
+                <Columns3 className="w-96 h-96 text-amber-500" />
+              </motion.div>
+
+              <div className="relative">
+                {/* Subtitle Badge */}
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  animate={{ x: ["-100%", "100%"] }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    ease: "linear",
-                  }}
-                />
-              </motion.h1>
-              <p className="text-stone-500 text-lg">
-                Wisdom, knowledge, and insights on the journey from darkness to
-                light
-              </p>
-            </div>
-          </div>
-
-          {/* 🔍 Search */}
-          <div className="max-w-2xl mx-auto mb-10">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
-              <input
-                type="text"
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-full focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all"
-              />
-            </div>
-          </div>
-
-          {/* 🏷️ Subcategory Filters */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 ${
-                selectedCategory === null
-                  ? "bg-stone-900 text-white shadow-lg"
-                  : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
-              }`}
-            >
-              All Posts
-            </button>
-            {subcategories.map((sub) => (
-              <button
-                key={sub}
-                onClick={() => setSelectedCategory(sub)}
-                className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 ${
-                  selectedCategory === sub
-                    ? "bg-stone-900 text-white shadow-lg"
-                    : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
-                }`}
-              >
-                {sub}
-              </button>
-            ))}
-          </div>
-
-          {/* 🌟 Featured Post */}
-          {featuredPost && (
-            <div className="mb-16 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
-              <div className="grid md:grid-cols-2">
-                <div className="relative bg-stone-800">
-                  {featuredPost.image_url ? (
-                    <img
-                      src={
-                        getPublicUrl(featuredPost.image_url) ||
-                        featuredPost.image_url
-                      }
-                      alt={featuredPost.title ?? ""}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Columns3 className="w-24 h-24 text-white/30" />
-                    </div>
-                  )}
-                  <span className="absolute top-4 left-4 bg-amber-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Featured
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="inline-flex items-center gap-2 px-6 py-2 mb-6 bg-amber-500/10 border border-amber-500/30 rounded-full backdrop-blur-sm"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-300 text-sm font-medium tracking-wider uppercase">
+                    Illuminating Wisdom
                   </span>
-                </div>
-                <div className="p-8 flex flex-col justify-center">
-                  <p className="text-amber-700 font-semibold text-sm uppercase mb-2">
-                    {featuredPost.subcategory}
-                  </p>
-                  <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 mb-3">
-                    {featuredPost.title}
-                  </h2>
-                  <p className="text-stone-600 mb-5 leading-relaxed">
-                    {featuredPost.summary}
-                  </p>
-                  <div className="flex items-center gap-5 text-sm text-stone-500 mb-4">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      {formatDate(featuredPost.publish_date)}
-                    </span>
-                    {featuredPost.reading_time_minutes && (
-                      <span className="flex items-center gap-1">
-                        <Clock size={16} />
-                        {featuredPost.reading_time_minutes} min read
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() =>
-                      navigate(`/blog/${featuredPost.slug || featuredPost.id}`)
-                    } // ✅ changed from /pillars/ to /blog/
-                    className="inline-flex items-center gap-2 text-amber-700 font-semibold hover:text-amber-900 transition-colors"
+                </motion.div>
+
+                {/* Main Title */}
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 0.2 }}
+                  className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold text-center tracking-[0.15em] select-none relative mb-6"
+                >
+                  <span className="text-white drop-shadow-2xl">The </span>
+                  <motion.span
+                    className="relative inline-block"
+                    animate={{
+                      textShadow: [
+                        "0 0 20px rgba(255, 215, 0, 0.5)",
+                        "0 0 40px rgba(255, 215, 0, 0.8)",
+                        "0 0 20px rgba(255, 215, 0, 0.5)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                   >
-                    Read Article <ArrowRight size={18} />
-                  </button>
+                    <span
+                      className="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 text-transparent bg-clip-text"
+                      style={{ backgroundSize: "200% auto" }}
+                    >
+                      Pillars
+                    </span>
+                  </motion.span>
+
+                  {/* Shimmer Effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    animate={{ x: ["-200%", "200%"] }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      repeatDelay: 2,
+                      ease: "easeInOut",
+                    }}
+                    style={{ mixBlendMode: "overlay" }}
+                  />
+                </motion.h1>
+
+                {/* Description */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 0.4 }}
+                  className="text-amber-100/80 text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed font-light"
+                >
+                  Wisdom, knowledge, and insights on the journey from darkness
+                  to light
+                </motion.p>
+
+                {/* Decorative Lines */}
+                <div className="flex items-center justify-center gap-4 mt-8">
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 1, delay: 0.6 }}
+                    className="h-px w-24 bg-gradient-to-r from-transparent to-amber-500"
+                  />
+                  <BookOpen className="w-6 h-6 text-amber-400" />
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 1, delay: 0.6 }}
+                    className="h-px w-24 bg-gradient-to-l from-transparent to-amber-500"
+                  />
                 </div>
               </div>
             </div>
-          )}
 
-          {/* 🧱 Posts Grid */}
-          {posts.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((p) => (
-                <article
-                  key={p.id}
-                  className="bg-white border border-stone-200 rounded-xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-1"
+            {/* 🔍 Premium Search Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="max-w-2xl mx-auto mb-10"
+            >
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+                <div className="relative flex items-center">
+                  <Search className="absolute left-6 w-5 h-5 text-amber-400" />
+                  <input
+                    type="text"
+                    placeholder="Search for wisdom..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-14 pr-6 py-4 bg-white/10 backdrop-blur-md border border-amber-500/30 rounded-full 
+                    text-white placeholder-amber-200/50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent 
+                    transition-all shadow-xl"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Archive Button - Premium Style */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 1 }}
+              className="flex justify-center mb-12"
+            >
+              <motion.button
+                onClick={() => navigate("/pillars/archive")}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-yellow-600 rounded-full blur-lg group-hover:blur-xl transition-all opacity-75" />
+                <div className="relative flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full font-bold text-slate-900 shadow-2xl">
+                  <Archive className="w-5 h-5" />
+                  <span>Explore Full Archive</span>
+                  <span className="px-3 py-1 bg-slate-900/20 rounded-full text-sm">
+                    {totalCount}
+                  </span>
+                </div>
+              </motion.button>
+            </motion.div>
+
+            {/* 🏷️ Premium Category Filters */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+              className="flex flex-wrap justify-center gap-3 mb-16"
+            >
+              <motion.button
+                onClick={() => setSelectedCategory(null)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative px-8 py-3 rounded-full font-semibold transition-all duration-300 ${
+                  selectedCategory === null
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 shadow-lg shadow-amber-500/50"
+                    : "bg-white/10 text-amber-100 hover:bg-white/20 border border-amber-500/30 backdrop-blur-sm"
+                }`}
+              >
+                All Posts
+              </motion.button>
+              {subcategories.map((sub, i) => (
+                <motion.button
+                  key={sub}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: 1.3 + i * 0.1 }}
+                  onClick={() => setSelectedCategory(sub)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`relative px-8 py-3 rounded-full font-semibold transition-all duration-300 ${
+                    selectedCategory === sub
+                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 shadow-lg shadow-amber-500/50"
+                      : "bg-white/10 text-amber-100 hover:bg-white/20 border border-amber-500/30 backdrop-blur-sm"
+                  }`}
                 >
-                  {p.image_url ? (
-                    <img
-                      src={getPublicUrl(p.image_url) || p.image_url}
-                      alt={p.title ?? ""}
-                      className="w-full h-48 object-cover rounded-t-xl"
-                    />
-                  ) : (
-                    <div className="h-48 bg-stone-100 flex items-center justify-center">
-                      <Columns3 className="w-12 h-12 text-stone-300" />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <p className="text-amber-700 text-xs uppercase mb-2 font-semibold">
-                      {p.subcategory}
-                    </p>
-                    <h3 className="text-xl font-serif font-bold text-stone-900 mb-3 leading-snug">
-                      {p.title}
-                    </h3>
-                    <p className="text-stone-600 text-sm mb-4 line-clamp-3">
-                      {p.summary}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-stone-500 border-t pt-3">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={14} /> {formatDate(p.publish_date)}
-                      </span>
-                      <button
-                        onClick={() => navigate(`/blog/${p.slug || p.id}`)} // ✅ changed from /pillars/ to /blog/
-                        className="inline-flex items-center gap-1 text-amber-700 hover:text-amber-900 font-medium"
+                  {sub}
+                </motion.button>
+              ))}
+            </motion.div>
+
+            {/* 🌟 Premium Featured Post */}
+            {featuredPost && (
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 1.4 }}
+                className="mb-20 relative group"
+              >
+                {/* Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all" />
+
+                <div className="relative bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-amber-500/20 rounded-3xl shadow-2xl overflow-hidden">
+                  <div className="grid md:grid-cols-2">
+                    {/* Image Section */}
+                    <div className="relative h-96 md:h-auto overflow-hidden">
+                      {featuredPost.image_url ? (
+                        <motion.img
+                          whileHover={{ scale: 1.1 }}
+                          transition={{ duration: 0.6 }}
+                          src={
+                            getPublicUrl(featuredPost.image_url) ||
+                            featuredPost.image_url
+                          }
+                          alt={featuredPost.title ?? ""}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-800">
+                          <Columns3 className="w-32 h-32 text-amber-500/20" />
+                        </div>
+                      )}
+
+                      {/* Featured Badge */}
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5, delay: 1.6 }}
+                        className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 rounded-full text-sm font-bold shadow-lg"
                       >
-                        Read More <ArrowRight size={14} />
-                      </button>
+                        <Sparkles className="w-4 h-4" />
+                        Featured
+                      </motion.span>
+
+                      {/* Overlay Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent md:bg-gradient-to-r" />
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="p-10 flex flex-col justify-center">
+                      <motion.p
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1.7 }}
+                        className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-3 flex items-center gap-2"
+                      >
+                        <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                        {featuredPost.subcategory}
+                      </motion.p>
+
+                      <motion.h2
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1.8 }}
+                        className="text-4xl md:text-5xl font-serif font-bold text-white mb-4 leading-tight"
+                      >
+                        {featuredPost.title}
+                      </motion.h2>
+
+                      <motion.p
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1.9 }}
+                        className="text-amber-100/70 text-lg mb-6 leading-relaxed"
+                      >
+                        {featuredPost.summary}
+                      </motion.p>
+
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 2 }}
+                        className="flex items-center gap-6 text-sm text-amber-200/60 mb-6"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Calendar size={16} className="text-amber-400" />
+                          {formatDate(featuredPost.publish_date)}
+                        </span>
+                        {featuredPost.reading_time_minutes && (
+                          <span className="flex items-center gap-2">
+                            <Clock size={16} className="text-amber-400" />
+                            {featuredPost.reading_time_minutes} min read
+                          </span>
+                        )}
+                      </motion.div>
+
+                      <motion.button
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 2.1 }}
+                        onClick={() =>
+                          navigate(
+                            `/blog/${featuredPost.slug || featuredPost.id}`
+                          )
+                        }
+                        whileHover={{ x: 5 }}
+                        className="inline-flex items-center gap-3 text-amber-400 font-bold text-lg group/btn"
+                      >
+                        Read Article
+                        <ArrowRight
+                          size={20}
+                          className="group-hover/btn:translate-x-2 transition-transform"
+                        />
+                      </motion.button>
                     </div>
                   </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 text-stone-500">
-              <Columns3 className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-              No blog posts found.
-            </div>
-          )}
+                </div>
+              </motion.div>
+            )}
 
-          {/* ✨ Membership / Contact CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="mt-20 bg-[#0A174E] rounded-2xl shadow-2xl overflow-hidden text-center py-16 px-6"
-          >
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">
-              Begin Your Journey
-            </h2>
-            <p className="text-[#f5d06f] text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-              Discover the timeless values of Freemasonry. Join a community
-              dedicated to personal growth, shared purpose, and service.
-            </p>
-            <motion.button
-              onClick={() => navigate("/contact")}
-              className="px-10 py-4 bg-[#FFD700] text-[#0A174E] font-semibold rounded-full
-                 shadow-lg hover:bg-[#f4c430] transition-all duration-300 hover:scale-105"
-              animate={{
-                boxShadow: [
-                  "0 0 0px rgba(255, 215, 0, 0.0)",
-                  "0 0 15px rgba(255, 215, 0, 0.5)",
-                  "0 0 0px rgba(255, 215, 0, 0.0)",
-                ],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatType: "mirror",
-                ease: "easeInOut",
-              }}
+            {/* 🧱 Premium Posts Grid */}
+            {posts.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {posts.map((p, index) => (
+                  <motion.article
+                    key={p.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 2.2 + index * 0.1 }}
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    onClick={() => navigate(`/blog/${p.slug || p.id}`)}
+                    className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-amber-500/20 rounded-2xl shadow-xl overflow-hidden cursor-pointer"
+                  >
+                    {/* Glow on Hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-yellow-500/0 group-hover:from-amber-500/10 group-hover:to-yellow-500/10 transition-all duration-500 rounded-2xl" />
+
+                    {/* Image */}
+                    <div className="relative h-56 overflow-hidden">
+                      {p.image_url ? (
+                        <motion.img
+                          whileHover={{ scale: 1.1 }}
+                          transition={{ duration: 0.6 }}
+                          src={getPublicUrl(p.image_url) || p.image_url}
+                          alt={p.title ?? ""}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                          <Columns3 className="w-16 h-16 text-amber-500/20" />
+                        </div>
+                      )}
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="relative p-6">
+                      <p className="text-amber-400 text-xs uppercase mb-2 font-bold tracking-widest flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+                        {p.subcategory}
+                      </p>
+
+                      <h3 className="text-2xl font-serif font-bold text-white mb-3 leading-tight group-hover:text-amber-300 transition-colors">
+                        {p.title}
+                      </h3>
+
+                      <p className="text-amber-100/60 text-sm mb-4 line-clamp-3 leading-relaxed">
+                        {p.summary}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-amber-200/50 border-t border-amber-500/20 pt-4">
+                        <span className="flex items-center gap-2">
+                          <Calendar size={14} className="text-amber-400" />
+                          {formatDate(p.publish_date)}
+                        </span>
+                        <motion.div
+                          whileHover={{ x: 5 }}
+                          className="flex items-center gap-2 text-amber-400 font-semibold"
+                        >
+                          Read More
+                          <ArrowRight
+                            size={14}
+                            className="group-hover:translate-x-1 transition-transform"
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    {/* Corner Accent */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/20 to-transparent rounded-bl-full" />
+                  </motion.article>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-20 text-amber-200/60"
+              >
+                <Columns3 className="w-16 h-16 text-amber-500/30 mx-auto mb-4" />
+                <p className="text-xl">No articles found.</p>
+              </motion.div>
+            )}
+
+            {/* ✨ Premium CTA Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              viewport={{ once: true }}
+              className="mt-24 relative group"
             >
-              Learn More →
-            </motion.button>
-          </motion.div>
+              {/* Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all" />
+
+              <div className="relative bg-gradient-to-br from-slate-800/90 to-blue-950/90 backdrop-blur-xl border border-amber-500/30 rounded-3xl shadow-2xl overflow-hidden text-center py-20 px-8">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-5">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute"
+                      style={{
+                        left: `${20 + i * 15}%`,
+                        top: `${10 + (i % 2) * 40}%`,
+                      }}
+                    >
+                      <Columns3 className="w-24 h-24 text-amber-500" />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="relative z-10">
+                  {/* Badge */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    viewport={{ once: true }}
+                    className="inline-flex items-center gap-2 px-6 py-2 mb-6 bg-amber-500/10 border border-amber-500/30 rounded-full backdrop-blur-sm"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span className="text-amber-300 text-sm font-medium tracking-wider uppercase">
+                      Join Our Brotherhood
+                    </span>
+                  </motion.div>
+
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    viewport={{ once: true }}
+                    className="text-5xl md:text-6xl font-serif font-bold text-white mb-6"
+                  >
+                    Begin Your Journey
+                  </motion.h2>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="text-amber-100/80 text-xl mb-12 max-w-3xl mx-auto leading-relaxed"
+                  >
+                    Discover the timeless values of Freemasonry. Join a
+                    community dedicated to personal growth, shared purpose, and
+                    service.
+                  </motion.p>
+
+                  <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    viewport={{ once: true }}
+                    onClick={() => navigate("/contact")}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative group/cta"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-yellow-600 rounded-full blur-lg group-hover/cta:blur-xl transition-all" />
+                    <div className="relative flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full font-bold text-lg text-slate-900 shadow-2xl">
+                      <span>Learn More</span>
+                      <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-2 transition-transform" />
+                    </div>
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </>

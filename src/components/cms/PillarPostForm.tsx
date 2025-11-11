@@ -42,6 +42,15 @@ const PillarPostForm: React.FC<Props> = ({
   const [showMM, setShowMM] = useState(false);
   const [img, setImg] = useState<string>(initialData?.image_url || "");
 
+  // Pillar categories (must match blog_subcategory_enum in database)
+  const categories = [
+    { slug: "For Those Seeking", label: "seekers" },
+    { slug: "History & Heritage", label: "history" },
+    { slug: "Member Stories", label: "stories" },
+    { slug: "Philosophy & Thought", label: "philosophy" },
+    { slug: "Community & Service", label: "community" },
+  ];
+
   const {
     register,
     handleSubmit,
@@ -197,14 +206,22 @@ const PillarPostForm: React.FC<Props> = ({
             placeholder="Radlett Lodge"
           />
         </div>
+        {/* Category Dropdown */}
         <div>
-          <label className="block text-sm font-medium text-primary-700">
-            Subcategory
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            Category
           </label>
-          <input
-            {...register("subcategory")}
-            className="mt-1 w-full border rounded-md px-3 py-2"
-          />
+          <select
+            {...register("subcategory", { required: true })}
+            className="w-full px-3 py-2 border rounded-md bg-white text-neutral-700 focus:ring-secondary-500 focus:border-secondary-500"
+          >
+            <option value="">Select a category…</option>
+            {categories.map((cat) => (
+              <option key={cat.slug} value={cat.slug}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-primary-700">
