@@ -151,84 +151,63 @@ const SnippetsPage: React.FC = () => {
         </motion.div>
 
         {/* Hero Card - Two Column Layout */}
-        <AnimatePresence mode="wait">
-          {!showFullSheetGlobal && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-6xl mx-auto mb-24"
-            >
-              <div className="backdrop-blur-md bg-slate-800/60 rounded-3xl border border-amber-500/20 p-8 md:p-12 shadow-2xl overflow-hidden relative">
-                {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-6xl mx-auto mb-24"
+        >
+          <div className="backdrop-blur-md bg-slate-800/60 rounded-3xl border border-amber-500/20 p-8 md:p-12 shadow-2xl overflow-hidden relative">
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
 
-                <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
-                  {/* Left Column - Description */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <h2 className="text-3xl md:text-4xl font-bold text-amber-300 mb-4">
-                      This Week's Reflection
-                    </h2>
-                    <div className="flex items-center gap-4 mb-6 text-slate-400 text-sm">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4" />
-                        <span>December 9, 2024</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-4 h-4" />
-                        <span>3 min read</span>
-                      </div>
-                    </div>
-                    <p className="text-slate-300 leading-relaxed mb-6 text-lg">
-                      Click the book to reveal this week's snippet—a carefully
-                      curated message designed to inspire reflection, promote
-                      brotherhood, and illuminate the timeless principles of
-                      Freemasonry.
-                    </p>
-                    <div className="flex items-center gap-2 text-amber-400 text-sm">
-                      <Sparkles className="w-4 h-4" />
-                      <span>Updated every Monday • New wisdom awaits</span>
-                    </div>
-                  </motion.div>
-
-                  {/* Right Column - Book */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4, duration: 0.8 }}
-                    className="flex justify-center md:justify-end"
-                    aria-label="Interactive weekly snippet book"
-                  >
-                    <div className="scale-90 md:scale-100">
-                      <AnimatedBook
-                        onSheetOpenChange={setShowFullSheetGlobal}
-                      />
-                    </div>
-                  </motion.div>
+            <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
+              {/* Left Column - Description */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h2 className="text-3xl md:text-4xl font-bold text-amber-300 mb-4">
+                  This Week's Reflection
+                </h2>
+                <div className="flex items-center gap-4 mb-6 text-slate-400 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    <span>December 9, 2024</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    <span>3 min read</span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+                <p className="text-slate-300 leading-relaxed mb-6 text-lg">
+                  Click the book to reveal this week's snippet—a carefully
+                  curated message designed to inspire reflection, promote
+                  brotherhood, and illuminate the timeless principles of
+                  Freemasonry.
+                </p>
+                <div className="flex items-center gap-2 text-amber-400 text-sm">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Updated every Monday • New wisdom awaits</span>
+                </div>
+              </motion.div>
 
-          {/* Full Book View */}
-          {showFullSheetGlobal && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5 }}
-              className="flex justify-center mb-24"
-              aria-label="Expanded weekly snippet book"
-            >
-              <AnimatedBook onSheetOpenChange={setShowFullSheetGlobal} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {/* Right Column - Book */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="flex justify-center md:justify-end"
+                aria-label="Interactive weekly snippet book"
+              >
+                <div className="scale-90 md:scale-100">
+                  <AnimatedBook onSheetOpenChange={setShowFullSheetGlobal} />
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Archive Section */}
         <motion.div

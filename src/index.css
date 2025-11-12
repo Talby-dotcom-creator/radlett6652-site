@@ -411,7 +411,7 @@ main {
 
 /* === Radlett Lodge Unified Card Style === */
 .radlett-card {
-  @apply bg-white/80 backdrop-blur-sm border border-secondary-100 rounded-2xl shadow-soft hover:shadow-gold transition-all duration-300;
+  @apply bg-slate-800/50 backdrop-blur-sm border border-amber-500/20 rounded-2xl shadow-soft hover:shadow-gold transition-all duration-300;
 }
 
 /* -----------------------------------------------------------

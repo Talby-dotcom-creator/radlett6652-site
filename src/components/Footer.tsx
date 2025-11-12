@@ -1,6 +1,6 @@
 // src/components/Footer.tsx
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Facebook,
   Twitter,
@@ -14,6 +14,7 @@ import { cmsApi } from "../lib/cmsApi";
 import { SiteSetting } from "../types";
 
 const Footer: React.FC = () => {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
@@ -192,25 +193,16 @@ const Footer: React.FC = () => {
                 <MapPin size={18} className="mr-2 text-yellow-500" />
                 <span>{lodgeAddress}</span>
               </li>
-              <li className="flex items-center">
-                <Mail size={18} className="mr-2 text-yellow-500" />
-                <a
-                  href={`mailto:${contactEmail}`}
-                  className="hover:text-yellow-400"
-                >
-                  {contactEmail}
-                </a>
-              </li>
-              <li className="flex items-center">
-                <Phone size={18} className="mr-2 text-yellow-500" />
-                <a
-                  href={`tel:${contactPhone.replace(/\s+/g, "")}`}
-                  className="hover:text-yellow-400"
-                >
-                  {contactPhone}
-                </a>
-              </li>
             </ul>
+
+            {/* Contact Secretary Button */}
+            <button
+              onClick={() => navigate("/contact")}
+              className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-yellow-600 to-yellow-500 text-[#0a1a2a] font-semibold rounded-lg shadow-lg hover:shadow-yellow-500/50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <Mail className="w-5 h-5" />
+              Contact Secretary
+            </button>
           </div>
         </div>
 

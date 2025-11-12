@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import App from "./App";
 import "./index.css";
 import "react-quill/dist/quill.snow.css";
@@ -40,14 +41,23 @@ if (import.meta.env.DEV) {
 // ✅ Proper rendering with BrowserRouter
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ErrorBoundary>
-        <HelmetProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </HelmetProvider>
-      </ErrorBoundary>
-    </BrowserRouter>
+    <GoogleReCaptchaProvider
+      reCaptchaKey="6Le51QosAAAAAEBZSKZXIMTfzuBhMaV5e6B1vpJd"
+      scriptProps={{
+        async: true,
+        defer: true,
+        appendTo: "head",
+      }}
+    >
+      <BrowserRouter>
+        <ErrorBoundary>
+          <HelmetProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </HelmetProvider>
+        </ErrorBoundary>
+      </BrowserRouter>
+    </GoogleReCaptchaProvider>
   </StrictMode>
 );

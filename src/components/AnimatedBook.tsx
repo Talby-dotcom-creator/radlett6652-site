@@ -36,9 +36,17 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
     const loadSnippet = async () => {
       try {
         const latest = await optimizedApi.getLatestSnippet();
+        console.log("📚 Loaded snippet:", latest);
         setSnippet(latest);
       } catch (err) {
-        console.error("Error loading snippet:", err);
+        console.error("❌ Error loading snippet:", err);
+        // Set fallback content if API fails
+        setSnippet({
+          title: "Weekly Reflection",
+          subtitle: "A Moment of Masonic Wisdom",
+          content:
+            "Welcome to our Weekly Snippet. Each Monday we share thought-provoking reflections on Freemasonry, brotherhood, and personal growth. These short pieces are designed to inspire and enlighten all who seek wisdom. Please check back regularly for new content.",
+        });
       } finally {
         setLoadingSnippet(false);
       }
@@ -53,15 +61,23 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
     }
   }, [isOpen]);
 
-  const displayedTitle = snippet?.title || "";
-  const displayedSubtitle = snippet?.subtitle || "";
+  const displayedTitle = snippet?.title || "Weekly Snippet";
+  const displayedSubtitle = snippet?.subtitle || "Masonic Reflection";
   const snippetBody =
     snippet?.content ||
     snippet?.subtitle ||
     snippet?.title ||
-    "Snippet not available. Please check back soon.";
+    "Each Monday we feature thought-provoking reflections on Freemasonry, brotherhood, and personal growth. These short pieces are designed to inspire and enlighten all who seek wisdom.";
 
   const formattedBody = snippetBody.replace(/([,.;!?])\s+/g, "$1\n").trim();
+
+  console.log("📖 Book State:", {
+    isOpen,
+    showFullSheet,
+    hasFlutteredIn,
+    loadingSnippet,
+    snippetTitle: snippet?.title,
+  });
 
   return (
     <div
@@ -168,19 +184,16 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
             {/* ✅ REFLECTION MESSAGE - ELEGANT CHAPTER PAGE */}
             {showReflectionMessage && (
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: 0 }}
-                animate={{ opacity: 1, y: 0, rotate: 5 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="absolute w-[55%]
-                           text-center
-                           font-serif z-30"
+                className="absolute w-[68%] text-center font-serif z-30"
                 style={{
-                  top: "calc(48% - 100px)",
-                  left: "calc(50% - 300px)",
-                  transform: "translateY(-50%)",
-                  padding: "1.5rem 1.2rem",
+                  top: "calc(30% - 20px)",
+                  left: "16%",
+                  padding: "1.5rem 2.5rem",
                   background:
-                    "linear-gradient(to bottom, rgba(245,234,205,0.05) 0%, rgba(245,234,205,0.02) 100%)",
+                    "linear-gradient(to bottom, rgba(245,234,205,0.03) 0%, rgba(245,234,205,0.01) 100%)",
                   borderRadius: "8px",
                 }}
               >
@@ -190,9 +203,9 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
                   style={{
-                    fontSize: "2rem",
+                    fontSize: "1.2rem",
                     color: "#D4AF37",
-                    marginBottom: "0.8rem",
+                    marginBottom: "0.4rem",
                     textShadow:
                       "0 0 8px rgba(212,175,55,0.4), 0 2px 4px rgba(0,0,0,0.3)",
                     letterSpacing: "0.3em",
@@ -210,7 +223,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                     height: "1px",
                     background:
                       "linear-gradient(to right, transparent, #D4AF37 20%, #D4AF37 80%, transparent)",
-                    marginBottom: "1.2rem",
+                    marginBottom: "0.8rem",
                     boxShadow: "0 0 4px rgba(212,175,55,0.5)",
                   }}
                 />
@@ -221,14 +234,14 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6, duration: 0.6 }}
                   style={{
-                    fontSize: "clamp(1.15rem, 1.5vw, 1.4rem)",
-                    lineHeight: 1.7,
+                    fontSize: "clamp(0.85rem, 1.1vw, 1rem)",
+                    lineHeight: 1.5,
                     color: "#f5eacd",
                     textShadow:
                       "0 2px 8px rgba(0,0,0,0.7), 0 1px 3px rgba(212,175,55,0.15)",
                     fontFamily: "'Libre Baskerville', 'Georgia', serif",
-                    letterSpacing: "0.02em",
-                    marginBottom: "1.2rem",
+                    letterSpacing: "0.01em",
+                    marginBottom: "0.8rem",
                   }}
                 >
                   Each Monday we feature thought-provoking reflections. These
@@ -245,7 +258,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                     height: "1px",
                     background:
                       "linear-gradient(to right, transparent, #D4AF37 20%, #D4AF37 80%, transparent)",
-                    marginBottom: "0.8rem",
+                    marginBottom: "0.5rem",
                     boxShadow: "0 0 4px rgba(212,175,55,0.5)",
                   }}
                 />
@@ -256,7 +269,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 1, duration: 0.5 }}
                   style={{
-                    fontSize: "1.6rem",
+                    fontSize: "1.1rem",
                     color: "#D4AF37",
                     textShadow:
                       "0 0 8px rgba(212,175,55,0.4), 0 2px 4px rgba(0,0,0,0.3)",
@@ -281,7 +294,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                              transition-all duration-200
                              hover:scale-105 active:scale-95"
                   style={{
-                    marginTop: "44px",
+                    marginTop: "1.5rem",
                     background:
                       "linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)",
                     color: "#1a1105",
@@ -999,17 +1012,17 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                 setShowFullSheet(false);
                 setShowReflectionMessage(true);
               }}
-              className="absolute top-[24%] right-[18%]
-                         bg-[#FFD700] text-[#0A174E] px-4 py-2 
+              className="absolute bottom-[12%] left-1/2 -translate-x-1/2
+                         bg-[#FFD700] text-[#0A174E] px-6 py-3 
                          rounded-lg shadow-lg font-semibold
-                         hover:bg-[#f4c430] transition-all"
+                         hover:bg-[#f4c430] hover:scale-105 transition-all"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
               style={{ zIndex: 40 }}
             >
-              Close
+              Close Book
             </motion.button>
           )}
         </motion.div>

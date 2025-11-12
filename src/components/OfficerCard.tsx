@@ -35,16 +35,16 @@ const OfficerCard: React.FC<OfficerCardProps> = ({ officer }) => {
       {/* Officer Details */}
       <div className="radlett-card-content flex-grow flex flex-col justify-between">
         <div>
-          <h3 className="text-xl font-heading font-semibold text-primary-700 mb-1 group-hover:text-secondary-500 transition-colors">
+          <h3 className="text-xl font-heading font-semibold text-amber-400 mb-1 group-hover:text-amber-300 transition-colors">
             <div>{firstName}</div>
             {surname && <div>{surname}</div>}
           </h3>
-          <p className="text-sm text-neutral-600 mb-3">{officer.position}</p>
+          <p className="text-sm text-amber-100/70 mb-3">{officer.position}</p>
         </div>
 
         {officer.is_active && (
-          <div className="flex items-center justify-center gap-1 text-secondary-500 text-sm font-medium">
-            <Star className="w-4 h-4" /> Active Officer
+          <div className="flex items-center justify-center gap-1 text-amber-400 text-sm font-medium">
+            <Star className="w-4 h-4 fill-amber-400" /> Active Officer
           </div>
         )}
       </div>

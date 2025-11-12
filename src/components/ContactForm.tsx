@@ -1,10 +1,12 @@
 // src/components/ContactForm.tsx
 import React, { useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import Button from "./Button";
 
 const ContactForm: React.FC = () => {
   // Toggle this to true while testing, false in production
   const debugMode = true;
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -45,17 +47,31 @@ const ContactForm: React.FC = () => {
       return;
     }
 
+    // reCAPTCHA verification
+    if (!executeRecaptcha) {
+      console.log("Execute recaptcha not yet available");
+      setFormStatus("error");
+      setErrorMessage("Security verification not ready. Please try again.");
+      return;
+    }
+
     setFormStatus("submitting");
     setErrorMessage("");
     setDebugResponse(null);
 
     try {
+      // Get reCAPTCHA token
+      const token = await executeRecaptcha("contact_form");
+
       const response = await fetch(
         "https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            recaptchaToken: token, // Add reCAPTCHA token
+          }),
         }
       );
 
