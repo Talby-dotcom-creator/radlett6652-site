@@ -125,45 +125,140 @@ export const optimizedApi: any = {
   },
 
   /* ---------------- SNIPPETS ---------------- */
-  async getLatestSnippet() {
+  async getSnippets(): Promise<CMSBlogPost[]> {
     try {
-      const table = await resolveSnippetsTable();
       const { data, error } = await supabase
-        .from(table as any)
-        .select("id, title, subtitle, content, publish_date, is_active")
-        .eq("is_active", true)
-        .order("publish_date", { ascending: false })
-        .limit(1);
+        .from("snippets")
+        .select("*")
+        .order("publish_date", { ascending: false });
 
-      if (error) handleError(error, "getLatestSnippet");
+      if (error) handleError(error, "getSnippets");
 
-      const row: any = data?.[0];
-      if (!row) {
-        return {
-          id: "",
-          title: "No snippet found",
-          subtitle: "Please check back after Monday 9pm",
-          content: "There are currently no active reflections available.",
-          publish_date: null,
-        };
+      return (data ?? []).map((snippet: any) => ({
+        id: snippet.id,
+        title: snippet.title ?? "Untitled Snippet",
+        content: snippet.content ?? "",
+        summary: snippet.summary ?? "",
+        author: snippet.author ?? "",
+        publish_date: snippet.publish_date ?? null,
+        is_published: snippet.is_active ?? false, // Map is_active to is_published
+        image_url: snippet.image_url ?? null,
+        created_at: snippet.created_at,
+        updated_at: snippet.updated_at,
+        category: "snippet",
+      }));
+    } catch (err) {
+      handleError(err, "getSnippets");
+      return [];
+    }
+  },
+
+  async getLatestSnippet() {
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("snippets")
+      .select("*")
+      .eq("is_active", true)
+      .lte("publish_date", now) // ensures future snippets don't appear early
+      .order("publish_date", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error("getLatestSnippet error:", error);
+      return null;
+    }
+
+    return data?.[0] || null;
+  },
+
+  async createSnippet(
+    snippet: Omit<CMSBlogPost, "id" | "created_at" | "updated_at">
+  ) {
+    try {
+      const insertData: any = {
+        title: snippet.title || "Untitled",
+        content: snippet.content || "",
+        publish_date: snippet.publish_date || new Date().toISOString(),
+        is_active: snippet.is_published ?? false,
+      };
+
+      // Add optional fields only if they exist in your table and have values
+      if ((snippet as any).subtitle)
+        insertData.subtitle = (snippet as any).subtitle;
+      if (snippet.author) insertData.author = snippet.author;
+      // Note: image_url doesn't exist in your snippets table
+
+      console.log("Creating snippet with data:", insertData);
+
+      const { data, error } = await supabase
+        .from("snippets")
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase error creating snippet:", error);
+        handleError(error, "createSnippet");
       }
 
-      return {
-        id: row.id,
-        title: row.title ?? "Untitled Snippet",
-        subtitle: row.subtitle ?? "",
-        content: row.content ?? "",
-        publish_date: row.publish_date ?? null,
-      };
+      console.log("Snippet created successfully:", data);
+      return data;
     } catch (err) {
-      handleError(err, "getLatestSnippet");
-      return {
-        id: "",
-        title: "Error loading snippet",
-        subtitle: "",
-        content: "There was a problem fetching the latest reflection.",
-        publish_date: null,
-      };
+      console.error("Exception creating snippet:", err);
+      handleError(err, "createSnippet");
+      return null;
+    }
+  },
+
+  async updateSnippet(id: string, updates: Partial<CMSBlogPost>) {
+    try {
+      const updateData: any = {};
+
+      // Only include fields that exist in your snippets table
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.content !== undefined) updateData.content = updates.content;
+      if ((updates as any).subtitle !== undefined)
+        updateData.subtitle = (updates as any).subtitle;
+      if (updates.author !== undefined) updateData.author = updates.author;
+      if (updates.publish_date !== undefined)
+        updateData.publish_date = updates.publish_date;
+      // Note: image_url doesn't exist in your snippets table
+
+      // Map is_published to is_active
+      if (updates.is_published !== undefined) {
+        updateData.is_active = updates.is_published;
+      }
+
+      console.log("Updating snippet with data:", updateData);
+
+      const { data, error } = await supabase
+        .from("snippets")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase error updating snippet:", error);
+        handleError(error, "updateSnippet");
+      }
+
+      console.log("Snippet updated successfully:", data);
+      return data;
+    } catch (err) {
+      console.error("Exception updating snippet:", err);
+      handleError(err, "updateSnippet");
+      return null;
+    }
+  },
+
+  async deleteSnippet(id: string) {
+    try {
+      const { error } = await supabase.from("snippets").delete().eq("id", id);
+      if (error) handleError(error, "deleteSnippet");
+    } catch (err) {
+      handleError(err, "deleteSnippet");
     }
   },
 

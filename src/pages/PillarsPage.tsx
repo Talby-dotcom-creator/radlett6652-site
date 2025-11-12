@@ -125,6 +125,10 @@ function PillarsPageInner() {
     const { data, error } = await query;
     if (error) console.error("Error fetching blog posts:", error);
     if (data) {
+      console.log(
+        "📸 Blog posts with images:",
+        data.map((p) => ({ title: p.title, image_url: p.image_url }))
+      );
       const featured = data.find(
         (p: any) => (p.featured ?? p.is_featured) === true
       ) as BlogPost | undefined;
@@ -425,12 +429,16 @@ function PillarsPageInner() {
                         <motion.img
                           whileHover={{ scale: 1.1 }}
                           transition={{ duration: 0.6 }}
-                          src={
-                            getPublicUrl(featuredPost.image_url) ||
-                            featuredPost.image_url
-                          }
+                          src={featuredPost.image_url}
                           alt={featuredPost.title ?? ""}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.error(
+                              "Failed to load featured image:",
+                              featuredPost.image_url
+                            );
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-800">
@@ -449,13 +457,13 @@ function PillarsPageInner() {
                         Featured
                       </motion.span>
 
-                      {/* Overlay Gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent md:bg-gradient-to-r" />
+                      {/* Overlay Gradient - Lightened to show image */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent md:bg-gradient-to-r" />
                     </div>
 
                     {/* Content Section */}
                     <div className="p-10 flex flex-col justify-center">
-                      <motion.p
+                      <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 1.7 }}
@@ -463,7 +471,7 @@ function PillarsPageInner() {
                       >
                         <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                         {featuredPost.subcategory}
-                      </motion.p>
+                      </motion.div>
 
                       <motion.h2
                         initial={{ opacity: 0, x: -20 }}
@@ -547,17 +555,21 @@ function PillarsPageInner() {
                         <motion.img
                           whileHover={{ scale: 1.1 }}
                           transition={{ duration: 0.6 }}
-                          src={getPublicUrl(p.image_url) || p.image_url}
+                          src={p.image_url}
                           alt={p.title ?? ""}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.error("Failed to load image:", p.image_url);
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
                       ) : (
                         <div className="h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
                           <Columns3 className="w-16 h-16 text-amber-500/20" />
                         </div>
                       )}
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                      {/* Gradient Overlay - Lightened to show image */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent" />
                     </div>
 
                     {/* Content */}

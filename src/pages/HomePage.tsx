@@ -11,12 +11,13 @@ import NewsCard from "../components/NewsCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
 import { Event, CMSBlogPost, Testimonial } from "../types";
-import CoreValuesSection from "../components/CoreValuesSection";
+import ThreePillarsSection from "../components/ThreePillarsSection";
 import UpcomingEventSpotlight from "../components/UpcomingEventSpotlight";
 import MemberExperiences from "../components/MemberExperiences";
 import NewsDetailsModal from "../components/NewsDetailsModal";
-import QuoteBanner from "../components/QuoteBanner";
+import SacredChamber from "../components/SacredChamber";
 import WelcomeToOurLodge from "../components/WelcomeToOurLodge";
+import SectionBreather from "../components/SectionBreather";
 
 const HomePage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -199,52 +200,124 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <SectionDivider variant="bold" />
+      <SectionBreather variant="minimal" />
 
-      {/* Welcome */}
+      {/* 1. Welcome - Introduction to who we are */}
       <WelcomeToOurLodge />
 
-      <SectionDivider />
+      <SectionBreather variant="default" />
 
-      {/* Core Values */}
-      <CoreValuesSection />
+      {/* 2. Core Values - Our foundational principles */}
+      <ThreePillarsSection />
 
-      {/* Quote Banner */}
-      <QuoteBanner />
+      <SectionBreather variant="ornate" />
 
-      {/* Upcoming Event Spotlight */}
-      <UpcomingEventSpotlight />
+      {/* 3. Quote Banner - Words of wisdom */}
+      <SacredChamber />
 
-      <SectionDivider />
+      <SectionBreather variant="default" />
 
-      {/* Member Experiences */}
+      {/* 4. Member Experiences - Real testimonials */}
       <MemberExperiences />
 
-      <SectionDivider />
+      <SectionBreather variant="ornate" />
 
-      {/* 🗞️ News Section — only top 3 true “news” posts */}
-      <section
-        className="relative py-20 text-neutral-900 overflow-hidden"
-        style={{
-          backgroundImage:
-            "url('https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/images%20/old-newspaper-light.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px]" />
+      {/* 5. Upcoming Event Spotlight - Join us */}
+      <UpcomingEventSpotlight />
 
-        <div className="relative z-10 container mx-auto px-4">
-          <SectionHeading
-            title="Latest News"
-            subtitle="Stay updated with the latest activities from our Lodge."
-          />
+      <SectionBreather variant="default" />
+
+      {/* 6. News Section — Latest updates */}
+      <section className="relative py-24 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+        {/* Texture Overlay */}
+        <div
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Floating Newspaper Icons */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute opacity-5"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -25, 0],
+                opacity: [0.03, 0.07, 0.03],
+                rotate: [0, 8, 0],
+              }}
+              transition={{
+                duration: 5 + Math.random() * 3,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+                ease: "easeInOut",
+              }}
+            >
+              <Calendar className="w-20 h-20 text-amber-400" />
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="relative z-10 container mx-auto px-6">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-6 py-2 mb-6 bg-amber-500/10 border border-amber-500/30 rounded-full backdrop-blur-sm"
+            >
+              <Calendar className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-300 text-sm font-medium tracking-wider uppercase">
+                From the Lodge
+              </span>
+            </motion.div>
+
+            {/* Title */}
+            <h2 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4">
+              Latest
+              <span className="block mt-2 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 text-transparent bg-clip-text">
+                News
+              </span>
+            </h2>
+
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              Stay updated with the latest activities from our Lodge
+            </p>
+
+            {/* Decorative Divider */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              viewport={{ once: true }}
+              className="flex items-center gap-4 mt-8 w-full max-w-md mx-auto"
+            >
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+              <Calendar className="w-5 h-5 text-amber-400/50" />
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+            </motion.div>
+          </motion.div>
 
           {loading ? (
             <LoadingSpinner subtle />
           ) : news.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 {news
                   .filter(
                     (n) =>
@@ -252,35 +325,70 @@ const HomePage: React.FC = () => {
                       n.is_published !== false
                   )
                   .slice(0, 3)
-                  .map((n) => (
-                    <NewsCard
+                  .map((n, index) => (
+                    <motion.div
                       key={n.id}
-                      news={{
-                        ...n,
-                        summary: n.summary ?? "",
-                      }}
-                      onOpen={(post) => setSelectedNews(post)}
-                    />
+                      initial={{ opacity: 0, y: 50 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.15 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      whileHover={{ y: -8 }}
+                      className="relative group"
+                    >
+                      {/* Glow Effect */}
+                      <motion.div
+                        animate={{
+                          opacity: [0.2, 0.4, 0.2],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          delay: index * 0.5,
+                          ease: "easeInOut",
+                        }}
+                        className="absolute inset-0 bg-gradient-to-b from-amber-500/20 to-transparent blur-2xl rounded-2xl"
+                      />
+
+                      {/* Card Wrapper */}
+                      <div className="relative">
+                        <NewsCard
+                          news={{
+                            ...n,
+                            summary: n.summary ?? "",
+                          }}
+                          onOpen={(post) => setSelectedNews(post)}
+                        />
+                      </div>
+                    </motion.div>
                   ))}
               </div>
 
-              <div className="text-center mt-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.8 }}
+                viewport={{ once: true }}
+                className="text-center mt-16"
+              >
                 <Link to="/news">
                   <Button
-                    variant="outline"
-                    className="hover:shadow-[0_0_15px_rgba(255,215,0,0.4)] transition-all duration-300"
+                    variant="primary"
+                    className="hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] transition-all duration-300"
                   >
                     See all news — past and present
                   </Button>
                 </Link>
-              </div>
+              </motion.div>
             </>
           ) : (
-            <p className="text-center text-neutral-600 mt-6">
+            <p className="text-center text-slate-400 mt-6">
               No news articles yet.
             </p>
           )}
         </div>
+
+        {/* Bottom Edge Glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
       </section>
 
       {selectedNews && (
@@ -290,7 +398,7 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      <SectionDivider variant="bold" shimmer={false} />
+      <SectionBreather variant="minimal" />
     </>
   );
 };

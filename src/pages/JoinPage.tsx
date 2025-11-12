@@ -1,8 +1,8 @@
 // src/pages/JoinPage.tsx
 import React, { useState, useEffect } from "react";
-import { Check, HelpCircle } from "lucide-react";
+import { Check, HelpCircle, Sparkles, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import HeroSection from "../components/HeroSection";
+import { motion } from "framer-motion";
 import SectionHeading from "../components/SectionHeading";
 import Button from "../components/Button";
 import FaqItem from "../components/FaqItem";
@@ -49,12 +49,126 @@ const JoinPage: React.FC = () => {
 
   return (
     <>
-      {/* HERO SECTION */}
-      <HeroSection
-        title="Join Radlett Lodge No. 6652"
-        subtitle="Begin your journey into Freemasonry with our welcoming community"
-        backgroundImage="https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/banners/Join-us.png"
-      />
+      {/* DARK HERO SECTION */}
+      <section className="relative min-h-[70vh] bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          {/* Glowing orbs */}
+          <motion.div
+            className="absolute top-20 right-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute bottom-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
+          {/* Subtle grid pattern */}
+          <div
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                               linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+              backgroundSize: "50px 50px",
+            }}
+          />
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 container mx-auto px-4 py-24 md:py-32">
+          <motion.div
+            className="text-center max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Badge */}
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 backdrop-blur-sm border border-amber-500/20 mb-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-300 text-sm font-medium">
+                Join Our Brotherhood
+              </span>
+            </motion.div>
+
+            {/* Main Title */}
+            <motion.h1
+              className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+            >
+              Begin Your{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300">
+                Masonic Journey
+              </span>
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              className="text-amber-100/80 text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              Join Radlett Lodge No. 6652 and become part of a tradition
+              spanning over seven decades of fellowship, personal growth, and
+              service to the community.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            >
+              <Link to="/contact">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="group bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300"
+                >
+                  Start Your Journey
+                  <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <a href="#requirements">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-amber-400/30 text-amber-100 hover:bg-amber-400/10 hover:border-amber-400/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  Learn More
+                </Button>
+              </a>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Decorative bottom gradient fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+      </section>
 
       {/* INTRODUCTION */}
       <section className="py-20 bg-white">
@@ -114,7 +228,7 @@ const JoinPage: React.FC = () => {
       </section>
 
       {/* REQUIREMENTS */}
-      <section className="py-20 bg-neutral-50">
+      <section id="requirements" className="py-20 bg-neutral-50">
         <div className="container mx-auto px-4 md:px-6">
           <SectionHeading
             title="Membership Requirements"
@@ -315,26 +429,92 @@ const JoinPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-primary-600 text-white text-center">
-        <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
-            Ready to Begin Your Masonic Journey?
-          </h2>
-          <p className="text-lg mb-8 max-w-3xl mx-auto text-neutral-100">
-            If you're interested in joining Radlett Lodge No. 6652 or have any
-            questions, we'd love to hear from you. Our Secretary will guide you
-            through the first steps.
-          </p>
-          <Link to="/contact">
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-2 border-white text-white hover:bg-white hover:text-primary-700 transition-all duration-300"
+      {/* DARK CTA SECTION */}
+      <section className="relative py-24 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                               linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+              backgroundSize: "50px 50px",
+            }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto"
+          >
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 backdrop-blur-sm border border-amber-500/20 mb-6">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-300 text-sm font-medium">
+                Take the Next Step
+              </span>
+            </div>
+
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
+              Ready to Begin?
+            </h2>
+            <p className="text-amber-100/80 text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
+              Contact our Secretary to learn more about joining Radlett Lodge
+              No. 6652. We'll answer your questions and guide you through the
+              first steps of your Masonic journey.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link to="/contact">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="group bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300"
+                >
+                  Contact Our Secretary
+                  <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/about">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-amber-400/30 text-amber-100 hover:bg-amber-400/10 hover:border-amber-400/50 backdrop-blur-sm transition-all duration-300"
+                >
+                  Learn About Our History
+                </Button>
+              </Link>
+            </div>
+
+            {/* Additional Info */}
+            <motion.p
+              className="mt-10 text-amber-200/60 text-sm"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.6 }}
             >
-              Contact Us Today
-            </Button>
-          </Link>
+              Radlett Lodge No. 6652 — Serving the community since 1948
+            </motion.p>
+          </motion.div>
         </div>
       </section>
     </>

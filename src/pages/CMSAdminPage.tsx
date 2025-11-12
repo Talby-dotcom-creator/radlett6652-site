@@ -830,7 +830,7 @@ const CMSAdminPage: React.FC = () => {
         ] = await Promise.all([
           cmsApi.getEvents(),
           cmsApi.getNewsArticles(),
-          cmsApi.getBlogPosts("snippet"),
+          optimizedApi.getSnippets(), // Use optimizedApi for snippets table
           cmsApi.getOfficers(),
           cmsApi.getTestimonials(),
           cmsApi.getFAQItems(),
@@ -2157,20 +2157,17 @@ const CMSAdminPage: React.FC = () => {
                   {editingSnippet ? "Edit Snippet" : "Add New Snippet"}
                 </h3>
                 <form
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
                     const form = e.currentTarget as HTMLFormElement;
                     const title = (
                       form.elements.namedItem("title") as HTMLInputElement
                     ).value;
-                    const summary = (
-                      form.elements.namedItem("summary") as HTMLInputElement
+                    const subtitle = (
+                      form.elements.namedItem("subtitle") as HTMLInputElement
                     ).value;
                     const content = (
                       form.elements.namedItem("content") as HTMLTextAreaElement
-                    ).value;
-                    const image_url = (
-                      form.elements.namedItem("image_url") as HTMLInputElement
                     ).value;
                     const is_published = (
                       form.elements.namedItem(
@@ -2178,33 +2175,36 @@ const CMSAdminPage: React.FC = () => {
                       ) as HTMLInputElement
                     ).checked;
 
-                    const newSnippet: CMSBlogPost = {
-                      id: editingSnippet
-                        ? editingSnippet.id
-                        : `demo-${Date.now()}`,
-                      title,
-                      summary,
-                      content,
-                      image_url,
-                      is_published,
-                      publish_date: new Date().toISOString(),
-                      is_members_only: false,
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                    } as CMSBlogPost;
+                    try {
+                      if (editingSnippet) {
+                        // Update existing snippet
+                        await optimizedApi.updateSnippet(editingSnippet.id, {
+                          title,
+                          subtitle,
+                          content,
+                          is_published,
+                        } as any);
+                        success("Snippet updated successfully");
+                      } else {
+                        // Create new snippet
+                        await optimizedApi.createSnippet({
+                          title,
+                          subtitle,
+                          content,
+                          is_published,
+                          publish_date: new Date().toISOString(),
+                        } as any);
+                        success("Snippet created successfully");
+                      }
 
-                    if (editingSnippet) {
-                      setSnippets((prev) =>
-                        prev.map((s) =>
-                          s.id === editingSnippet.id ? newSnippet : s
-                        )
-                      );
-                    } else {
-                      setSnippets((prev) => [...prev, newSnippet]);
+                      // Reload data
+                      await loadData();
+                      setShowSnippetForm(false);
+                      setEditingSnippet(null);
+                    } catch (err) {
+                      console.error("Error saving snippet:", err);
+                      showError("Failed to save snippet");
                     }
-
-                    setShowSnippetForm(false);
-                    setEditingSnippet(null);
                   }}
                 >
                   <div className="space-y-4">
@@ -2223,14 +2223,14 @@ const CMSAdminPage: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-700">
-                        Summary
+                        Subtitle
                       </label>
                       <input
                         type="text"
-                        name="summary"
-                        required
-                        defaultValue={editingSnippet?.summary || ""}
+                        name="subtitle"
+                        defaultValue={(editingSnippet as any)?.subtitle || ""}
                         className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
+                        placeholder="Optional short description"
                       />
                     </div>
 
@@ -2246,17 +2246,7 @@ const CMSAdminPage: React.FC = () => {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700">
-                        Image URL
-                      </label>
-                      <input
-                        type="url"
-                        name="image_url"
-                        defaultValue={editingSnippet?.image_url || ""}
-                        className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
-                      />
-                    </div>
+                    {/* Note: image_url field removed - not supported in snippets table */}
 
                     <div className="flex items-center space-x-2">
                       <input
@@ -2265,7 +2255,7 @@ const CMSAdminPage: React.FC = () => {
                         defaultChecked={editingSnippet?.is_published || false}
                       />
                       <label className="text-sm text-neutral-700">
-                        Published
+                        Active (visible on homepage)
                       </label>
                     </div>
 
@@ -2290,6 +2280,24 @@ const CMSAdminPage: React.FC = () => {
             <SnippetsManager
               snippets={snippets}
               onRefresh={loadData}
+              onAdd={() => {
+                setEditingSnippet(null);
+                setShowSnippetForm(true);
+              }}
+              onEdit={(snippet) => {
+                setEditingSnippet(snippet);
+                setShowSnippetForm(true);
+              }}
+              onDelete={async (id) => {
+                try {
+                  await optimizedApi.deleteSnippet(id);
+                  success("Snippet deleted successfully");
+                  await loadData();
+                } catch (err) {
+                  console.error("Error deleting snippet:", err);
+                  showError("Failed to delete snippet");
+                }
+              }}
               onPreview={(item) => {
                 setPreviewItem(item);
                 setShowPreview(true);

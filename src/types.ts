@@ -81,6 +81,7 @@ export interface LodgeDocument {
   description?: string | null;
   category: string;
   file_url: string;
+  document_date?: string | null; // The actual date of the document (for sorting)
   created_at?: string | null;
   updated_at?: string | null;
   // alternate/legacy field name seen across the codebase

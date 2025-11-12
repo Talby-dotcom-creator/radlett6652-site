@@ -1,6 +1,6 @@
 // src/components/UpcomingEventSpotlight.tsx
 import React, { useEffect, useState } from "react";
-import { MapPin } from "lucide-react";
+import { Calendar, MapPin, Clock, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { optimizedApi as api } from "../lib/optimizedApi";
@@ -44,104 +44,298 @@ const UpcomingEventSpotlight: React.FC = () => {
   };
 
   return (
-    <section className="py-24 bg-[#002147] text-center text-white relative overflow-hidden">
-      {/* ✨ Soft ambient gold glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(252,163,17,0.08)_0%,transparent_70%)]" />
+    <section className="relative py-24 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 overflow-hidden">
+      {/* Texture Overlay */}
+      <div
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E")`,
+        }}
+      />
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6">
+      {/* Radial Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.08)_0%,transparent_60%)]" />
+
+      {/* Floating Calendar Icons */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute opacity-5"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.03, 0.08, 0.03],
+              rotate: [0, 10, 0],
+            }}
+            transition={{
+              duration: 6 + Math.random() * 3,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+              ease: "easeInOut",
+            }}
+          >
+            <Calendar className="w-24 h-24 text-amber-400" />
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6">
         {/* Header */}
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-3xl md:text-4xl font-heading font-bold text-secondary-500 mb-2"
+          className="text-center mb-16"
         >
-          Upcoming Event Spotlight
-        </motion.h2>
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-6 py-2 mb-6 bg-amber-500/10 border border-amber-500/30 rounded-full backdrop-blur-sm"
+          >
+            <Calendar className="w-4 h-4 text-amber-400" />
+            <span className="text-amber-300 text-sm font-medium tracking-wider uppercase">
+              Next Gathering
+            </span>
+          </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-neutral-300 mb-10"
-        >
-          Next on the Lodge Calendar
-        </motion.p>
+          {/* Title */}
+          <h2 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4">
+            Upcoming Event
+            <span className="block mt-2 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 text-transparent bg-clip-text">
+              Spotlight
+            </span>
+          </h2>
+
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Mark your calendar for our next lodge gathering
+          </p>
+        </motion.div>
 
         {/* Content */}
         {loading ? (
-          <p className="text-neutral-400">Loading event...</p>
+          <p className="text-center text-slate-400">Loading event...</p>
         ) : nextEvent ? (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.7 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
             viewport={{ once: true }}
-            whileHover={{ y: -6, scale: 1.02 }}
-            className="max-w-2xl mx-auto relative rounded-2xl overflow-hidden shadow-2xl border border-yellow-600/40 bg-white/90 transition-transform duration-500"
+            className="max-w-4xl mx-auto"
           >
-            {/* Parchment Background */}
-            <div
-              className="absolute inset-0 bg-center bg-no-repeat"
-              style={{
-                backgroundImage:
-                  "url('https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/images%20/parchment-light.jpg')",
-                backgroundSize: "cover",
-              }}
-            />
+            {/* Main Event Card */}
+            <div className="relative group">
+              {/* Pulsing Glow */}
+              <motion.div
+                animate={{
+                  opacity: [0.3, 0.6, 0.3],
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 blur-3xl rounded-3xl"
+              />
 
-            {/* Subtle overlay for contrast */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-white/90" />
+              {/* Card */}
+              <div className="relative bg-slate-800/60 backdrop-blur-md border-2 border-amber-500/30 rounded-3xl overflow-hidden shadow-2xl">
+                {/* Top Golden Bar */}
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
 
-            {/* Gold edge shimmer */}
-            <div className="absolute inset-0 border-2 border-yellow-600/60 rounded-2xl shadow-[0_0_25px_rgba(252,163,17,0.3)] pointer-events-none" />
+                {/* Corner Decorations */}
+                <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 border-amber-500/40 rounded-tl-3xl" />
+                <div className="absolute top-0 right-0 w-24 h-24 border-t-4 border-r-4 border-amber-500/40 rounded-tr-3xl" />
 
-            {/* Content */}
-            <div className="relative z-10 py-12 px-10 text-neutral-900">
-              <h3 className="text-2xl font-heading text-primary-700 mb-4 font-semibold">
-                {nextEvent.title}
-              </h3>
+                <div className="grid md:grid-cols-[300px_1fr] gap-0">
+                  {/* Left: Countdown Circle */}
+                  <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 p-10 flex flex-col items-center justify-center border-r border-amber-500/20">
+                    {/* Rotating Ring */}
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="absolute inset-10 border-2 border-dashed border-amber-500/20 rounded-full"
+                    />
 
-              {nextEvent.event_date && (
-                <p className="text-lg font-semibold text-yellow-700 mb-3">
-                  {daysUntilEvent(nextEvent.event_date)}{" "}
-                  {daysUntilEvent(nextEvent.event_date) === 1
-                    ? "Day to go"
-                    : "Days to go"}
-                </p>
-              )}
+                    {/* Countdown Number */}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      transition={{ delay: 0.5, type: "spring", bounce: 0.5 }}
+                      viewport={{ once: true }}
+                      className="relative"
+                    >
+                      <div className="text-center">
+                        <div className="text-7xl md:text-8xl font-bold bg-gradient-to-b from-amber-300 to-amber-600 text-transparent bg-clip-text mb-2">
+                          {nextEvent.event_date
+                            ? daysUntilEvent(nextEvent.event_date)
+                            : "?"}
+                        </div>
+                        <div className="text-amber-400 text-lg font-medium uppercase tracking-wider">
+                          {nextEvent.event_date &&
+                          daysUntilEvent(nextEvent.event_date) === 1
+                            ? "Day"
+                            : "Days"}
+                        </div>
+                        <div className="text-slate-400 text-sm mt-1">to go</div>
+                      </div>
 
-              <p className="text-sm text-neutral-700 mb-4 flex items-center justify-center gap-2">
-                <MapPin className="w-4 h-4 text-yellow-700" />
-                {nextEvent.location ?? "Venue TBA"}
-              </p>
+                      {/* Sparkle Accents */}
+                      <motion.div
+                        animate={{
+                          rotate: [0, 180, 360],
+                          scale: [1, 1.2, 1],
+                        }}
+                        transition={{
+                          duration: 4,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                        className="absolute -top-4 -right-4"
+                      >
+                        <Sparkles className="w-8 h-8 text-amber-400/50" />
+                      </motion.div>
+                      <motion.div
+                        animate={{
+                          rotate: [360, 180, 0],
+                          scale: [1, 1.2, 1],
+                        }}
+                        transition={{
+                          duration: 4,
+                          repeat: Infinity,
+                          ease: "linear",
+                          delay: 2,
+                        }}
+                        className="absolute -bottom-4 -left-4"
+                      >
+                        <Sparkles className="w-8 h-8 text-amber-400/50" />
+                      </motion.div>
+                    </motion.div>
+                  </div>
 
-              {nextEvent.event_date && (
-                <p className="text-sm text-neutral-600 mb-6 italic">
-                  {new Date(nextEvent.event_date).toLocaleDateString("en-GB", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}{" "}
-                  at{" "}
-                  {new Date(nextEvent.event_date).toLocaleTimeString("en-GB", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              )}
+                  {/* Right: Event Details */}
+                  <div className="p-10">
+                    {/* Event Title */}
+                    <h3 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6 leading-tight">
+                      {nextEvent.title}
+                    </h3>
 
-              {/* CTA Button */}
-              <Link
-                to="/events"
-                aria-label="View all events"
-                className="inline-block border border-yellow-700 text-yellow-700 hover:bg-yellow-600 hover:text-white transition rounded-full px-6 py-2 font-medium shadow-md hover:shadow-lg"
-              >
-                View All Events
-              </Link>
+                    {/* Event Details Grid */}
+                    <div className="space-y-4 mb-8">
+                      {/* Date */}
+                      {nextEvent.event_date && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 }}
+                          viewport={{ once: true }}
+                          className="flex items-start gap-4"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                            <Calendar className="w-6 h-6 text-amber-400" />
+                          </div>
+                          <div>
+                            <div className="text-sm text-slate-400 uppercase tracking-wide mb-1">
+                              Date
+                            </div>
+                            <div className="text-lg text-slate-200 font-medium">
+                              {new Date(
+                                nextEvent.event_date
+                              ).toLocaleDateString("en-GB", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Time */}
+                      {nextEvent.event_date && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5 }}
+                          viewport={{ once: true }}
+                          className="flex items-start gap-4"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                            <Clock className="w-6 h-6 text-amber-400" />
+                          </div>
+                          <div>
+                            <div className="text-sm text-slate-400 uppercase tracking-wide mb-1">
+                              Time
+                            </div>
+                            <div className="text-lg text-slate-200 font-medium">
+                              {new Date(
+                                nextEvent.event_date
+                              ).toLocaleTimeString("en-GB", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Location */}
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 }}
+                        viewport={{ once: true }}
+                        className="flex items-start gap-4"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-6 h-6 text-amber-400" />
+                        </div>
+                        <div>
+                          <div className="text-sm text-slate-400 uppercase tracking-wide mb-1">
+                            Location
+                          </div>
+                          <div className="text-lg text-slate-200 font-medium">
+                            {nextEvent.location ?? "Venue TBA"}
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {/* CTA Button */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
+                      viewport={{ once: true }}
+                    >
+                      <Link
+                        to="/events"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-semibold rounded-full shadow-lg hover:shadow-amber-500/50 transition-all duration-300 group"
+                      >
+                        <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        View All Events
+                        <Sparkles className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                      </Link>
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Bottom Golden Bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+              </div>
             </div>
           </motion.div>
         ) : (
@@ -150,14 +344,22 @@ const UpcomingEventSpotlight: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.7 }}
             viewport={{ once: true }}
-            className="max-w-2xl mx-auto bg-white/90 shadow-md border border-neutral-200 rounded-2xl py-10 px-8 text-neutral-800"
+            className="max-w-2xl mx-auto bg-slate-800/60 backdrop-blur-md border border-amber-500/20 rounded-2xl py-16 px-10 text-center"
           >
-            <h3 className="text-xl font-heading text-neutral-700 mb-2">
-              No upcoming events
+            <Calendar className="w-16 h-16 text-amber-400/50 mx-auto mb-6" />
+            <h3 className="text-2xl font-serif font-semibold text-white mb-3">
+              No Upcoming Events
             </h3>
-            <p className="text-sm text-neutral-500">
-              Please check back soon for our next Lodge meeting or social night.
+            <p className="text-slate-400 mb-6">
+              Please check back soon for our next Lodge meeting or social
+              gathering.
             </p>
+            <Link
+              to="/events"
+              className="inline-flex items-center gap-2 px-6 py-3 border-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 rounded-full font-medium transition-all"
+            >
+              View Past Events
+            </Link>
           </motion.div>
         )}
 
@@ -165,13 +367,16 @@ const UpcomingEventSpotlight: React.FC = () => {
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 1 }}
+          transition={{ delay: 0.9, duration: 1 }}
           viewport={{ once: true }}
-          className="mt-12 text-sm italic text-neutral-300"
+          className="mt-16 text-center text-slate-400 italic text-sm"
         >
           Counting down to another evening of friendship and fellowship.
         </motion.p>
       </div>
+
+      {/* Bottom Edge Glow */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
     </section>
   );
 };

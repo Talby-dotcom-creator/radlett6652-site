@@ -10,13 +10,19 @@ const OfficerCard: React.FC<OfficerCardProps> = ({ officer }) => {
   const imageUrl =
     officer.image_url || officer.image || "/placeholder-officer.webp";
 
+  // Split name into first name and surname
+  const fullName = officer.name || officer.full_name || "";
+  const nameParts = fullName.trim().split(" ");
+  const firstName = nameParts[0] || "";
+  const surname = nameParts.slice(1).join(" ") || "";
+
   return (
-    <div className="radlett-card group text-center overflow-hidden">
+    <div className="radlett-card group text-center overflow-hidden h-full flex flex-col">
       {/* Officer Image */}
-      <div className="relative w-full h-56 overflow-hidden rounded-t-2xl">
+      <div className="relative w-full h-56 overflow-hidden rounded-t-2xl flex-shrink-0">
         <img
           src={imageUrl}
-          alt={officer.name || officer.full_name}
+          alt={fullName}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           onError={(e) => {
             e.currentTarget.src = "/placeholder-officer.webp";
@@ -27,11 +33,14 @@ const OfficerCard: React.FC<OfficerCardProps> = ({ officer }) => {
       </div>
 
       {/* Officer Details */}
-      <div className="radlett-card-content">
-        <h3 className="text-xl font-heading font-semibold text-primary-700 mb-1 group-hover:text-secondary-500 transition-colors">
-          {officer.name || officer.full_name}
-        </h3>
-        <p className="text-sm text-neutral-600 mb-3">{officer.position}</p>
+      <div className="radlett-card-content flex-grow flex flex-col justify-between">
+        <div>
+          <h3 className="text-xl font-heading font-semibold text-primary-700 mb-1 group-hover:text-secondary-500 transition-colors">
+            <div>{firstName}</div>
+            {surname && <div>{surname}</div>}
+          </h3>
+          <p className="text-sm text-neutral-600 mb-3">{officer.position}</p>
+        </div>
 
         {officer.is_active && (
           <div className="flex items-center justify-center gap-1 text-secondary-500 text-sm font-medium">

@@ -268,13 +268,40 @@ const MembersPage: React.FC = () => {
             api.getMeetingMinutes(),
           ]);
 
-          setAllDocuments(
-            documentsData.map((d: LodgeDocument) => ({
-              ...d,
-              category: normaliseCategory(d.category),
-            }))
+          // Normalize categories
+          const normalizedDocs = documentsData.map((d: LodgeDocument) => ({
+            ...d,
+            category: normaliseCategory(d.category),
+          }));
+
+          // Extract minutes from lodge_documents where category is 'minutes' or 'meeting_minutes'
+          const minutesFromDocs = normalizedDocs.filter(
+            (d: LodgeDocument) =>
+              d.category === "minutes" || d.category === "meeting_minutes"
           );
-          setMinutes(minutesData);
+
+          // Filter out minutes from the general documents array (they go in the minutes section)
+          const docsWithoutMinutes = normalizedDocs.filter(
+            (d: LodgeDocument) =>
+              d.category !== "minutes" && d.category !== "meeting_minutes"
+          );
+
+          // Combine minutes from both sources (old table + new lodge_documents)
+          const combinedMinutes = [
+            ...minutesData,
+            ...minutesFromDocs.map((d: LodgeDocument) => ({
+              id: d.id,
+              meeting_date: d.document_date || d.created_at,
+              title: d.title,
+              content: d.description || "",
+              created_at: d.created_at,
+              file_url: d.file_url || d.url,
+              document_url: d.url,
+            })),
+          ];
+
+          setAllDocuments(docsWithoutMinutes);
+          setMinutes(combinedMinutes);
           setUsingDemoData(false);
         } catch (dbError) {
           console.warn("Database not connected, using demo data:", dbError);
@@ -331,7 +358,7 @@ const MembersPage: React.FC = () => {
   };
 
   const getTimestamp = (d: LodgeDocument | MeetingMinutes) => {
-    const s = isMinutes(d) ? d.meeting_date : d.created_at;
+    const s = isMinutes(d) ? d.meeting_date : d.document_date || d.created_at;
     return s ? new Date(s).getTime() : 0;
   };
 

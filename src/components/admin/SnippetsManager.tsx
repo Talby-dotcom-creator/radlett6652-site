@@ -7,6 +7,9 @@ import type { CMSBlogPost } from "../../types";
 interface SnippetsManagerProps {
   snippets: CMSBlogPost[];
   onRefresh?: () => void;
+  onEdit?: (snippet: CMSBlogPost) => void;
+  onDelete?: (id: string) => void;
+  onAdd?: () => void;
   onPreview?: (item: {
     title?: string;
     content?: string;
@@ -17,6 +20,9 @@ interface SnippetsManagerProps {
 const SnippetsManager: React.FC<SnippetsManagerProps> = ({
   snippets,
   onRefresh,
+  onEdit,
+  onDelete,
+  onAdd,
   onPreview,
 }) => {
   const hasSnippets = Array.isArray(snippets) && snippets.length > 0;
@@ -30,10 +36,7 @@ const SnippetsManager: React.FC<SnippetsManagerProps> = ({
         </h2>
 
         {/* ✅ Active button */}
-        <Button
-          onClick={() => alert("✨ Add Snippet form coming soon")}
-          variant="primary"
-        >
+        <Button onClick={() => onAdd?.()} variant="primary">
           <PlusCircle className="w-4 h-4 mr-2 inline" />
           Add Snippet
         </Button>
@@ -55,7 +58,7 @@ const SnippetsManager: React.FC<SnippetsManagerProps> = ({
                   {snip.publish_date
                     ? new Date(snip.publish_date).toLocaleDateString()
                     : "No date"}{" "}
-                  • {snip.is_published ? "Published" : "Draft"}
+                  • {snip.is_published ? "Active" : "Inactive"}
                 </p>
               </div>
 
@@ -76,14 +79,18 @@ const SnippetsManager: React.FC<SnippetsManagerProps> = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => alert(`✏️ Edit snippet: ${snip.title}`)}
+                  onClick={() => onEdit?.(snip)}
                 >
                   <Pencil size={14} />
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => alert(`🗑️ Delete snippet: ${snip.title}`)}
+                  onClick={() => {
+                    if (confirm(`Delete snippet "${snip.title}"?`)) {
+                      onDelete?.(snip.id);
+                    }
+                  }}
                 >
                   <Trash2 size={14} />
                 </Button>

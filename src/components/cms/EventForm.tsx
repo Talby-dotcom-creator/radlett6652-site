@@ -21,6 +21,7 @@ type EventFormValues = {
   image_url: string;
   event_date: string;
   location: string;
+  event_type: string;
   is_members_only: boolean;
   is_past_event?: boolean;
 };
@@ -50,6 +51,7 @@ const EventForm: React.FC<EventFormProps> = ({
         ? new Date(initialData.event_date).toISOString().slice(0, 16)
         : "",
       location: initialData?.location || "",
+      event_type: (initialData as any)?.event_type || "regular",
       is_members_only: initialData?.is_members_only || false,
       is_past_event: false,
     },
@@ -232,6 +234,31 @@ const EventForm: React.FC<EventFormProps> = ({
           {errors.location && (
             <p className="mt-1 text-sm text-red-600">
               {errors.location.message as string}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="event_type"
+            className="block text-sm font-medium text-primary-600"
+          >
+            Event Type
+          </label>
+          <select
+            id="event_type"
+            {...register("event_type", { required: "Event type is required" })}
+            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+          >
+            <option value="regular">Regular Meeting</option>
+            <option value="special">Special Event</option>
+            <option value="social">Social Event</option>
+            <option value="educational">Educational</option>
+            <option value="ladies">Ladies Event</option>
+          </select>
+          {errors.event_type && (
+            <p className="mt-1 text-sm text-red-600">
+              {errors.event_type.message as string}
             </p>
           )}
         </div>
