@@ -71,4 +71,5 @@ export interface CMSBlogPost {
   categories?: { name?: string } | string[] | null;
   created_at?: string;
   updated_at?: string;
+  seo_description?: string | null;
 }

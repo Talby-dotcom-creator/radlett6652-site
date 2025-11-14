@@ -11,6 +11,7 @@ import {
 import { format } from "date-fns";
 import { LodgeEvent } from "../types";
 import Button from "./Button";
+import { useNavigate } from "react-router-dom";
 
 interface EventDetailsModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
   onClose,
   event,
 }) => {
+  const navigate = useNavigate();
   // Handle escape key press
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -170,30 +172,34 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
               </p>
               {isUpcoming && (
                 <p>
-                  • For any questions or to confirm attendance, please contact
-                  the Lodge Secretary
+                  For any questions or to confirm attendance, please use our
+                  contact form so the Lodge Secretary can assist you.
                 </p>
               )}
             </div>
           </div>
 
-          {/* Contact Information */}
+          {/* Contact CTA */}
           {isUpcoming && (
             <div className="bg-neutral-50 rounded-lg p-4">
               <h4 className="font-medium text-neutral-800 mb-2">
-                Contact Information
+                Get In Touch
               </h4>
-              <div className="text-sm text-neutral-600 space-y-1">
+              <div className="text-sm text-neutral-600 space-y-3">
                 <p>
-                  <strong>Email:</strong> mattjohnson56@hotmail.co.uk
+                  Please visit our contact page to ask questions, request
+                  special accommodations, or let us know you plan to attend. A
+                  member of the team will respond promptly.
                 </p>
-                <p>
-                  <strong>Phone:</strong> 07590 800657
-                </p>
-                <p className="text-xs text-neutral-500 mt-2">
-                  Please contact us if you have any questions about this event
-                  or need special accommodations.
-                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    onClose();
+                    navigate("/contact");
+                  }}
+                >
+                  Go to Contact Page
+                </Button>
               </div>
             </div>
           )}

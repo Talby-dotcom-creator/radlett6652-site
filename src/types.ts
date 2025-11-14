@@ -18,6 +18,7 @@ export interface CMSBlogPost {
   category?: "news" | "blog" | "snippet";
   image_url?: string | null;
   featured_image_url?: string | null;
+  seo_description?: string | null;
   // optional subcategory name used in the Pillars UI
   subcategory_name?: string | null;
   publish_date?: string | null;

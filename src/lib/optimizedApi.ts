@@ -57,6 +57,38 @@ async function resolveSnippetsTable(): Promise<"snippets" | "snippet"> {
  * Unified Optimized API Layer (Cleaned & Consolidated)
  * ---------------------------------------------------- */
 export const optimizedApi: any = {
+  /* ---------------- RESOURCES ---------------- */
+  async createResource(resource: {
+    title: string;
+    category?: string;
+    description?: string;
+    file_url: string;
+    publish_date?: string;
+    content?: string;
+  }) {
+    try {
+      const payload = {
+        title: resource.title,
+        category: resource.category || "",
+        description: resource.description || "",
+        file_url: resource.file_url,
+        publish_date: resource.publish_date || new Date().toISOString(),
+        content: resource.content || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      const { data, error } = await supabase
+        .from("member_resources")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) handleError(error, "createResource");
+      return data;
+    } catch (err) {
+      handleError(err, "createResource");
+      return null;
+    }
+  },
   /* ---------------- CONNECTION TEST ---------------- */
   async checkConnection() {
     try {
@@ -76,18 +108,28 @@ export const optimizedApi: any = {
     category: "blog" | "news" | "snippet" | null = null
   ): Promise<CMSBlogPost[]> {
     try {
-      let query = supabase
+      const baseQuery = supabase
         .from("blog_posts")
-        .select("*")
+        // tell TS to stop being clever about columns here
+        .select(
+          "id, title, content, excerpt, seo_description, created_at, category, is_published, slug, image_url, summary, publish_date, author, subcategory, reading_time_minutes, featured"
+        )
         .eq("is_published", true)
         .order("publish_date", { ascending: false });
 
-      if (category) query = query.eq("category", category);
+      const query = category ? baseQuery.eq("category", category) : baseQuery;
 
-      const { data, error } = await query;
+      // cast the result of the query to 'any' so TS ignores SelectQueryError
+      const { data, error } = (await query) as any;
+
       if (error) handleError(error, "getBlogPosts");
 
-      return (data ?? []) as CMSBlogPost[];
+      return ((data ?? []) as any[]).map((d) => ({
+        ...d,
+        summary: d.summary ?? d.excerpt ?? "",
+        image_url: d.image_url ?? d.featured_image ?? null,
+        seo_description: d.seo_description ?? d.summary ?? d.excerpt ?? "",
+      })) as CMSBlogPost[];
     } catch (err) {
       handleError(err, "getBlogPosts");
       return [];
@@ -98,7 +140,23 @@ export const optimizedApi: any = {
     try {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("*")
+        .select(
+          `
+        id,
+        title,
+        summary,
+        content,
+        image_url,
+        publish_date,
+        author,
+        subcategory,
+        reading_time_minutes,
+        featured,
+        is_published,
+        slug,
+        seo_description
+      `
+        )
         .eq("slug", slug)
         .maybeSingle();
 
@@ -106,17 +164,15 @@ export const optimizedApi: any = {
       if (!data) return null;
 
       const d: any = data;
+
       return {
         ...d,
         title: d.title ?? "Untitled Post",
-        summary: d.summary ?? d.excerpt ?? "",
-        publish_date: d.publish_date ?? d.published_at ?? d.created_at,
-        image_url: d.image_url ?? d.featured_image_url ?? null,
-        featured_image_url: d.featured_image_url ?? null,
-        reading_time_minutes: d.reading_time_minutes ?? null,
-        author_name: d.author_name ?? d.author ?? null,
-        categories: d.categories ?? null,
+        summary: d.summary ?? "",
         content: d.content ?? "",
+        publish_date: d.publish_date ?? d.created_at ?? null,
+        image_url: d.image_url ?? null,
+        reading_time_minutes: d.reading_time_minutes ?? null,
       } as CMSBlogPost;
     } catch (err) {
       handleError(err, "getBlogPostBySlug");
@@ -520,6 +576,76 @@ export const optimizedApi: any = {
   },
 
   /* ---------------- DOCUMENTS ---------------- */
+  // Normalise lodge_documents.category into clean, predictable keys
+  normalizeDocCategory(category: string | null | undefined): string {
+    const raw = (category || "").toLowerCase().trim();
+
+    if (!raw) return "other";
+
+    // Minutes
+    if (
+      raw === "meeting minutes" ||
+      raw === "meeting_minutes" ||
+      raw === "minutes"
+    ) {
+      return "minutes";
+    }
+
+    // GPC Minutes
+    if (raw === "gpc minutes" || raw === "gpc_minutes") {
+      return "gpc_minutes";
+    }
+
+    // Grand Lodge
+    if (raw === "grand lodge" || raw === "grand_lodge") {
+      return "grand_lodge";
+    }
+
+    // Provincial
+    if (raw === "provincial" || raw === "provincial communications") {
+      return "provincial";
+    }
+
+    // Summons
+    if (raw === "summons" || raw === "summon") {
+      return "summons";
+    }
+
+    // Lodge of Instruction
+    if (raw === "lodge of instruction" || raw === "lodge_instruction") {
+      return "lodge_instruction";
+    }
+
+    // Bylaws / Byelaws
+    if (raw === "bylaws" || raw === "byelaws") {
+      return "bylaws";
+    }
+
+    // Forms
+    if (raw === "forms" || raw === "form") {
+      return "forms";
+    }
+
+    // Ritual
+    if (raw === "ritual") {
+      return "ritual";
+    }
+
+    // Resources
+    if (raw === "resources" || raw === "resource") {
+      return "resources";
+    }
+
+    // Solomon
+    if (raw === "solomon") {
+      return "solomon";
+    }
+
+    // Fallback: convert spaces/dashes to underscores
+    return raw.replace(/[\s-]+/g, "_");
+  },
+
+  /* ---------------- LODGE DOCUMENTS ---------------- */
   async getLodgeDocuments(): Promise<LodgeDocument[]> {
     try {
       const { data, error } = await supabase
@@ -532,6 +658,7 @@ export const optimizedApi: any = {
       return (data ?? []).map((doc: any) => ({
         ...doc,
         file_url: doc.file_url ?? doc.url ?? "",
+        category: this.normalizeDocCategory(doc.category),
       }));
     } catch (err) {
       handleError(err, "getLodgeDocuments");
@@ -616,6 +743,22 @@ export const getResources = async () => {
     }));
   } catch (err) {
     handleError(err, "getResources");
+    return [];
+  }
+};
+
+// Fetch resources from member_resources table
+export const getMemberResources = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("member_resources")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) handleError(error, "getMemberResources");
+    return data ?? [];
+  } catch (err) {
+    handleError(err, "getMemberResources");
     return [];
   }
 };

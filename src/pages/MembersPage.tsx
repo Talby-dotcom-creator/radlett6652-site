@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+// src/pages/MembersPage.tsx
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { optimizedApi as api } from "../lib/optimizedApi";
-import { LodgeDocument, MeetingMinutes, MemberProfile } from "../types";
+import { LodgeDocument, MemberProfile } from "../types";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
 import VirtualizedList from "../components/VirtualizedList";
 import PaginationControls from "../components/PaginationControls";
 import DashboardCard from "../components/DashboardCard";
 import ProfileSummaryCard from "../components/dashboard/ProfileSummaryCard";
-import RecentUpdatesCard from "../components/dashboard/RecentUpdatesCard";
 import RecentDocumentsCard from "../components/dashboard/RecentDocumentsCard";
 import QuickActionCard from "../components/dashboard/QuickActionCard";
 import {
@@ -22,151 +22,15 @@ import {
   Archive,
   LogOut,
   Search,
-  Filter,
   X,
   ExternalLink,
   Settings,
   Calendar,
 } from "lucide-react";
 
-const demoDocuments: LodgeDocument[] = [
-  {
-    id: "1",
-    title: "Grand Lodge Quarterly Communication - Q4 2024",
-    description:
-      "Latest quarterly communication from the United Grand Lodge of England",
-    url: "#",
-    file_url: "",
-    category: "grand_lodge",
-    created_at: "2024-12-01T00:00:00Z",
-    updated_at: "2024-12-01T00:00:00Z",
-  },
-  {
-    id: "2",
-    title: "Provincial Grand Lodge Newsletter - Winter 2024",
-    description: "Hertfordshire Provincial Grand Lodge quarterly newsletter",
-    url: "#",
-    file_url: "",
-    category: "provincial",
-    created_at: "2024-11-15T00:00:00Z",
-    updated_at: "2024-11-15T00:00:00Z",
-  },
-  {
-    id: "3",
-    title: "Summons - December 2024 Regular Meeting",
-    description: "Official summons for the December regular meeting",
-    url: "#",
-    file_url: "",
-    category: "summons",
-    created_at: "2024-11-25T00:00:00Z",
-    updated_at: "2024-11-25T00:00:00Z",
-  },
-  {
-    id: "4",
-    title: "Summons - October 2024 Regular Meeting",
-    description: "Official summons for the October regular meeting",
-    url: "#",
-    file_url: "",
-    category: "summons",
-    created_at: "2024-09-25T00:00:00Z",
-    updated_at: "2024-09-25T00:00:00Z",
-  },
-  {
-    id: "5",
-    title: "Lodge of Instruction - Week 48 Minutes",
-    description: "Minutes from Lodge of Instruction meeting - Week 48, 2024",
-    url: "#",
-    file_url: "",
-    category: "lodge_instruction",
-    created_at: "2024-11-28T00:00:00Z",
-    updated_at: "2024-11-28T00:00:00Z",
-  },
-  {
-    id: "6",
-    title: "Lodge of Instruction - Week 47 Minutes",
-    description: "Minutes from Lodge of Instruction meeting - Week 47, 2024",
-    url: "#",
-    file_url: "",
-    category: "lodge_instruction",
-    created_at: "2024-11-21T00:00:00Z",
-    updated_at: "2024-11-21T00:00:00Z",
-  },
-  {
-    id: "7",
-    title: "Lodge Bylaws 2024",
-    description: "Updated lodge bylaws and regulations",
-    url: "#",
-    file_url: "",
-    category: "resources",
-    created_at: "2024-10-01T00:00:00Z",
-    updated_at: "2024-10-01T00:00:00Z",
-  },
-  {
-    id: "8",
-    title: "Ritual Guide - Entered Apprentice",
-    description: "Guide for the Entered Apprentice degree ceremony",
-    url: "#",
-    file_url: "",
-    category: "resources",
-    created_at: "2024-08-01T00:00:00Z",
-    updated_at: "2024-08-01T00:00:00Z",
-  },
-  {
-    id: "9",
-    title: "Membership Application Form",
-    description: "Form for new membership applications",
-    url: "#",
-    file_url: "",
-    category: "resources",
-    created_at: "2024-07-15T00:00:00Z",
-    updated_at: "2024-07-15T00:00:00Z",
-  },
-  {
-    id: "10",
-    title: "Charity Application Form",
-    description: "Form for submitting charity funding requests",
-    url: "#",
-    file_url: "",
-    category: "forms",
-    created_at: "2024-09-15T00:00:00Z",
-    updated_at: "2024-09-15T00:00:00Z",
-  },
-];
+/* ---------------- CATEGORY CONFIG ---------------- */
 
-const demoMinutes: MeetingMinutes[] = [
-  {
-    id: "1",
-    meeting_date: "2024-12-10",
-    title: "December Regular Meeting",
-    content:
-      "The Lodge was opened in due form by the Worshipful Master. Present were 24 members and 3 visitors. The minutes of the previous meeting were read and approved. The Treasurer reported a healthy balance. Three candidates were proposed for initiation. The charity steward announced successful fundraising efforts totaling £2,500 for local charities. The Lodge was closed in harmony at 9:30 PM.",
-    created_at: "2024-12-11T00:00:00Z",
-    file_url: "https://example.com/minutes-december-2024.pdf",
-    document_url: "https://example.com/minutes-december-2024.pdf",
-  },
-  {
-    id: "2",
-    meeting_date: "2024-10-15",
-    title: "October Regular Meeting",
-    content:
-      "The Lodge was opened by the Worshipful Master with 28 members in attendance. The charity steward reported successful fundraising efforts totaling £1,800. Two new members were initiated in a beautiful ceremony. Discussion of the upcoming installation ceremony and annual dinner. The Lodge voted to support three local charities. The meeting concluded at 9:45 PM.",
-    created_at: "2024-10-16T00:00:00Z",
-    file_url: "https://example.com/minutes-october-2024.pdf",
-    document_url: "https://example.com/minutes-october-2024.pdf",
-  },
-  {
-    id: "3",
-    meeting_date: "2024-08-20",
-    title: "August Regular Meeting",
-    content:
-      "Summer meeting held with 22 members present. The Secretary read correspondence from the Provincial Grand Lodge. A motion was passed to donate £500 to the local children's hospital. Two candidates were passed to the degree of Fellow Craft. Plans for the autumn social event were discussed and approved. The Lodge closed at 9:15 PM.",
-    created_at: "2024-08-21T00:00:00Z",
-    file_url: "https://example.com/minutes-august-2024.pdf",
-    document_url: "https://example.com/minutes-august-2024.pdf",
-  },
-];
-
-// Document categories with their display information
+// Sidebar categories & labels
 const DOCUMENT_CATEGORIES = [
   { key: "grand_lodge", label: "Grand Lodge Communications", icon: FileText },
   { key: "provincial", label: "Provincial Communications", icon: FileText },
@@ -182,6 +46,42 @@ const DOCUMENT_CATEGORIES = [
   { key: "other", label: "Other", icon: FileText },
 ];
 
+// Keys used in the sidebar → valid canonical categories from DB/API
+const CATEGORY_MAP: Record<string, string[]> = {
+  grand_lodge: ["grand_lodge"],
+  provincial: ["provincial"],
+  summons: ["summons"],
+  minutes: ["minutes"], // we've normalised all variants to "minutes" in optimizedApi
+  gpc_minutes: ["gpc_minutes"],
+  lodge_instruction: ["lodge_instruction"],
+  resources: ["resources"],
+  solomon: ["solomon"],
+  bylaws: ["bylaws"],
+  forms: ["forms"],
+  ritual: ["ritual"],
+  other: ["other"],
+};
+
+// Local normaliser (belt and braces)
+const normaliseCategory = (c: string | null | undefined): string => {
+  if (!c) return "";
+  return c
+    .toLowerCase()
+    .trim()
+    .replace(/[\s-]+/g, "_");
+};
+
+const membersDocMatchesCategory = (
+  doc: LodgeDocument,
+  categoryKey: string
+): boolean => {
+  const allowed = CATEGORY_MAP[categoryKey] ?? [categoryKey];
+  const cat = normaliseCategory((doc as any).category);
+  return allowed.includes(cat);
+};
+
+/* ---------------- COMPONENT ---------------- */
+
 const MembersPage: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -195,23 +95,22 @@ const MembersPage: React.FC = () => {
 
   // Basic state
   const [allDocuments, setAllDocuments] = useState<LodgeDocument[]>([]);
-  const [minutes, setMinutes] = useState<MeetingMinutes[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [usingDemoData, setUsingDemoData] = useState(false);
-  const [pageContent, setPageContent] = useState<Record<string, string>>({});
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Document filtering state
+  // Filtering state
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoriesInitialized, setCategoriesInitialized] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Simple pagination state (no external hook)
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  // Handle navigation for non-authenticated users
+  /* ---------------- AUTH REDIRECTS ---------------- */
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login", { replace: true });
@@ -229,198 +128,120 @@ const MembersPage: React.FC = () => {
     }
   }, [authLoading, user, userProfile?.status, needsPasswordReset, navigate]);
 
-  // Load initial data - only once when user is available
-  useEffect(() => {
-    if (!user || authLoading || dataLoaded) {
-      return;
-    }
+  /* ---------------- LOAD DATA ---------------- */
 
-    // Normalize category names to match the category list
-    const normaliseCategory = (c: string) =>
-      (c || "")
-        .toLowerCase()
-        .trim()
-        .replace(/[\s-]+/g, "_");
+  useEffect(() => {
+    if (!user || authLoading || dataLoaded) return;
 
     const loadData = async () => {
       try {
         setError(null);
         setDataLoading(true);
 
-        // Load page content (optional)
-        try {
-          const content = await api.getPageContent("members");
-          const contentMap: Record<string, string> = {};
-          if (content && Array.isArray(content)) {
-            content.forEach((item) => {
-              contentMap[item.section_name] = item.content;
-            });
-          }
-          setPageContent(contentMap);
-        } catch (contentError) {
-          console.warn("Could not load page content:", contentError);
-        }
+        const docs = await api.getLodgeDocuments();
 
-        // Load documents and minutes
-        try {
-          const [documentsData, minutesData] = await Promise.all([
-            api.getLodgeDocuments(),
-            api.getMeetingMinutes(),
-          ]);
+        // Extra safety: normalise categories again on the client
+        const normalisedDocs = docs.map((d: any) => ({
+          ...d,
+          category: normaliseCategory(d.category),
+        }));
 
-          // Normalize categories
-          const normalizedDocs = documentsData.map((d: LodgeDocument) => ({
-            ...d,
-            category: normaliseCategory(d.category),
-          }));
-
-          // Extract minutes from lodge_documents where category is 'minutes' or 'meeting_minutes'
-          const minutesFromDocs = normalizedDocs.filter(
-            (d: LodgeDocument) =>
-              d.category === "minutes" || d.category === "meeting_minutes"
-          );
-
-          // Filter out minutes from the general documents array (they go in the minutes section)
-          const docsWithoutMinutes = normalizedDocs.filter(
-            (d: LodgeDocument) =>
-              d.category !== "minutes" && d.category !== "meeting_minutes"
-          );
-
-          // Combine minutes from both sources (old table + new lodge_documents)
-          const combinedMinutes = [
-            ...minutesData,
-            ...minutesFromDocs.map((d: LodgeDocument) => ({
-              id: d.id,
-              meeting_date: d.document_date || d.created_at,
-              title: d.title,
-              content: d.description || "",
-              created_at: d.created_at,
-              file_url: d.file_url || d.url,
-              document_url: d.url,
-            })),
-          ];
-
-          setAllDocuments(docsWithoutMinutes);
-          setMinutes(combinedMinutes);
-          setUsingDemoData(false);
-        } catch (dbError) {
-          console.warn("Database not connected, using demo data:", dbError);
-          setAllDocuments(demoDocuments);
-          setMinutes(demoMinutes);
-          setUsingDemoData(true);
-        }
+        setAllDocuments(normalisedDocs);
       } catch (err) {
-        console.error("Error loading member data:", err);
+        console.error("Error loading member documents:", err);
         setError(
           err instanceof Error ? err.message : "Failed to load member data"
         );
-        setAllDocuments(demoDocuments);
-        setMinutes(demoMinutes);
-        setUsingDemoData(true);
       } finally {
         setDataLoading(false);
         setDataLoaded(true);
       }
     };
 
-    // Add a small delay to ensure auth context is fully settled
-    const timer = setTimeout(() => {
-      loadData();
-    }, 100);
-
+    const timer = setTimeout(() => loadData(), 100);
     return () => clearTimeout(timer);
   }, [user, authLoading, dataLoaded]);
 
-  // Auto-select categories that contain documents
+  /* ---------------- INITIAL CATEGORY SELECTION ---------------- */
+
   useEffect(() => {
-    if (allDocuments.length > 0 && selectedCategories.length === 0) {
-      const categoriesWithDocs = DOCUMENT_CATEGORIES.map((c) => c.key).filter(
-        (key) => allDocuments.some((d) => d.category === key)
-      );
+    if (categoriesInitialized || allDocuments.length === 0) return;
 
-      // Default to summons if nothing else
-      setSelectedCategories(
-        categoriesWithDocs.length ? categoriesWithDocs : ["summons"]
-      );
-    }
-  }, [allDocuments]);
+    // Which sidebar categories have at least one document?
+    const categoriesWithDocs = DOCUMENT_CATEGORIES.map((c) => c.key).filter(
+      (key) => allDocuments.some((doc) => membersDocMatchesCategory(doc, key))
+    );
 
-  // Calculate filtered and paginated documents
-  // Type guard and helpers to satisfy TypeScript for union types
-  const isMinutes = (
-    d: LodgeDocument | MeetingMinutes
-  ): d is MeetingMinutes => {
-    return (d as MeetingMinutes).meeting_date !== undefined;
+    setSelectedCategories(
+      categoriesWithDocs.length ? categoriesWithDocs : ["summons"]
+    );
+    setCategoriesInitialized(true);
+  }, [allDocuments, categoriesInitialized]);
+
+  /* ---------------- HELPERS ---------------- */
+
+  const getCategoryCount = (categoryKey: string) => {
+    return allDocuments.filter((doc) =>
+      membersDocMatchesCategory(doc, categoryKey)
+    ).length;
   };
 
-  const getTextForSearch = (d: LodgeDocument | MeetingMinutes) => {
-    return isMinutes(d) ? d.content ?? "" : d.description ?? "";
+  const getTextForSearch = (d: LodgeDocument) => {
+    const title = (d.title ?? "").toString();
+    const desc = ((d as any).description ?? "").toString();
+    return `${title} ${desc}`;
   };
 
-  const getTimestamp = (d: LodgeDocument | MeetingMinutes) => {
-    const s = isMinutes(d) ? d.meeting_date : d.document_date || d.created_at;
-    return s ? new Date(s).getTime() : 0;
+  const getTimestamp = (d: LodgeDocument) => {
+    const source = ((d as any).document_date ??
+      d.created_at ??
+      (d as any).updated_at) as string | undefined;
+    return source ? new Date(source).getTime() : 0;
   };
+
+  /* ---------------- FILTER + PAGINATION ---------------- */
 
   const filteredAndPaginatedDocuments = useMemo(() => {
     if (selectedCategories.length === 0) {
-      return { documents: [], total: 0, totalPages: 0 };
+      return { documents: [] as LodgeDocument[], total: 0, totalPages: 0 };
     }
 
-    let allSelectedDocuments: (LodgeDocument | MeetingMinutes)[] = [];
+    let docs = allDocuments.filter((doc) =>
+      selectedCategories.some((categoryKey) =>
+        membersDocMatchesCategory(doc, categoryKey)
+      )
+    );
 
-    // Collect documents from selected categories
-    selectedCategories.forEach((category) => {
-      if (category === "minutes") {
-        allSelectedDocuments.push(...minutes);
-      } else {
-        const categoryDocs = allDocuments.filter(
-          (doc) => doc.category === category
-        );
-        allSelectedDocuments.push(...categoryDocs);
-      }
-    });
-
-    // Apply search filter
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
-      allSelectedDocuments = allSelectedDocuments.filter((doc) => {
+      docs = docs.filter((doc) => {
         const title = (doc.title ?? "").toLowerCase();
         const text = getTextForSearch(doc).toLowerCase();
         return title.includes(search) || text.includes(search);
       });
     }
 
-    // Sort by date (newest first)
-    allSelectedDocuments.sort((a, b) => {
+    docs.sort((a, b) => {
       const ta = getTimestamp(a);
       const tb = getTimestamp(b);
       return tb - ta;
     });
 
-    // Calculate pagination
-    const total = allSelectedDocuments.length;
-    const totalPages = Math.ceil(total / pageSize);
+    const total = docs.length;
+    const totalPages = Math.ceil(total / pageSize) || 1;
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
-    const documents = allSelectedDocuments.slice(start, end);
+    const documents = docs.slice(start, end);
 
     return { documents, total, totalPages };
-  }, [
-    selectedCategories,
-    allDocuments,
-    minutes,
-    searchTerm,
-    currentPage,
-    pageSize,
-  ]);
+  }, [selectedCategories, allDocuments, searchTerm, currentPage, pageSize]);
 
-  // Reset to first page when categories or search changes
+  // Reset to first page when filters change
   useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    }
+    setCurrentPage(1);
   }, [selectedCategories, searchTerm]);
+
+  /* ---------------- EVENT HANDLERS ---------------- */
 
   const handleSignOut = async () => {
     try {
@@ -441,18 +262,10 @@ const MembersPage: React.FC = () => {
   ) => {
     setSelectedCategories((prev) => {
       if (prev.includes(categoryKey)) {
-        // If clicking the only selected category, keep it selected
-        if (prev.length === 1) {
-          return prev;
-        }
-        // Otherwise, deselect it
-        return prev.filter((cat) => cat !== categoryKey);
+        if (prev.length === 1) return prev; // don't deselect the last one
+        return prev.filter((c) => c !== categoryKey);
       } else {
-        // If additive mode (Ctrl/Cmd held), add to selection
-        if (additive) {
-          return [...prev, categoryKey];
-        }
-        // Otherwise, replace selection with just this category
+        if (additive) return [...prev, categoryKey];
         return [categoryKey];
       }
     });
@@ -461,27 +274,18 @@ const MembersPage: React.FC = () => {
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
     setSearchTerm("");
+    setCategoriesInitialized(true);
   };
 
-  // Get document counts by category
-  const getCategoryCount = (categoryKey: string) => {
-    if (categoryKey === "minutes") {
-      return minutes.length;
-    }
-    return allDocuments.filter((doc) => doc.category === categoryKey).length;
-  };
-
-  // Simple pagination handlers
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1);
   };
 
-  // Document row renderer for virtualized list
+  /* ---------------- DOCUMENT ROW ---------------- */
+
   const DocumentRow = ({
     index,
     style,
@@ -489,101 +293,91 @@ const MembersPage: React.FC = () => {
   }: {
     index: number;
     style: React.CSSProperties;
-    data: (LodgeDocument | MeetingMinutes)[];
+    data: LodgeDocument[];
   }) => {
     const doc = data[index];
-    const isMinute = "meeting_date" in doc;
+
+    const categoryLabel = (() => {
+      const cat = normaliseCategory((doc as any).category);
+      const entry = DOCUMENT_CATEGORIES.find((c) =>
+        (CATEGORY_MAP[c.key] ?? [c.key]).includes(cat)
+      );
+      return (entry?.label ?? (cat || "Document")).toUpperCase();
+    })();
+
+    const url =
+      (doc as any).file_url || (doc as any).url || (doc as any).document_url;
 
     return (
       <div style={style} className="px-4">
         <div className="bg-white rounded-lg border border-neutral-200 p-4 flex items-center justify-between hover:shadow-soft transition-shadow">
           <div className="flex-grow">
-            <h3 className="font-medium text-primary-600">{doc.title}</h3>
-            {isMinute ? (
-              <>
-                <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
-                  {(doc.content ?? "").substring(0, 150)}...
-                </p>
-                <div className="flex items-center mt-2">
-                  <span className="text-xs font-medium bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                    MEETING MINUTES
-                  </span>
-                  <span className="text-xs text-neutral-500 ml-4">
-                    Meeting:{" "}
-                    {new Date(doc.meeting_date).toLocaleDateString("en-GB")}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <>
-                {doc.description && (
-                  <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
-                    {doc.description}
-                  </p>
-                )}
-                <div className="flex items-center mt-2">
-                  <span className="text-xs font-medium bg-neutral-100 text-neutral-600 px-2 py-1 rounded">
-                    {doc.category.replace("_", " ").toUpperCase()}
-                  </span>
-                  <span className="text-xs text-neutral-500 ml-4">
-                    Added{" "}
-                    {doc.created_at
-                      ? new Date(doc.created_at).toLocaleDateString("en-GB")
-                      : "Unknown"}
-                  </span>
-                </div>
-              </>
+            <h3 className="font-medium text-primary-600">
+              {doc.title || "Untitled document"}
+            </h3>
+
+            {(doc as any).description && (
+              <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
+                {(doc as any).description}
+              </p>
             )}
+
+            <div className="flex items-center mt-2">
+              <span className="text-xs font-medium bg-neutral-100 text-neutral-600 px-2 py-1 rounded">
+                {categoryLabel}
+              </span>
+              <span className="text-xs text-neutral-500 ml-4">
+                Added{" "}
+                {doc.created_at
+                  ? new Date(doc.created_at as any).toLocaleDateString("en-GB")
+                  : "Unknown"}
+              </span>
+            </div>
           </div>
+
           <div className="flex items-center space-x-2 ml-4">
-            <a
-              href={
-                isMinute
-                  ? (doc as any).document_url ||
-                    (doc as any).file_url ||
-                    (doc as any).url ||
-                    "#"
-                  : (doc as any).file_url || (doc as any).url || "#"
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-neutral-500 hover:text-primary-600 transition-colors"
-              title={isMinute ? "View meeting minutes" : "Open document"}
-            >
-              <ExternalLink size={18} />
-            </a>
+            {url && (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-neutral-500 hover:text-primary-600 transition-colors"
+                title="Open document"
+              >
+                <ExternalLink size={18} />
+              </a>
+            )}
           </div>
         </div>
       </div>
     );
   };
 
-  // Show loading while auth is loading
+  /* ---------------- LOADING GUARDS ---------------- */
+
   if (authLoading) {
     return (
       <div className="min-h-screen pt-28 pb-20 bg-white">
         <div className="container mx-auto px-4 md:px-6 text-center pt-12">
-          <LoadingSpinner subtle={true} />
+          <LoadingSpinner subtle />
         </div>
       </div>
     );
   }
 
-  // Show loading while data is loading
   if (user && dataLoading) {
     return (
       <div className="min-h-screen pt-28 pb-20 bg-white">
         <div className="container mx-auto px-4 md:px-6 text-center pt-12">
-          <LoadingSpinner subtle={true} />
+          <LoadingSpinner subtle />
         </div>
       </div>
     );
   }
 
-  // Don't render anything if redirecting
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
+
+  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="min-h-screen pb-20 bg-neutral-50">
@@ -595,17 +389,14 @@ const MembersPage: React.FC = () => {
               <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
                 <h3 className="font-medium text-yellow-800 mb-1">Notice</h3>
-                <p className="text-yellow-700">
-                  {error} - Showing demo data instead.
-                </p>
+                <p className="text-yellow-700">{error}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Document Category Selection Sidebar */}
+          {/* Sidebar: Document Categories */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-soft p-6 sticky top-8">
               <div className="flex items-center justify-between mb-6">
@@ -629,20 +420,21 @@ const MembersPage: React.FC = () => {
                 </Button>
               </div>
 
-              {/* Category Selection */}
               <div className="space-y-3">
                 <p className="text-xs text-neutral-500 mb-3">
                   Click to select. Hold Ctrl/Cmd to select multiple.
                 </p>
+
                 {DOCUMENT_CATEGORIES.map((category) => {
                   const count = getCategoryCount(category.key);
                   const IconComponent = category.icon;
+                  const isSelected = selectedCategories.includes(category.key);
 
                   return (
                     <label
                       key={category.key}
                       className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
-                        selectedCategories.includes(category.key)
+                        isSelected
                           ? "border-secondary-500 bg-secondary-50"
                           : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
                       }`}
@@ -656,18 +448,18 @@ const MembersPage: React.FC = () => {
                     >
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes(category.key)}
+                        checked={isSelected}
                         onChange={() => {}}
                         className="sr-only"
                       />
                       <div
                         className={`w-4 h-4 rounded border-2 mr-3 flex items-center justify-center ${
-                          selectedCategories.includes(category.key)
+                          isSelected
                             ? "border-secondary-500 bg-secondary-500"
                             : "border-neutral-300"
                         }`}
                       >
-                        {selectedCategories.includes(category.key) && (
+                        {isSelected && (
                           <svg
                             className="w-3 h-3 text-white"
                             fill="currentColor"
@@ -698,7 +490,6 @@ const MembersPage: React.FC = () => {
                 })}
               </div>
 
-              {/* Clear All Button */}
               {selectedCategories.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-neutral-200">
                   <Button
@@ -715,17 +506,15 @@ const MembersPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Main Content Area */}
+          {/* Main content */}
           <div className="lg:col-span-3">
-            {/* Dashboard Overview Section */}
+            {/* Overview cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-              {/* Profile Summary Card */}
               <ProfileSummaryCard
-                profile={userProfile}
-                userEmail={user?.email}
+                profile={userProfile as MemberProfile | null}
+                userEmail={user?.email ?? undefined}
               />
 
-              {/* Recent Documents Card */}
               <RecentDocumentsCard
                 documents={allDocuments}
                 onViewAllDocuments={() =>
@@ -738,7 +527,6 @@ const MembersPage: React.FC = () => {
                 }
               />
 
-              {/* Quick Actions */}
               <section className="md:col-span-2 lg:col-span-2">
                 <h2 className="text-xl font-semibold text-primary-700 mb-3">
                   Quick Actions
@@ -786,7 +574,7 @@ const MembersPage: React.FC = () => {
               </section>
             </div>
 
-            {/* Document Browser Section */}
+            {/* Document Browser */}
             <DashboardCard
               title="Document Browser"
               icon={FileText}
@@ -798,13 +586,6 @@ const MembersPage: React.FC = () => {
                 )
               }
             >
-              {selectedCategories.length === 0 && (
-                <p className="text-sm text-neutral-500 mb-6">
-                  Select categories from the left to view documents
-                </p>
-              )}
-
-              {/* Search Bar - Only show when categories are selected */}
               {selectedCategories.length > 0 && (
                 <div className="mb-6">
                   <div className="relative">
@@ -823,7 +604,6 @@ const MembersPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Document Display Area */}
               {selectedCategories.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -864,7 +644,6 @@ const MembersPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Virtualized list for better performance */}
                   <VirtualizedList
                     items={filteredAndPaginatedDocuments.documents}
                     height={600}
@@ -873,7 +652,6 @@ const MembersPage: React.FC = () => {
                     className="border border-neutral-200 rounded-lg"
                   />
 
-                  {/* Pagination controls */}
                   {filteredAndPaginatedDocuments.total > pageSize && (
                     <PaginationControls
                       currentPage={currentPage}

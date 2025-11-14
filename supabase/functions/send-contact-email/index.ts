@@ -1,6 +1,13 @@
 // supabase/functions/send-contact-email/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
+declare const Deno: {
+  serve: (handler: (req: Request) => Response | Promise<Response>) => void;
+  env: {
+    get: (key: string) => string | undefined;
+  };
+};
+
 // Rate limiting: Track IP addresses and submission times
 const submissions = new Map<string, number>();
 
@@ -15,7 +22,7 @@ setInterval(() => {
   }
 }, 3600000);
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   // ✅ Handle preflight CORS request
   if (req.method === "OPTIONS") {
     return new Response(null, {

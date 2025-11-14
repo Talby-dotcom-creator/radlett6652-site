@@ -892,7 +892,7 @@ const CMSAdminPage: React.FC = () => {
   useEffect(() => {
     const loadResources = async () => {
       try {
-        const all = await optimizedApi.getResources();
+        const all = await optimizedApi.getMemberResources();
         setResources(all);
       } catch (err) {
         console.error("Failed to load resources:", err);
@@ -931,7 +931,7 @@ const CMSAdminPage: React.FC = () => {
         }
 
         // Refresh
-        const all = await optimizedApi.getResources();
+        const all = await optimizedApi.getMemberResources();
         setResources(all);
         setShowResourceForm(false);
         setEditingResource(null);

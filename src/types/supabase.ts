@@ -483,6 +483,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      snippet_activate_one: {
+        Args: { p_id: string };
+        Returns: null;
+      };
     };
     Enums: {
       [_ in never]: never;

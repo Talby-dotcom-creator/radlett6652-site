@@ -30,14 +30,15 @@ const ContactPage: React.FC = () => {
     loadSettings();
   }, []);
 
-  const contactEmail = settings.contact_email || "mattjohnson56@hotmail.co.uk";
-  const contactPhone = settings.contact_phone || "07590 800657";
   const lodgeAddress =
     settings.lodge_address ||
     "Radlett Masonic Centre, Rose Walk, Radlett, Hertfordshire WD7 7JS";
   const meetingSchedule =
     settings.meeting_schedule_description ||
-    "1st Saturday December (Installation)\n2nd Saturday February\n1st Saturday April\n2nd Saturday July\n1st Saturday September\nAll at 4:00 PM unless otherwise stated";
+    `• 2nd Saturday in February • 1st Saturday in April • 2nd Saturday in July • 1st Saturday in September • 2nd Saturday in December (Installation)`;
+  const contactEmail = settings.contact_email || "";
+  const contactPhone = settings.contact_phone || "";
+  const sanitizedPhone = contactPhone ? contactPhone.replace(/\s+/g, "") : "";
 
   return (
     <>
@@ -82,44 +83,6 @@ const ContactPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Email */}
-                <div className="flex items-start">
-                  <Mail
-                    size={20}
-                    className="mr-3 text-secondary-500 flex-shrink-0 mt-1"
-                  />
-                  <div>
-                    <h3 className="font-medium text-primary-600">Email</h3>
-                    <p className="text-neutral-600">
-                      <a
-                        href={`mailto:${contactEmail}`}
-                        className="hover:text-secondary-500 transition-colors"
-                      >
-                        {contactEmail}
-                      </a>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <div className="flex items-start">
-                  <Phone
-                    size={20}
-                    className="mr-3 text-secondary-500 flex-shrink-0 mt-1"
-                  />
-                  <div>
-                    <h3 className="font-medium text-primary-600">Phone</h3>
-                    <p className="text-neutral-600">
-                      <a
-                        href={`tel:${contactPhone.replace(/\s+/g, "")}`}
-                        className="hover:text-secondary-500 transition-colors"
-                      >
-                        {contactPhone}
-                      </a>
-                    </p>
-                  </div>
-                </div>
-
                 {/* Meeting Schedule */}
                 <div className="flex items-start">
                   <Clock
@@ -130,9 +93,13 @@ const ContactPage: React.FC = () => {
                     <h3 className="font-medium text-primary-600">
                       Lodge Meetings
                     </h3>
-                    <p className="text-neutral-600 whitespace-pre-line">
-                      {meetingSchedule}
-                    </p>
+                    <ul className="text-neutral-600 list-disc pl-5">
+                      <li>2nd Saturday in February</li>
+                      <li>1st Saturday in April</li>
+                      <li>2nd Saturday in July</li>
+                      <li>1st Saturday in September</li>
+                      <li>2nd Saturday in December (Installation)</li>
+                    </ul>
                   </div>
                 </div>
               </div>

@@ -146,11 +146,12 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                 setIsOpen(true);
                 setShowReflectionMessage(false);
               }}
-              className="absolute bottom-[calc(8%+350px)] px-5 py-2 
+              className="absolute bottom-[calc(8%+100px)] px-5 py-2 
                          text-sm font-semibold bg-[#FFD700] 
                          text-[#0A174E] rounded-full shadow-md 
                          hover:bg-[#f4c430] hover:scale-105 
                          transition-all duration-300"
+              style={{ marginTop: "300px" }}
             >
               Open the Book
             </motion.button>
@@ -294,7 +295,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                              transition-all duration-200
                              hover:scale-105 active:scale-95"
                   style={{
-                    marginTop: "1.5rem",
+                    marginTop: "calc(1.5rem + 2.5rem + 50px)",
                     background:
                       "linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)",
                     color: "#1a1105",
@@ -648,10 +649,10 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                   }}
                   style={{
                     position: "absolute",
-                    top: "22%",
-                    left: "16%",
-                    width: "68%",
-                    height: "58%",
+                    top: "10%",
+                    left: "5%",
+                    width: "90%",
+                    height: "80%",
                     zIndex: 35,
                     pointerEvents: "auto",
                     borderRadius: "6px",
@@ -730,8 +731,8 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                       position: "absolute",
                       top: "50%",
                       left: "50%",
-                      width: "70%",
-                      height: "70%",
+                      width: "90%",
+                      height: "90%",
                       transform: "translate(-50%, -50%)",
                       background:
                         "radial-gradient(ellipse at center, rgba(255,245,220,0.15) 0%, rgba(255,215,130,0.08) 40%, transparent 70%)",
@@ -886,6 +887,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                       overflowY: "auto",
                       overflowX: "hidden",
                       zIndex: 4,
+                      marginTop: "100px",
                     }}
                   >
                     {/* SNIPPET CONTENT ON PARCHMENT */}
@@ -900,17 +902,20 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                         <h2
                           className="text-center"
                           style={{
-                            fontFamily:
-                              "'Playfair Display SC', 'Playfair Display', serif",
-                            fontWeight: 700,
-                            letterSpacing: "0.12em",
-                            fontSize: "clamp(1.8rem, 2.5vw, 2.5rem)",
-                            marginBottom: "0.5em",
-                            lineHeight: 1.25,
+                            fontFamily: "'Playfair Display', serif",
+                            fontWeight: 600,
+                            letterSpacing: "0.08em",
+                            fontSize: "clamp(1.2rem, 2vw, 2rem)",
+                            marginBottom: "0.3em",
+                            lineHeight: 1.15,
                             textTransform: "uppercase",
-                            color: "#6B4E11",
+                            color: "#8B6B2F",
                             textShadow:
-                              "0 0 2px rgba(255,215,0,0.4), 0 1px 2px rgba(0,0,0,0.25), 0 -1px 1px rgba(139,105,20,0.3)",
+                              "0 0 1px rgba(255,215,0,0.2), 0 1px 1px rgba(0,0,0,0.1)",
+                            wordBreak: "break-word",
+                            maxWidth: "95%",
+                            marginLeft: "auto",
+                            marginRight: "auto",
                           }}
                         >
                           {displayedTitle}
@@ -924,8 +929,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                           style={{
                             fontSize: "clamp(1.05rem, 1.4vw, 1.2rem)",
                             marginBottom: "1.5em",
-                            textAlign: "left",
-                            textIndent: "1.5em",
+                            textAlign: "center",
                             letterSpacing: "0.02em",
                             opacity: 0.85,
                             color: "#3a2f18",
@@ -990,14 +994,8 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                     background: rgba(90, 70, 50, 0.6);
                   }
                   .snippet-body::first-letter {
-                    font-size: 3.8em;
-                    line-height: 0.82;
-                    float: left;
-                    margin: 0.05em 0.12em 0 0;
-                    font-family: 'Playfair Display SC', 'Playfair Display', serif;
-                    font-weight: 700;
-                    color: #6B4E11;
-                    text-shadow: 0 0 2px rgba(255,215,0,0.4), 0 1px 2px rgba(0,0,0,0.2);
+                    /* Removed drop cap effect */
+                  }
                   }
                 `}</style>
                 </motion.div>
@@ -1007,23 +1005,29 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
 
           {/* ✅ CLOSE BUTTON */}
           {showFullSheet && (
-            <motion.button
-              onClick={() => {
-                setShowFullSheet(false);
-                setShowReflectionMessage(true);
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "32px",
               }}
-              className="absolute bottom-[12%] left-1/2 -translate-x-1/2
-                         bg-[#FFD700] text-[#0A174E] px-6 py-3 
-                         rounded-lg shadow-lg font-semibold
-                         hover:bg-[#f4c430] hover:scale-105 transition-all"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              style={{ zIndex: 40 }}
             >
-              Close Book
-            </motion.button>
+              <motion.button
+                onClick={() => {
+                  setShowFullSheet(false);
+                  setShowReflectionMessage(true);
+                }}
+                className="bg-[#FFD700] text-[#0A174E] px-6 py-3 rounded-lg shadow-lg font-semibold hover:bg-[#f4c430] hover:scale-105 transition-all"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                style={{ zIndex: 40 }}
+              >
+                Close Book
+              </motion.button>
+            </div>
           )}
         </motion.div>
       </div>

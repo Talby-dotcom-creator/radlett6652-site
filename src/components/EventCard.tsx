@@ -11,6 +11,16 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
   return (
     <div className="radlett-card group">
       <div className="radlett-card-content">
+        {event.image_url && (
+          <div className="w-full h-48 mb-4 flex items-center justify-center overflow-hidden rounded-lg bg-neutral-100">
+            <img
+              src={event.image_url}
+              alt={event.title}
+              className="object-contain w-full h-full max-h-48"
+              style={{ maxWidth: "100%", maxHeight: "12rem" }}
+            />
+          </div>
+        )}
         <h3 className="text-xl font-heading font-semibold text-primary-700 mb-2 group-hover:text-secondary-500 transition-colors">
           {event.title}
         </h3>

@@ -27,7 +27,7 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
     handleSubmit,
     setValue,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<FormVals>({
     defaultValues: {
       title: initialData?.title || "",
@@ -85,12 +85,18 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
 
       <div>
         <label className="block text-sm font-medium text-primary-700">
-          Subtitle
+          Subtitle <span className="text-red-500">*</span>
         </label>
         <input
-          {...register("subtitle")}
+          {...register("subtitle", { required: "Subtitle is required" })}
           className="mt-1 w-full border rounded-md px-3 py-2"
         />
+        {/* Show validation error for subtitle */}
+        {errors.subtitle && (
+          <span className="text-red-500 text-sm">
+            {errors.subtitle.message}
+          </span>
+        )}
       </div>
 
       <div>

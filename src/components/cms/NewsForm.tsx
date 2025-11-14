@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CMSBlogPost } from "../../types";
 import Button from "../Button";
+import TinyMCEEditor from "../TinyMCEEditor";
 import MediaManagerModal from "../media/MediaManagerModal";
 import { Image, X } from "lucide-react";
 import QuillEditor from "../QuillEditor";
@@ -63,6 +64,7 @@ const NewsForm: React.FC<NewsFormProps> = ({
     await onSubmit({
       ...data,
       image_url: selectedImageUrl || data.image_url,
+      category: "news",
     });
   };
 
@@ -113,18 +115,15 @@ const NewsForm: React.FC<NewsFormProps> = ({
             htmlFor="content"
             className="block text-sm font-medium text-primary-600"
           >
-            Article Content (HTML)
+            Article Content
           </label>
-          <div className="mt-1">
-            <QuillEditor
-              value={watch("content")}
-              onChange={(html: string) =>
-                setValue("content", html, { shouldDirty: true })
-              }
-              placeholder="Write your article content here…"
-              showSnippets={true}
-            />
-          </div>
+          <TinyMCEEditor
+            value={watch("content")}
+            onChange={(value: string) =>
+              setValue("content", value, { shouldDirty: true })
+            }
+            placeholder="Write or paste your article content here (rich text and HTML allowed)"
+          />
           {errors.content && (
             <p className="mt-1 text-sm text-red-600">
               {errors.content.message as string}
