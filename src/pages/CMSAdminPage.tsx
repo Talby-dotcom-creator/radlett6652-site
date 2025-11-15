@@ -753,19 +753,18 @@ const CMSAdminPage: React.FC = () => {
           }
         } else {
           if (editingPageContent) {
-            await (cmsApi as any).updatePageContentByKey(
-              pageContentData.page_name,
-              pageContentData.section_name,
-              pageContentData.content
+            await optimizedApi.updatePageContent(
+              editingPageContent.id,
+              pageContentData
             );
             success("Page content updated successfully");
           } else {
-            await cmsApi.createPageContent(pageContentData);
+            await optimizedApi.createPageContent(pageContentData);
             success("Page content created successfully");
           }
 
-          const updatedPageContent = await cmsApi.getPageContent();
-          setPageContent(updatedPageContent);
+          const updated = await optimizedApi.getPageContent();
+          setPageContent(updated);
         }
 
         setShowPageContentForm(false);

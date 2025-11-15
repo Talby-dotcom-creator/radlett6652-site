@@ -57,6 +57,50 @@ async function resolveSnippetsTable(): Promise<"snippets" | "snippet"> {
  * Unified Optimized API Layer (Cleaned & Consolidated)
  * ---------------------------------------------------- */
 export const optimizedApi: any = {
+  // ---------- PAGE CONTENT ----------
+  async createPageContent(payload: {
+    page_name: string;
+    section_name?: string;
+    content: string;
+    content_type?: string;
+  }): Promise<PageContent> {
+    const { data, error } = await supabase
+      .from("page_content")
+      .insert({
+        page_name: payload.page_name,
+        section_name: payload.section_name ?? "",
+        content: payload.content,
+        content_type: payload.content_type || "html",
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updatePageContent(
+    id: string,
+    payload: {
+      page_name: string;
+      section_name?: string;
+      content: string;
+      content_type?: string;
+    }
+  ): Promise<PageContent> {
+    const { data, error } = await supabase
+      .from("page_content")
+      .update({
+        page_name: payload.page_name,
+        section_name: payload.section_name ?? "",
+        content: payload.content,
+        content_type: payload.content_type || "html",
+      })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
   /* ---------------- RESOURCES ---------------- */
   async createResource(resource: {
     title: string;
