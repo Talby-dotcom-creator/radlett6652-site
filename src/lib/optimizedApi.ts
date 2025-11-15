@@ -18,7 +18,7 @@ import {
  * Error handling helper
  * ---------------------------------------------------- */
 const handleError = (error: any, context: string) => {
-  console.error(`ÔØî ${context}:`, error.message || error);
+  console.error(`ï¿½ï¿½ï¿½ ${context}:`, error.message || error);
   throw new Error(`${context} failed: ${error.message || "Unknown error"}`);
 };
 
@@ -89,16 +89,31 @@ export const optimizedApi: any = {
       return null;
     }
   },
+  /* ---------------- MEMBER RESOURCES (correct) ---------------- */
+  async getMemberResources() {
+    try {
+      const { data, error } = await supabase
+        .from("member_resources")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) handleError(error, "getMemberResources");
+      return data ?? [];
+    } catch (err) {
+      handleError(err, "getMemberResources");
+      return [];
+    }
+  },
   /* ---------------- CONNECTION TEST ---------------- */
   async checkConnection() {
     try {
       const { error } = await supabase.from("blog_posts").select("id").limit(1);
 
       if (error) throw error;
-      console.log("Ô£à Supabase connected successfully");
+      console.log("Ô£ï¿½ Supabase connected successfully");
       return true;
     } catch (err) {
-      console.error("ÔØî Supabase connection failed:", err);
+      console.error("ï¿½ï¿½ï¿½ Supabase connection failed:", err);
       return false;
     }
   },
@@ -473,7 +488,7 @@ export const optimizedApi: any = {
         .maybeSingle();
 
       if (error) {
-        console.error("ÔØî getMemberProfile failed:", error);
+        console.error("ï¿½ï¿½ï¿½ getMemberProfile failed:", error);
         return null;
       }
 
@@ -492,7 +507,7 @@ export const optimizedApi: any = {
           }
         : null;
     } catch (err) {
-      console.error("­ƒÆÑ getMemberProfile exception:", err);
+      console.error("ï¿½ï¿½ï¿½ï¿½ getMemberProfile exception:", err);
       return null;
     }
   },
@@ -505,7 +520,7 @@ export const optimizedApi: any = {
         .order("full_name", { ascending: true });
 
       if (error) {
-        console.error("ÔØî getAllMembers failed:", error);
+        console.error("ï¿½ï¿½ï¿½ getAllMembers failed:", error);
         handleError(error, "getAllMembers");
         return [];
       }
@@ -532,7 +547,7 @@ export const optimizedApi: any = {
         needs_password_reset: profile.needs_password_reset ?? null,
       }));
     } catch (err) {
-      console.error("­ƒÆÑ getAllMembers exception:", err);
+      console.error("ï¿½ï¿½ï¿½ï¿½ getAllMembers exception:", err);
       return [];
     }
   },

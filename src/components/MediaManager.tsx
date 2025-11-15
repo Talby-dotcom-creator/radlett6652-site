@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import Button from "./Button";
+import { optimizedApi } from "../lib/optimizedApi";
 
 import {
   Folder as FolderIcon,
@@ -72,6 +73,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
   startPath = "",
   defaultFolder,
 }) => {
+  console.log("MEDIA MANAGER MOUNTED");
   // ✅ Modal exit logic
   const handleClose = () => {
     document.body.style.overflow = "auto";
@@ -124,27 +126,22 @@ const MediaManager: React.FC<MediaManagerProps> = ({
   }, [cwd]);
 
   const ensureRootFolders = (listed: Entry[]) => {
-    if (defaultFolder) return listed; // locked mode
+    // If locked to a folder, do nothing
+    if (defaultFolder) return listed;
 
+    // If we are NOT at root, don't inject anything
     if (cwd !== "") return listed;
-    const existing = new Set(
-      listed.filter((e) => e.type === "folder").map((e) => e.name)
-    );
 
-    const injected: Entry[] = ROOT_FOLDERS.filter((f) => !existing.has(f)).map(
-      (f) => ({
-        name: f,
-        type: "folder",
-        size: null,
-        created_at: null,
-        path: f,
-      })
-    );
+    // Always inject all root folders when at root
+    const injected: Entry[] = ROOT_FOLDERS.map((f) => ({
+      name: f,
+      type: "folder",
+      size: null,
+      created_at: null,
+      path: f,
+    }));
 
-    return [...listed, ...injected].sort((a, b) => {
-      if (a.type !== b.type) return a.type === "folder" ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
+    return injected.sort((a, b) => a.name.localeCompare(b.name));
   };
 
   const load = async () => {
@@ -158,6 +155,9 @@ const MediaManager: React.FC<MediaManagerProps> = ({
         offset: (page - 1) * pageSize,
         sortBy: { column: "name", order: "asc" },
       });
+
+      console.log("SUPABASE RAW LIST:", data);
+      console.log("cwd:", cwd);
 
       if (error) throw error;
 
@@ -274,6 +274,10 @@ const MediaManager: React.FC<MediaManagerProps> = ({
         </button>
 
         <div className="p-4 overflow-y-auto max-h-[90vh]">
+          <div className="text-white mb-3">
+            DEBUG cwd: {cwd || "(root)"} | entries: {entries.length} | search: "
+            {search}"
+          </div>
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-[#BFA76F]">
@@ -374,6 +378,10 @@ const MediaManager: React.FC<MediaManagerProps> = ({
               </thead>
 
               <tbody>
+                <>
+                  {console.log("TABLE RENDER", entries)}
+                  {null}
+                </>
                 {entries
                   .filter((e) =>
                     e.name.toLowerCase().includes(search.toLowerCase())

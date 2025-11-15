@@ -83,6 +83,7 @@ export interface LodgeDocument {
   category: string;
   file_url: string;
   document_date?: string | null; // The actual date of the document (for sorting)
+  publish_date?: string | null; // Added for compatibility with CMSAdminPage
   created_at?: string | null;
   updated_at?: string | null;
   // alternate/legacy field name seen across the codebase

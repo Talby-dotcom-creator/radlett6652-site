@@ -12,6 +12,8 @@ import {
   PageContent,
 } from "../types";
 import type { LodgeEvent } from "../types";
+import type { CMSSnippet } from "../types";
+import type { LodgeDocument } from "../types";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
 import MediaManager from "../components/MediaManager";
@@ -41,6 +43,7 @@ import {
   Columns3,
   FolderOpen,
 } from "lucide-react";
+import { success, showError } from "../utils/toast";
 import SnippetsManager from "../components/admin/SnippetsManager";
 
 // Import all the forms
@@ -246,58 +249,64 @@ const demoPageContent: PageContent[] = [
 ];
 
 const CMSAdminPage: React.FC = () => {
-  // ALL HOOKS MUST BE DECLARED FIRST - BEFORE ANY CONDITIONAL RETURNS
+  // Helper to remove a toast by id
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+  // Auth and navigation
+  const { user, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
-  const { toasts, removeToast, success, error: showError } = useToast();
 
-  // Core state
-  const [activeTab, setActiveTab] = useState<TabType>("officers"); // Start with officers tab
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [usingDemoData, setUsingDemoData] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
-
-  // Data states
+  // State for all content types
   const [events, setEvents] = useState<LodgeEvent[]>([]);
   const [news, setNews] = useState<CMSBlogPost[]>([]);
-  const [snippets, setSnippets] = useState<CMSBlogPost[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [snippets, setSnippets] = useState<CMSSnippet[]>([]);
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
-  const [siteSettings, setSiteSettings] = useState<SiteSetting[]>([]);
   const [pageContent, setPageContent] = useState<PageContent[]>([]);
-
-  // Form states
-  const [showEventForm, setShowEventForm] = useState(false);
-  const [showNewsForm, setShowNewsForm] = useState(false);
-  const [showOfficerForm, setShowOfficerForm] = useState(false);
-  const [showTestimonialForm, setShowTestimonialForm] = useState(false);
-  const [showSnippetForm, setShowSnippetForm] = useState(false);
-  const [editingSnippet, setEditingSnippet] = useState<CMSBlogPost | null>(
-    null
-  );
-  const [showFAQForm, setShowFAQForm] = useState(false);
-  const [showSettingsForm, setShowSettingsForm] = useState(false);
-  const [showPageContentForm, setShowPageContentForm] = useState(false);
-  const [resources, setResources] = useState<any[]>([]);
-  const [showResourceForm, setShowResourceForm] = useState(false);
-  const [editingResource, setEditingResource] = useState<any | null>(null);
-  const [showMediaManager, setShowMediaManager] = useState(false);
-  const [showContentScheduler, setShowContentScheduler] = useState(false);
-
-  // Editing states
+  const [resources, setResources] = useState<LodgeDocument[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSetting[]>([]);
+  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("events");
+  const [mediaOpen, setMediaOpen] = useState(true); // <-- auto open when tab loads
+  const [showEventForm, setShowEventForm] = useState<boolean>(false);
   const [editingEvent, setEditingEvent] = useState<LodgeEvent | null>(null);
+  const [showNewsForm, setShowNewsForm] = useState<boolean>(false);
   const [editingNews, setEditingNews] = useState<CMSBlogPost | null>(null);
+  const [showOfficerForm, setShowOfficerForm] = useState<boolean>(false);
   const [editingOfficer, setEditingOfficer] = useState<Officer | null>(null);
+  const [showTestimonialForm, setShowTestimonialForm] =
+    useState<boolean>(false);
   const [editingTestimonial, setEditingTestimonial] =
     useState<Testimonial | null>(null);
+  const [showSnippetForm, setShowSnippetForm] = useState<boolean>(false);
+  const [editingSnippet, setEditingSnippet] = useState<CMSSnippet | null>(null);
+  const [showFAQForm, setShowFAQForm] = useState<boolean>(false);
   const [editingFAQ, setEditingFAQ] = useState<FAQItem | null>(null);
+  const [showPageContentForm, setShowPageContentForm] =
+    useState<boolean>(false);
   const [editingPageContent, setEditingPageContent] =
     useState<PageContent | null>(null);
-
-  // Selection states for bulk operations
+  const [showSettingsForm, setShowSettingsForm] = useState<boolean>(false);
+  const [showResourceForm, setShowResourceForm] = useState<boolean>(false);
+  const [editingResource, setEditingResource] = useState<LodgeDocument | null>(
+    null
+  );
+  const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [previewItem, setPreviewItem] = useState<any>(null);
+  const [showMediaManager, setShowMediaManager] = useState<boolean>(false);
+  const [showContentScheduler, setShowContentScheduler] =
+    useState<boolean>(false);
+  const [schedulingContent, setSchedulingContent] = useState<any>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: (() => void) | null;
+  }>({ isOpen: false, title: "", message: "", onConfirm: null });
+  const [toasts, setToasts] = useState<any[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [selectedNews, setSelectedNews] = useState<string[]>([]);
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([]);
@@ -305,30 +314,8 @@ const CMSAdminPage: React.FC = () => {
     []
   );
   const [selectedFAQs, setSelectedFAQs] = useState<string[]>([]);
-
-  // Preview states (consolidated into previewItem + showPreview)
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewItem, setPreviewItem] = useState<{
-    title?: string;
-    content?: string;
-    image_url?: string | null;
-  } | null>(null);
-
-  // Scheduler states
-  const [schedulingContent, setSchedulingContent] = useState<any>(null);
-
-  // Confirmation dialog state
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  }>({
-    isOpen: false,
-    title: "",
-    message: "",
-    onConfirm: () => {},
-  });
+  const [usingDemoData, setUsingDemoData] = useState<boolean>(false);
+  const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
 
   // Count state variables for dashboard navigation
   const [eventCount, setEventCount] = useState(0);
@@ -371,10 +358,10 @@ const CMSAdminPage: React.FC = () => {
 
   // Handle navigation for non-admin users
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
+    if (!loading && (!user || !isAdmin)) {
       navigate("/members", { replace: true });
     }
-  }, [authLoading, user, isAdmin, navigate]);
+  }, [loading, user, isAdmin, navigate]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -835,10 +822,10 @@ const CMSAdminPage: React.FC = () => {
 
   // Optimized data loading with proper dependency management
   const loadData = useCallback(async () => {
-    if (authLoading || !user || dataLoaded) return;
+    if (loading || !user || dataLoaded) return;
 
     try {
-      setLoading(true);
+      // No local loading state to set
       setError(null);
 
       // Try to load real data first
@@ -905,9 +892,9 @@ const CMSAdminPage: React.FC = () => {
       setUsingDemoData(true);
       setDataLoaded(true);
     } finally {
-      setLoading(false);
+      // No local loading state to set
     }
-  }, [user, authLoading, dataLoaded, showError]);
+  }, [user, loading, dataLoaded, showError]);
 
   useEffect(() => {
     loadData();
@@ -1270,15 +1257,7 @@ const CMSAdminPage: React.FC = () => {
   );
 
   // Show loading while auth is loading
-  if (authLoading) {
-    return (
-      <div className="min-h-screen pt-8 pb-20 bg-white">
-        <div className="container mx-auto px-4 md:px-6 text-center pt-12">
-          <LoadingSpinner subtle={true} />
-        </div>
-      </div>
-    );
-  }
+  // AuthContext loading state is now handled by 'loading'
 
   // Show loading while data is loading (but only if user is authenticated)
   if (user && loading && !dataLoaded) {
@@ -1937,7 +1916,7 @@ const CMSAdminPage: React.FC = () => {
           </div>
         )}
 
-        {/* Testimonials Tab */}
+        {/* Resources Tab */}
         {activeTab === "resources" && (
           <div>
             <h2 className="text-xl font-heading font-semibold text-[#BFA76F] mb-4">
@@ -2003,11 +1982,7 @@ const CMSAdminPage: React.FC = () => {
                       size="sm"
                       className="text-red-600 border-red-200 hover:bg-red-50"
                       onClick={async () => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this resource?"
-                          )
-                        ) {
+                        if (window.confirm("Delete this resource?")) {
                           await optimizedApi.deleteResource(r.id, r.file_url);
                           setResources((prev) =>
                             prev.filter((res) => res.id !== r.id)
@@ -2580,29 +2555,10 @@ const CMSAdminPage: React.FC = () => {
 
         {/* Media Tab */}
         {activeTab === "media" && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-heading font-semibold text-primary-600">
-                Media Manager
-              </h2>
-            </div>
-
-            <div className="bg-neutral-50 rounded-lg p-8 text-center">
-              <Image className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-              <h3 className="text-lg font-semibold text-primary-600 mb-2">
-                Media Management
-              </h3>
-              <p className="text-neutral-600 max-w-lg mx-auto mb-6">
-                The Media Manager allows you to upload, organize, and manage all
-                images and documents used throughout the website.
-              </p>
-              <div className="mx-auto">
-                <MediaManager
-                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
-                />
-              </div>
-            </div>
-          </div>
+          <MediaManager
+            isOpen={true}
+            onClose={() => setActiveTab("dashboard")}
+          />
         )}
 
         {/* Settings Tab */}
@@ -2724,6 +2680,13 @@ const CMSAdminPage: React.FC = () => {
           </div>
         )}
 
+        {/* MEDIA TAB */}
+        {activeTab === "media" && (
+          <MediaManager
+            isOpen={true}
+            onClose={() => setActiveTab("dashboard")}
+          />
+        )}
         {/* Placeholder for any remaining tabs */}
         {activeTab !== "officers" &&
           activeTab !== "events" &&
@@ -2784,7 +2747,7 @@ const CMSAdminPage: React.FC = () => {
         isOpen={confirmDialog.isOpen}
         title={confirmDialog.title}
         message={confirmDialog.message}
-        onConfirm={confirmDialog.onConfirm}
+        onConfirm={confirmDialog.onConfirm ?? (() => {})}
         onCancel={() =>
           setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
         }
