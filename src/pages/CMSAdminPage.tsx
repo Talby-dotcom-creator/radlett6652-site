@@ -340,6 +340,7 @@ const CMSAdminPage: React.FC = () => {
   const [faqCount, setFaqCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [documentCount, setDocumentCount] = useState(0);
+  const [resourceCount, setResourceCount] = useState(0);
   const [minutesCount, setMinutesCount] = useState(0);
   const [mediaCount, setMediaCount] = useState(0);
 
@@ -353,6 +354,7 @@ const CMSAdminPage: React.FC = () => {
       snippets: snippetCount || snippets.length,
       faq: faqCount || faqItems.length,
       pages: pageCount || pageContent.length,
+      resources: resourceCount || resources.length,
     }),
     [
       events.length,
@@ -362,6 +364,8 @@ const CMSAdminPage: React.FC = () => {
       snippets.length,
       faqItems.length,
       pageContent.length,
+      resources.length,
+      resourceCount,
     ]
   );
 
@@ -434,15 +438,14 @@ const CMSAdminPage: React.FC = () => {
   useEffect(() => {
     const loadCounts = async () => {
       const tables = [
-        { name: "events_v2", setter: setEventCount },
-        { name: "news_articles", setter: setNewsCount },
+        { name: "events", setter: setEventCount },
         { name: "officers", setter: setOfficerCount },
         { name: "testimonials", setter: setTestimonialCount },
         { name: "snippets", setter: setSnippetCount },
         { name: "faq_items", setter: setFaqCount },
-        { name: "pages", setter: setPageCount },
+        { name: "page_content", setter: setPageCount },
         { name: "lodge_documents", setter: setDocumentCount },
-        { name: "meeting_minutes", setter: setMinutesCount },
+        { name: "member_resources", setter: setResourceCount },
       ];
 
       for (const { name, setter } of tables) {
@@ -455,6 +458,28 @@ const CMSAdminPage: React.FC = () => {
           console.error(`Failed to load count for ${name}:`, err);
           setter(0);
         }
+      }
+
+      try {
+        const { count } = await supabase
+          .from("meeting_minutes")
+          .select("*", { count: "exact", head: true });
+        setMinutesCount(count || 0);
+      } catch (err) {
+        console.error("Failed to load minutes count:", err);
+        setMinutesCount(0);
+      }
+
+      // Count news posts (blog_posts with category='news')
+      try {
+        const { count } = await supabase
+          .from("blog_posts")
+          .select("*", { count: "exact", head: true })
+          .eq("category", "news");
+        setNewsCount(count || 0);
+      } catch (err) {
+        console.error("Failed to load news count:", err);
+        setNewsCount(0);
       }
 
       // Count Pillars (blog posts with category='blog')
@@ -1410,7 +1435,7 @@ const CMSAdminPage: React.FC = () => {
                 />
                 <DashboardButton
                   icon={<FolderOpen className="w-4 h-4" />}
-                  label="Resources"
+                  label={`Resources (${counts.resources})`}
                   onClick={() => setActiveTab("resources")}
                   isActive={activeTab === "resources"}
                 />
@@ -1954,17 +1979,15 @@ const CMSAdminPage: React.FC = () => {
                       ? new Date(r.publish_date).toLocaleDateString()
                       : "N/A"}
                   </p>
-                  {r.file_url && (
-                    <a
-                      href={r.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#BFA76F] hover:underline block mt-1"
-                    >
-                      View File
-                    </a>
-                  )}
                   <div className="mt-3 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(r.file_url, "_blank")}
+                      disabled={!r.file_url}
+                    >
+                      View
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1974,6 +1997,25 @@ const CMSAdminPage: React.FC = () => {
                       }}
                     >
                       Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={async () => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete this resource?"
+                          )
+                        ) {
+                          await optimizedApi.deleteResource(r.id, r.file_url);
+                          setResources((prev) =>
+                            prev.filter((res) => res.id !== r.id)
+                          );
+                        }
+                      }}
+                    >
+                      Delete
                     </Button>
                   </div>
                 </div>

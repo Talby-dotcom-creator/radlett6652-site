@@ -6,7 +6,6 @@ import {
   Twitter,
   Instagram,
   Mail,
-  Phone,
   MapPin,
   Building2,
 } from "lucide-react";
@@ -38,8 +37,6 @@ const Footer: React.FC = () => {
 
   const currentYear = new Date().getFullYear();
   const lodgeName = settings.lodge_name || "Radlett Lodge No. 6652";
-  const contactEmail = settings.contact_email || "secretary@radlettlodge.co.uk";
-  const contactPhone = settings.contact_phone || "07590 800657";
   const lodgeAddress =
     settings.lodge_address ||
     "Radlett Masonic Centre, Rose Walk, Radlett, Hertfordshire WD7 7JS";

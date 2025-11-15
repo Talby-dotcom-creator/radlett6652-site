@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { cmsApi } from "../lib/cmsApi";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { Clock, AlertTriangle, Mail, Phone } from "lucide-react";
+import { Clock, AlertTriangle, Mail } from "lucide-react";
 
 const MembersPendingPage: React.FC = () => {
   const { user, profile } = useAuth();
@@ -147,42 +147,23 @@ const MembersPendingPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-soft p-6">
-                <h2 className="text-xl font-heading font-semibold text-primary-600 mb-4">
-                  Contact Information
+              <div className="bg-white rounded-lg shadow-soft p-6 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-secondary-100 mb-4">
+                  <Mail className="w-6 h-6 text-secondary-600" />
+                </div>
+                <h2 className="text-xl font-heading font-semibold text-primary-600 mb-2">
+                  Need Assistance?
                 </h2>
                 <p className="text-neutral-600 mb-6">
-                  If you need immediate assistance or have questions about your
-                  membership status, please contact:
+                  Our Lodge Secretary is happy to help. Use the contact form and
+                  we&rsquo;ll reply as soon as possible.
                 </p>
-
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <Mail className="w-5 h-5 text-secondary-500 mr-3" />
-                    <div>
-                      <h3 className="font-medium text-primary-600">Email</h3>
-                      <a
-                        href="mailto:mattjohnson56@hotmail.co.uk"
-                        className="text-secondary-500 hover:text-secondary-600 transition-colors"
-                      >
-                        mattjohnson56@hotmail.co.uk
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center">
-                    <Phone className="w-5 h-5 text-secondary-500 mr-3" />
-                    <div>
-                      <h3 className="font-medium text-primary-600">Phone</h3>
-                      <a
-                        href="tel:07590800657"
-                        className="text-secondary-500 hover:text-secondary-600 transition-colors"
-                      >
-                        07590 800657
-                      </a>
-                    </div>
-                  </div>
-                </div>
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-secondary-600 text-white rounded-lg shadow hover:bg-secondary-700 transition-colors"
+                >
+                  Contact the Secretary
+                </Link>
               </div>
             </>
           )}

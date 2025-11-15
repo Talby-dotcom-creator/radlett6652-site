@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { optimizedApi as api } from "../lib/optimizedApi";
-import { LodgeDocument, MemberProfile } from "../types";
+import { LodgeDocument, MemberProfile, MeetingMinutes } from "../types";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
 import VirtualizedList from "../components/VirtualizedList";
@@ -80,6 +80,110 @@ const membersDocMatchesCategory = (
   return allowed.includes(cat);
 };
 
+const MONTH_MAP: Record<string, number> = {
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  may: 4,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  sept: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
+};
+
+const normaliseYear = (value: string): number => {
+  let year = parseInt(value, 10);
+  if (Number.isNaN(year)) return 0;
+  if (year < 100) {
+    year += year >= 50 ? 1900 : 2000;
+  }
+  return year;
+};
+
+const buildTimestamp = (year: number, month: number, day: number): number => {
+  const date = new Date(year, month, day);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+};
+
+const parseDateFromText = (text?: string | null): number => {
+  if (!text) return 0;
+  const cleaned = text.replace(/(\d)(st|nd|rd|th)/gi, "$1");
+
+  const iso = cleaned.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if (iso) {
+    return buildTimestamp(
+      normaliseYear(iso[1]),
+      parseInt(iso[2], 10) - 1,
+      parseInt(iso[3], 10)
+    );
+  }
+
+  const dmy = cleaned.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if (dmy) {
+    return buildTimestamp(
+      normaliseYear(dmy[3]),
+      parseInt(dmy[2], 10) - 1,
+      parseInt(dmy[1], 10)
+    );
+  }
+
+  const dayMonthName = cleaned.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{2,4})/i);
+  if (dayMonthName) {
+    const month = MONTH_MAP[dayMonthName[2].toLowerCase()] ?? -1;
+    if (month >= 0) {
+      return buildTimestamp(
+        normaliseYear(dayMonthName[3]),
+        month,
+        parseInt(dayMonthName[1], 10)
+      );
+    }
+  }
+
+  const monthNameDay = cleaned.match(
+    /([A-Za-z]+)\s+(\d{1,2})(?:,)?\s+(\d{2,4})/i
+  );
+  if (monthNameDay) {
+    const month = MONTH_MAP[monthNameDay[1].toLowerCase()] ?? -1;
+    if (month >= 0) {
+      return buildTimestamp(
+        normaliseYear(monthNameDay[3]),
+        month,
+        parseInt(monthNameDay[2], 10)
+      );
+    }
+  }
+
+  return 0;
+};
+
+const getDocumentRecency = (doc: LodgeDocument): number => {
+  const explicitDate =
+    ((doc as any).document_date as string | undefined) ??
+    doc.created_at ??
+    doc.updated_at;
+  const parsedFromText = parseDateFromText(
+    `${doc.title ?? ""} ${((doc as any).description ?? "").toString()}`
+  );
+  if (parsedFromText) return parsedFromText;
+  return explicitDate ? new Date(explicitDate).getTime() : 0;
+};
+
 /* ---------------- COMPONENT ---------------- */
 
 const MembersPage: React.FC = () => {
@@ -138,10 +242,49 @@ const MembersPage: React.FC = () => {
         setError(null);
         setDataLoading(true);
 
-        const docs = await api.getLodgeDocuments();
+        const [resources, minutes, lodgeDocs] = await Promise.all([
+          api.getMemberResources(),
+          api.getMeetingMinutes(),
+          api.getLodgeDocuments(),
+        ]);
+
+        // Map meeting_minutes to LodgeDocument format
+        const minuteDocs: LodgeDocument[] = (minutes ?? [])
+          .filter((minute: MeetingMinutes) => minute.file_url)
+          .map((minute: MeetingMinutes) => {
+            const readableDate = minute.meeting_date
+              ? new Date(minute.meeting_date).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              : null;
+            return {
+              id: `minutes-${minute.id}`,
+              title:
+                minute.title ||
+                (readableDate
+                  ? `Meeting Minutes - ${readableDate}`
+                  : "Meeting Minutes"),
+              category: "minutes",
+              description: readableDate
+                ? `Meeting minutes for ${readableDate}`
+                : "Meeting minutes",
+              file_url: minute.file_url || "",
+              created_at: minute.created_at ?? minute.meeting_date ?? undefined,
+              updated_at: minute.updated_at ?? minute.meeting_date ?? undefined,
+            };
+          });
+
+        // Combine all document sources
+        const combinedDocs = [
+          ...(lodgeDocs ?? []),
+          ...(resources ?? []),
+          ...minuteDocs,
+        ];
 
         // Extra safety: normalise categories again on the client
-        const normalisedDocs = docs.map((d: any) => ({
+        const normalisedDocs = combinedDocs.map((d: any) => ({
           ...d,
           category: normaliseCategory(d.category),
         }));
@@ -164,19 +307,49 @@ const MembersPage: React.FC = () => {
 
   /* ---------------- INITIAL CATEGORY SELECTION ---------------- */
 
+  const categoryRecency = useMemo(() => {
+    const map: Record<string, number> = {};
+    allDocuments.forEach((doc) => {
+      const timestamp = getDocumentRecency(doc);
+      Object.keys(CATEGORY_MAP).forEach((key) => {
+        if (membersDocMatchesCategory(doc, key)) {
+          map[key] = Math.max(map[key] ?? 0, timestamp);
+        }
+      });
+    });
+    return map;
+  }, [allDocuments]);
+
+  const sortedDocumentCategories = useMemo(() => {
+    const baseOrder = DOCUMENT_CATEGORIES.reduce<Record<string, number>>(
+      (acc, cat, index) => {
+        acc[cat.key] = index;
+        return acc;
+      },
+      {}
+    );
+    return [...DOCUMENT_CATEGORIES].sort((a, b) => {
+      const aTime = categoryRecency[a.key] ?? 0;
+      const bTime = categoryRecency[b.key] ?? 0;
+      if (bTime !== aTime) return bTime - aTime;
+      return (baseOrder[a.key] ?? 0) - (baseOrder[b.key] ?? 0);
+    });
+  }, [categoryRecency]);
+
   useEffect(() => {
     if (categoriesInitialized || allDocuments.length === 0) return;
 
-    // Which sidebar categories have at least one document?
-    const categoriesWithDocs = DOCUMENT_CATEGORIES.map((c) => c.key).filter(
-      (key) => allDocuments.some((doc) => membersDocMatchesCategory(doc, key))
-    );
+    const categoriesWithDocs = sortedDocumentCategories
+      .map((c) => c.key)
+      .filter((key) =>
+        allDocuments.some((doc) => membersDocMatchesCategory(doc, key))
+      );
 
     setSelectedCategories(
       categoriesWithDocs.length ? categoriesWithDocs : ["summons"]
     );
     setCategoriesInitialized(true);
-  }, [allDocuments, categoriesInitialized]);
+  }, [allDocuments, categoriesInitialized, sortedDocumentCategories]);
 
   /* ---------------- HELPERS ---------------- */
 
@@ -193,6 +366,13 @@ const MembersPage: React.FC = () => {
   };
 
   const getTimestamp = (d: LodgeDocument) => {
+    const parsedFromText = parseDateFromText(
+      `${d.title ?? ""} ${(d as any).description ?? ""} ${
+        (d as any).summary ?? ""
+      }`
+    );
+    if (parsedFromText) return parsedFromText;
+
     const source = ((d as any).document_date ??
       d.created_at ??
       (d as any).updated_at) as string | undefined;
@@ -425,7 +605,7 @@ const MembersPage: React.FC = () => {
                   Click to select. Hold Ctrl/Cmd to select multiple.
                 </p>
 
-                {DOCUMENT_CATEGORIES.map((category) => {
+                {sortedDocumentCategories.map((category) => {
                   const count = getCategoryCount(category.key);
                   const IconComponent = category.icon;
                   const isSelected = selectedCategories.includes(category.key);

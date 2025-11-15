@@ -151,7 +151,7 @@ const ContactPage: React.FC = () => {
                     </span>
                   </p>
                   <a
-                    href="https://www.google.com/maps/place/Masonic+Hall+Radlett/@51.6776475,-0.3175806,17z/data=!3m1!4b1!4m6!3m5!1s0x4876158eb518e1d3:0x52aefcf9fc035790!8m2!3d51.6776475!4d-0.3150057"
+                    href="https://www.google.co.uk/maps/place/Masonic+Hall+Radlett/@51.6776475,-0.3175806,17z/data=!3m1!4b1!4m6!3m5!1s0x4876158eb518e1d3:0x52aefcf9fc035790!8m2!3d51.6776475!4d-0.3150057"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-6 py-3 bg-secondary-500 text-primary-800 rounded-md hover:bg-secondary-600 transition-colors font-medium shadow-sm"

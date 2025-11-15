@@ -59,14 +59,8 @@ const PendingApprovalPage: React.FC = () => {
           once your membership has been approved.
         </p>
         <p className="text-neutral-600 mb-6">
-          If you have questions, please contact the lodge administrator or email{" "}
-          <a
-            href="mailto:admin@radlettlodge6652.org.uk"
-            className="text-primary-600 underline"
-          >
-            radlettlodge6652@gmail.com
-          </a>
-          .
+          If you have questions, please reach out to the Lodge Secretary using
+          the secure contact form. We aim to respond within two working days.
         </p>
 
         <div className="flex gap-3 justify-center">
@@ -80,7 +74,7 @@ const PendingApprovalPage: React.FC = () => {
             to="/contact"
             className="inline-block border border-primary-700 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-50"
           >
-            Contact Support
+            Contact the Secretary
           </Link>
         </div>
       </div>

@@ -18,7 +18,7 @@ import {
  * Error handling helper
  * ---------------------------------------------------- */
 const handleError = (error: any, context: string) => {
-  console.error(`‚ùå ${context}:`, error.message || error);
+  console.error(`‘ÿÓ ${context}:`, error.message || error);
   throw new Error(`${context} failed: ${error.message || "Unknown error"}`);
 };
 
@@ -95,10 +95,10 @@ export const optimizedApi: any = {
       const { error } = await supabase.from("blog_posts").select("id").limit(1);
 
       if (error) throw error;
-      console.log("‚úÖ Supabase connected successfully");
+      console.log("‘£‡ Supabase connected successfully");
       return true;
     } catch (err) {
-      console.error("‚ùå Supabase connection failed:", err);
+      console.error("‘ÿÓ Supabase connection failed:", err);
       return false;
     }
   },
@@ -473,7 +473,7 @@ export const optimizedApi: any = {
         .maybeSingle();
 
       if (error) {
-        console.error("‚ùå getMemberProfile failed:", error);
+        console.error("‘ÿÓ getMemberProfile failed:", error);
         return null;
       }
 
@@ -492,7 +492,7 @@ export const optimizedApi: any = {
           }
         : null;
     } catch (err) {
-      console.error("üí• getMemberProfile exception:", err);
+      console.error("≠É∆— getMemberProfile exception:", err);
       return null;
     }
   },
@@ -505,7 +505,7 @@ export const optimizedApi: any = {
         .order("full_name", { ascending: true });
 
       if (error) {
-        console.error("‚ùå getAllMembers failed:", error);
+        console.error("‘ÿÓ getAllMembers failed:", error);
         handleError(error, "getAllMembers");
         return [];
       }
@@ -532,7 +532,7 @@ export const optimizedApi: any = {
         needs_password_reset: profile.needs_password_reset ?? null,
       }));
     } catch (err) {
-      console.error("üí• getAllMembers exception:", err);
+      console.error("≠É∆— getAllMembers exception:", err);
       return [];
     }
   },

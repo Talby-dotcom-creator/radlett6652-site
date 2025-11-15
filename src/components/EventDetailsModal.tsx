@@ -60,7 +60,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fadeIn">
+      <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fadeIn flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-6">
           <div className="flex items-start justify-between">
@@ -112,34 +112,36 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="p-6 overflow-y-auto flex-1">
           {/* Location */}
-          <div className="mb-6">
-            <h3 className="text-lg font-heading font-semibold text-primary-600 mb-3 flex items-center">
-              <MapPin size={20} className="mr-2 text-secondary-500" />
-              Location
-            </h3>
-            <div className="bg-neutral-50 rounded-lg p-4">
-              <p className="text-neutral-700 mb-3">{event.location}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const encodedLocation = encodeURIComponent(
-                    event.location || ""
-                  );
-                  window.open(
-                    `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`,
-                    "_blank"
-                  );
-                }}
-                className="flex items-center"
-              >
-                <ExternalLink size={16} className="mr-2" />
-                View on Google Maps
-              </Button>
+          {event.location && (
+            <div className="mb-6">
+              <h3 className="text-lg font-heading font-semibold text-primary-600 mb-3 flex items-center">
+                <MapPin size={20} className="mr-2 text-secondary-500" />
+                Location
+              </h3>
+              <div className="bg-neutral-50 rounded-lg p-4">
+                <p className="text-neutral-700 mb-3">{event.location}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const encodedLocation = encodeURIComponent(
+                      event.location || ""
+                    );
+                    window.open(
+                    `https://www.google.co.uk/maps/search/?api=1&query=${encodedLocation}`,
+                      "_blank"
+                    );
+                  }}
+                  className="flex items-center"
+                >
+                  <ExternalLink size={16} className="mr-2" />
+                  View on Google Maps
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Description */}
           {event.description && (

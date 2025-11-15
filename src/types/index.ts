@@ -33,6 +33,7 @@ export interface MeetingMinutes {
   meeting_date: string;
   file_url: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface Event {
