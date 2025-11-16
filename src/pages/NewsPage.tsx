@@ -197,6 +197,9 @@ const NewsPage: React.FC = () => {
                           <img
                             src={featuredArticle.image_url}
                             alt={featuredArticle.title}
+                            loading="lazy"
+                            decoding="async"
+                            sizes="(max-width: 768px) 100vw, 50vw"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/50 to-transparent" />
@@ -268,6 +271,9 @@ const NewsPage: React.FC = () => {
                           <img
                             src={post.image_url}
                             alt={post.title}
+                            loading="lazy"
+                            decoding="async"
+                            sizes="(max-width: 768px) 100vw, 50vw"
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
                         </div>
@@ -370,6 +376,9 @@ const NewsPage: React.FC = () => {
                               <img
                                 src={post.image_url}
                                 alt={post.title}
+                                loading="lazy"
+                                decoding="async"
+                                sizes="(max-width: 768px) 100vw, 50vw"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             </div>
@@ -482,6 +491,9 @@ const NewsPage: React.FC = () => {
                   <img
                     src={selectedArticle.image_url}
                     alt={selectedArticle.title}
+                    loading="lazy"
+                    decoding="async"
+                    sizes="100vw"
                     className="max-h-[500px] w-full object-cover"
                   />
                 </div>

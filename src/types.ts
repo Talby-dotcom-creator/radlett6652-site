@@ -96,6 +96,7 @@ export interface MeetingMinutes {
   meeting_date: string;
   file_url: string;
   created_at?: string | null;
+  updated_at?: string | null;
   // some places use `content` or `document_url`
   content?: string | null;
   document_url?: string | null;

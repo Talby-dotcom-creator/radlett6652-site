@@ -28,6 +28,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({
 }) => {
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [sourceMode, setSourceMode] = useState<"media" | "url">("media");
 
   const {
     register,
@@ -126,32 +127,66 @@ const DocumentForm: React.FC<DocumentFormProps> = ({
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Category
           </label>
-          <select
-            {...register("category")}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[#BFA76F] focus:border-transparent bg-white"
-          >
-            <option value="">Select a category</option>
-            <option value="Grand Lodge Communications">
-              Grand Lodge Communications
-            </option>
-            <option value="Provincial Communications">
-              Provincial Communications
-            </option>
-            <option value="Summons">Summons</option>
-            <option value="Meeting Minutes">Meeting Minutes</option>
-            <option value="GPC Minutes">GPC Minutes</option>
-            <option value="Lodge of Instruction">Lodge of Instruction</option>
-            <option value="Resources">Resources</option>
-            <option value="Solomon">Solomon</option>
-            <option value="Bylaws">Bylaws</option>
-            <option value="Forms">Forms</option>
-            <option value="Ritual">Ritual</option>
-            <option value="Other">Other</option>
-          </select>
+          {(() => {
+            const categories = [
+              "Grand Lodge Communications",
+              "Provincial Communications",
+              "Summons",
+              "Meeting Minutes",
+              "GPC Minutes",
+              "Lodge of Instruction",
+              "Resources",
+              "Solomon",
+              "Bylaws",
+              "Forms",
+              "Ritual",
+              "Other",
+            ];
+            const sorted = [...categories].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
+            return (
+              <select
+                {...register("category")}
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[#BFA76F] focus:border-transparent bg-white"
+              >
+                <option value="">Select a category</option>
+                {sorted.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            );
+          })()}
         </div>
 
-        {/* File URL */}
+        {/* Source + File URL */}
         <div>
+          <span className="block text-sm font-medium text-neutral-700 mb-1">
+            Source
+          </span>
+          <div className="flex items-center gap-6 mb-3">
+            <label className="inline-flex items-center gap-2 text-sm text-neutral-700">
+              <input
+                type="radio"
+                name="sourceMode"
+                value="media"
+                checked={sourceMode === "media"}
+                onChange={() => setSourceMode("media")}
+              />
+              Select from Media
+            </label>
+            <label className="inline-flex items-center gap-2 text-sm text-neutral-700">
+              <input
+                type="radio"
+                name="sourceMode"
+                value="url"
+                checked={sourceMode === "url"}
+                onChange={() => setSourceMode("url")}
+              />
+              Paste external link
+            </label>
+          </div>
+
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Document URL *
           </label>
@@ -160,17 +195,24 @@ const DocumentForm: React.FC<DocumentFormProps> = ({
               {...register("url", { required: "Document URL is required" })}
               type="text"
               className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[#BFA76F] focus:border-transparent"
-              placeholder="https://... or select from media"
+              placeholder={
+                sourceMode === "media"
+                  ? "Select from media or paste a link"
+                  : "https://example.com/file.pdf"
+              }
               value={urlValue}
-              readOnly
+              readOnly={sourceMode === "media"}
+              onChange={(e) => setValue("url", e.target.value)}
             />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowMediaManager(true)}
-            >
-              Browse
-            </Button>
+            {sourceMode === "media" && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowMediaManager(true)}
+              >
+                Browse
+              </Button>
+            )}
           </div>
           {errors.url && (
             <p className="text-red-600 text-sm mt-1">{errors.url.message}</p>

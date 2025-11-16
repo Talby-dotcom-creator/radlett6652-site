@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { optimizedApi } from "../lib/optimizedApi";
+import { injectPreloadLink, preloadAndSwap, preloadImage } from "../utils/imagePreload";
 
 interface SnippetData {
   id?: string;
@@ -25,6 +26,31 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
   const [hasFlutteredIn, setHasFlutteredIn] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [parchmentUrl, setParchmentUrl] = useState<string>("/parchment-full.png");
+
+  useEffect(() => {
+    // Prefer responsive WebP variants if present; fallback to single WebP; else PNG
+    const sources = [
+      { w: 1280, url: "/parchment-full-1280.webp" },
+      { w: 1920, url: "/parchment-full-1920.webp" },
+      { w: 2560, url: "/parchment-full-2560.webp" },
+    ];
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    const target = Math.min(3840, Math.max(640, Math.round(vw * Math.max(1, dpr))));
+    const candidate = sources.find((s) => s.w >= target) || sources[sources.length - 1];
+
+    const srcset = sources.map((s) => `${s.url} ${s.w}w`).join(", ");
+    injectPreloadLink(candidate.url, { as: "image", imageSrcSet: srcset, imageSizes: "100vw" });
+    (async () => {
+      const okPrimary = await preloadImage(candidate.url);
+      if (okPrimary) return setParchmentUrl(candidate.url);
+      const single = "/parchment-full.webp";
+      const okSingle = await preloadImage(single);
+      if (okSingle) return setParchmentUrl(single);
+      setParchmentUrl("/parchment-full.png");
+    })();
+  }, []);
 
   useEffect(() => {
     if (onSheetOpenChange) {
@@ -438,7 +464,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
 
                 {/* Parchment Image */}
                 <motion.img
-                  src="/parchment-full.png"
+                  src={parchmentUrl}
                   alt="Parchment"
                   animate={{
                     filter: [
@@ -812,7 +838,7 @@ const AnimatedBook: React.FC<AnimatedBookProps> = ({ onSheetOpenChange }) => {
                     style={{
                       position: "absolute",
                       inset: 0,
-                      backgroundImage: "url('/parchment-full.png')",
+                      backgroundImage: `url('${parchmentUrl}')`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       borderRadius: "6px",

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import React, { useEffect, useState } from "react";\nimport { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import Button from "../../components/Button";
 import { Pencil, Trash2, Plus } from "lucide-react";
@@ -16,8 +15,7 @@ interface Minute {
   updated_at: string | null;
 }
 
-const MinutesAdminPage: React.FC = () => {
-  const navigate = useNavigate();
+const MinutesAdminPage: React.FC = () => {`n  const navigate = useNavigate();
   const [rows, setRows] = useState<Minute[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Minute | null>(null);
@@ -39,8 +37,7 @@ const MinutesAdminPage: React.FC = () => {
     load();
   }, []);
 
-  const looksLikeUrl = (v: any) =>
-    typeof v === "string" && /^(https?:)?\/\//i.test(v);
+  const looksLikeUrl = (v: any) => typeof v === "string" && /^(https?:)?\/\//i.test(v);
 
   const handleSubmit = async (vals: {
     title: string;
@@ -88,22 +85,11 @@ const MinutesAdminPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate("/admin")}
-            className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
-          >
-            Back to Admin
-          </button>
-          <button
-            onClick={() => navigate("/members")}
-            className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
-          >
-            Back to Members
-          </button>
-        </div>
-        <h1 className="text-2xl font-semibold text-primary-700">Meeting Minutes</h1>
+      <div className="flex justify-between mb-6">`n        <div className="flex items-center gap-2">`n          <button onClick={() => navigate("/admin")} className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm">? Back to Admin</button>`n          <button onClick={() => navigate("/members")} className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm">? Back to Members</button>`n        </div>
+        <h1 className="text-2xl font-semibold text-primary-700">
+          Meeting Minutes
+        </h1>
+
         <Button onClick={() => setCreating(true)} className="flex items-center">
           <Plus className="w-4 h-4 mr-2" /> Add Minutes
         </Button>
@@ -121,7 +107,7 @@ const MinutesAdminPage: React.FC = () => {
       )}
 
       {loading ? (
-        <p>Loading…</p>
+        <p>Loadingâ€¦</p>
       ) : (
         <div className="overflow-auto rounded-lg border border-neutral-200">
           <table className="min-w-full text-sm">
@@ -142,10 +128,7 @@ const MinutesAdminPage: React.FC = () => {
                   <td className="px-3 py-2">{r.title}</td>
                   <td className="px-3 py-2">
                     {(() => {
-                      const url =
-                        r.document_url ||
-                        r.file_url ||
-                        (looksLikeUrl(r.content) ? r.content : "");
+                      const url = r.document_url || r.file_url || (looksLikeUrl(r.content) ? r.content : "");
                       return url ? (
                         <a
                           href={url}
@@ -156,7 +139,7 @@ const MinutesAdminPage: React.FC = () => {
                           View
                         </a>
                       ) : (
-                        "—"
+                        "â€”"
                       );
                     })()}
                   </td>
@@ -190,4 +173,5 @@ const MinutesAdminPage: React.FC = () => {
 };
 
 export default MinutesAdminPage;
+
 

@@ -1,4 +1,4 @@
-// src/App.tsx
+﻿// src/App.tsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
@@ -15,6 +15,7 @@ import PillarsPage from "./pages/PillarsPage";
 import PillarsArchivePage from "./pages/PillarsArchivePage";
 import PillarPostDetail from "./pages/PillarPostDetail";
 import SnippetsPage from "./pages/SnippetsPage";
+import SnippetArchivePage from "./pages/archives/SnippetArchivePage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
@@ -50,7 +51,7 @@ const App: React.FC = () => {
       <ScrollToTop />
       <Routes>
         {/* -------------------------------------------------------------------- */}
-        {/* PUBLIC + MEMBER ROUTES — These use the Layout (header + footer)      */}
+        {/* PUBLIC + MEMBER ROUTES â€” These use the Layout (header + footer)      */}
         {/* -------------------------------------------------------------------- */}
         <Route
           path="/*"
@@ -79,6 +80,7 @@ const App: React.FC = () => {
                   element={<Navigate to="/blog" replace />}
                 />
                 <Route path="/snippets" element={<SnippetsPage />} />
+                <Route path="/snippets/archive" element={<SnippetArchivePage />} />
                 <Route
                   path="/faq"
                   element={<Navigate to="/join#faq" replace />}
@@ -125,7 +127,7 @@ const App: React.FC = () => {
         />
 
         {/* -------------------------------------------------------------------- */}
-        {/* ADMIN ROUTES — These are OUTSIDE Layout (clean white pages)          */}
+        {/* ADMIN ROUTES â€” These are OUTSIDE Layout (clean white pages)          */}
         {/* -------------------------------------------------------------------- */}
         <Route
           path="/admin"
@@ -206,3 +208,5 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+

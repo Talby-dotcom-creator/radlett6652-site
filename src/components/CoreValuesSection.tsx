@@ -41,11 +41,16 @@ const CoreValuesSection: React.FC = () => {
           viewport={{ once: true }}
           className="flex justify-center mb-10"
         >
-          <img
-            src="/square-compasses.png"
-            alt="Masonic Square and Compasses"
-            className="w-32 sm:w-40 md:w-48 lg:w-56 xl:w-64 h-auto drop-shadow-lg"
-          />
+          <picture>
+            <source srcSet="/square-compasses1.webp" type="image/webp" />
+            <img
+              src="/square-compasses.png"
+              alt="Masonic Square and Compasses"
+              loading="lazy"
+              decoding="async"
+              className="w-32 sm:w-40 md:w-48 lg:w-56 xl:w-64 h-auto drop-shadow-lg"
+            />
+          </picture>
         </motion.div>
 
         <motion.div

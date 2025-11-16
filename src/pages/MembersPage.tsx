@@ -249,8 +249,9 @@ const MembersPage: React.FC = () => {
         ]);
 
         // Map meeting_minutes to LodgeDocument format
+        const looksLikeUrl = (v: any) =>
+          typeof v === "string" && /^(https?:)?\/\//i.test(v);
         const minuteDocs: LodgeDocument[] = (minutes ?? [])
-          .filter((minute: MeetingMinutes) => minute.file_url)
           .map((minute: MeetingMinutes) => {
             const readableDate = minute.meeting_date
               ? new Date(minute.meeting_date).toLocaleDateString("en-GB", {
@@ -259,6 +260,13 @@ const MembersPage: React.FC = () => {
                   year: "numeric",
                 })
               : null;
+            const url =
+              (minute as any).file_url ||
+              (minute as any).document_url ||
+              (looksLikeUrl((minute as any).content)
+                ? ((minute as any).content as any as string)
+                : "");
+            if (!url) return null as any;
             return {
               id: `minutes-${minute.id}`,
               title:
@@ -270,11 +278,14 @@ const MembersPage: React.FC = () => {
               description: readableDate
                 ? `Meeting minutes for ${readableDate}`
                 : "Meeting minutes",
-              file_url: minute.file_url || "",
-              created_at: minute.created_at ?? minute.meeting_date ?? undefined,
-              updated_at: minute.updated_at ?? minute.meeting_date ?? undefined,
-            };
-          });
+              file_url: url,
+              created_at:
+                (minute as any).created_at ?? minute.meeting_date ?? undefined,
+              updated_at:
+                (minute as any).updated_at ?? minute.meeting_date ?? undefined,
+            } as unknown as LodgeDocument;
+          })
+          .filter(Boolean) as LodgeDocument[];
 
         // Combine all document sources
         const combinedDocs = [
@@ -766,6 +777,7 @@ const MembersPage: React.FC = () => {
                 )
               }
             >
+              <div className="max-h-[70vh] overflow-y-auto pr-1">
               {selectedCategories.length > 0 && (
                 <div className="mb-6">
                   <div className="relative">
@@ -863,6 +875,7 @@ const MembersPage: React.FC = () => {
                   )}
                 </div>
               )}
+              </div>
             </DashboardCard>
           </div>
         </div>

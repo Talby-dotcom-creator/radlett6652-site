@@ -1,6 +1,5 @@
 // src/pages/admin/SnippetsAdminPage.tsx
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";\nimport { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import Button from "../../components/Button";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -18,8 +17,7 @@ export interface Snippet {
   updated_at: string;
 }
 
-const SnippetsAdminPage: React.FC = () => {
-  const navigate = useNavigate();
+const SnippetsAdminPage: React.FC = () => {`n  const navigate = useNavigate();
   const [rows, setRows] = useState<Snippet[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Snippet | null>(null);
@@ -69,22 +67,10 @@ const SnippetsAdminPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate("/admin")}
-            className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
-          >
-            Back to Admin
-          </button>
-          <button
-            onClick={() => navigate("/members")}
-            className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
-          >
-            Back to Members
-          </button>
-        </div>
-        <h1 className="text-2xl font-semibold text-primary-700">Snippet Manager</h1>
+      <div className="flex items-center justify-between mb-6">`n        <div className="flex items-center gap-2">`n          <button onClick={() => navigate("/admin")} className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm">? Back to Admin</button>`n          <button onClick={() => navigate("/members")} className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm">? Back to Members</button>`n        </div>
+        <h1 className="text-2xl font-semibold text-primary-700">
+          Snippet Manager
+        </h1>
         <Button onClick={() => setCreating(true)} className="flex items-center">
           <Plus className="w-4 h-4 mr-2" /> New Snippet
         </Button>
@@ -180,4 +166,5 @@ const SnippetsAdminPage: React.FC = () => {
 };
 
 export default SnippetsAdminPage;
+
 

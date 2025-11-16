@@ -12,8 +12,6 @@ import {
   PageContent,
 } from "../types";
 import type { LodgeEvent } from "../types";
-import type { CMSSnippet } from "../types";
-import type { LodgeDocument } from "../types";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
 import MediaManager from "../components/MediaManager";
@@ -36,14 +34,10 @@ import {
   Clock,
   FileText,
   Image,
-  CheckSquare,
-  Square,
-  LogOut,
   BookOpen,
   Columns3,
   FolderOpen,
 } from "lucide-react";
-import { success, showError } from "../utils/toast";
 import SnippetsManager from "../components/admin/SnippetsManager";
 
 // Import all the forms
@@ -55,9 +49,7 @@ import FAQForm from "../components/cms/FAQForm";
 import SiteSettingsForm from "../components/cms/SiteSettingsForm";
 import PageContentForm from "../components/cms/PageContentForm";
 import BulkActions from "../components/cms/BulkActions";
-import ContentPreview from "../components/cms/ContentPreview";
 import ContentPreviewModal from "../components/ContentPreviewModal";
-// media manager (use top-level MediaManager from components/MediaManager)
 import ContentScheduler from "../components/cms/ContentScheduler";
 import ResourceForm from "../components/ResourceForm";
 import { optimizedApi } from "../lib/optimizedApi";
@@ -249,64 +241,58 @@ const demoPageContent: PageContent[] = [
 ];
 
 const CMSAdminPage: React.FC = () => {
-  // Helper to remove a toast by id
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-  // Auth and navigation
-  const { user, isAdmin, loading, signOut } = useAuth();
+  // ALL HOOKS MUST BE DECLARED FIRST - BEFORE ANY CONDITIONAL RETURNS
   const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { toasts, removeToast, success, error: showError } = useToast();
 
-  // State for all content types
+  // Core state
+  const [activeTab, setActiveTab] = useState<TabType>("officers"); // Start with officers tab
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [usingDemoData, setUsingDemoData] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Data states
   const [events, setEvents] = useState<LodgeEvent[]>([]);
   const [news, setNews] = useState<CMSBlogPost[]>([]);
+  const [snippets, setSnippets] = useState<CMSBlogPost[]>([]);
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [snippets, setSnippets] = useState<CMSSnippet[]>([]);
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
-  const [pageContent, setPageContent] = useState<PageContent[]>([]);
-  const [resources, setResources] = useState<LodgeDocument[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSetting[]>([]);
-  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("events");
-  const [mediaOpen, setMediaOpen] = useState(true); // <-- auto open when tab loads
-  const [showEventForm, setShowEventForm] = useState<boolean>(false);
-  const [editingEvent, setEditingEvent] = useState<LodgeEvent | null>(null);
-  const [showNewsForm, setShowNewsForm] = useState<boolean>(false);
-  const [editingNews, setEditingNews] = useState<CMSBlogPost | null>(null);
-  const [showOfficerForm, setShowOfficerForm] = useState<boolean>(false);
-  const [editingOfficer, setEditingOfficer] = useState<Officer | null>(null);
-  const [showTestimonialForm, setShowTestimonialForm] =
-    useState<boolean>(false);
-  const [editingTestimonial, setEditingTestimonial] =
-    useState<Testimonial | null>(null);
-  const [showSnippetForm, setShowSnippetForm] = useState<boolean>(false);
-  const [editingSnippet, setEditingSnippet] = useState<CMSSnippet | null>(null);
-  const [showFAQForm, setShowFAQForm] = useState<boolean>(false);
-  const [editingFAQ, setEditingFAQ] = useState<FAQItem | null>(null);
-  const [showPageContentForm, setShowPageContentForm] =
-    useState<boolean>(false);
-  const [editingPageContent, setEditingPageContent] =
-    useState<PageContent | null>(null);
-  const [showSettingsForm, setShowSettingsForm] = useState<boolean>(false);
-  const [showResourceForm, setShowResourceForm] = useState<boolean>(false);
-  const [editingResource, setEditingResource] = useState<LodgeDocument | null>(
+  const [pageContent, setPageContent] = useState<PageContent[]>([]);
+  const [resources, setResources] = useState<any[]>([]);
+
+  // Form states
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [showNewsForm, setShowNewsForm] = useState(false);
+  const [showOfficerForm, setShowOfficerForm] = useState(false);
+  const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+  const [showSnippetForm, setShowSnippetForm] = useState(false);
+  const [editingSnippet, setEditingSnippet] = useState<CMSBlogPost | null>(
     null
   );
-  const [showPreview, setShowPreview] = useState<boolean>(false);
-  const [previewItem, setPreviewItem] = useState<any>(null);
-  const [showMediaManager, setShowMediaManager] = useState<boolean>(false);
-  const [showContentScheduler, setShowContentScheduler] =
-    useState<boolean>(false);
-  const [schedulingContent, setSchedulingContent] = useState<any>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: (() => void) | null;
-  }>({ isOpen: false, title: "", message: "", onConfirm: null });
-  const [toasts, setToasts] = useState<any[]>([]);
+  const [showFAQForm, setShowFAQForm] = useState(false);
+  const [showSettingsForm, setShowSettingsForm] = useState(false);
+  const [showPageContentForm, setShowPageContentForm] = useState(false);
+  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [editingResource, setEditingResource] = useState<any | null>(null);
+  const [showMediaManager, setShowMediaManager] = useState(false);
+  const [showContentScheduler, setShowContentScheduler] = useState(false);
+
+  // Editing states
+  const [editingEvent, setEditingEvent] = useState<LodgeEvent | null>(null);
+  const [editingNews, setEditingNews] = useState<CMSBlogPost | null>(null);
+  const [editingOfficer, setEditingOfficer] = useState<Officer | null>(null);
+  const [editingTestimonial, setEditingTestimonial] =
+    useState<Testimonial | null>(null);
+  const [editingFAQ, setEditingFAQ] = useState<FAQItem | null>(null);
+  const [editingPageContent, setEditingPageContent] =
+    useState<PageContent | null>(null);
+
+  // Selection states for bulk operations
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [selectedNews, setSelectedNews] = useState<string[]>([]);
   const [selectedOfficers, setSelectedOfficers] = useState<string[]>([]);
@@ -314,8 +300,30 @@ const CMSAdminPage: React.FC = () => {
     []
   );
   const [selectedFAQs, setSelectedFAQs] = useState<string[]>([]);
-  const [usingDemoData, setUsingDemoData] = useState<boolean>(false);
-  const [isSigningOut, setIsSigningOut] = useState<boolean>(false);
+
+  // Preview states
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewItem, setPreviewItem] = useState<{
+    title?: string;
+    content?: string;
+    image_url?: string | null;
+  } | null>(null);
+
+  // Scheduler states
+  const [schedulingContent, setSchedulingContent] = useState<any>(null);
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Count state variables for dashboard navigation
   const [eventCount, setEventCount] = useState(0);
@@ -327,7 +335,6 @@ const CMSAdminPage: React.FC = () => {
   const [faqCount, setFaqCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [documentCount, setDocumentCount] = useState(0);
-  const [resourceCount, setResourceCount] = useState(0);
   const [minutesCount, setMinutesCount] = useState(0);
   const [mediaCount, setMediaCount] = useState(0);
 
@@ -341,9 +348,15 @@ const CMSAdminPage: React.FC = () => {
       snippets: snippetCount || snippets.length,
       faq: faqCount || faqItems.length,
       pages: pageCount || pageContent.length,
-      resources: resourceCount || resources.length,
     }),
     [
+      eventCount,
+      newsCount,
+      officerCount,
+      testimonialCount,
+      snippetCount,
+      faqCount,
+      pageCount,
       events.length,
       news.length,
       officers.length,
@@ -351,17 +364,15 @@ const CMSAdminPage: React.FC = () => {
       snippets.length,
       faqItems.length,
       pageContent.length,
-      resources.length,
-      resourceCount,
     ]
   );
 
   // Handle navigation for non-admin users
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!authLoading && (!user || !isAdmin)) {
       navigate("/members", { replace: true });
     }
-  }, [loading, user, isAdmin, navigate]);
+  }, [authLoading, user, isAdmin, navigate]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -375,7 +386,147 @@ const CMSAdminPage: React.FC = () => {
     }
   }, [signOut, showError]);
 
-  // Event handlers with useCallback
+  // Loader for events (fetch from optimizedApi)
+  const loadEvents = useCallback(async () => {
+    try {
+      const list = await optimizedApi.getEvents();
+      setEvents(list || []);
+    } catch (err) {
+      console.error("Failed to load events:", err);
+      setError(err instanceof Error ? err.message : "Failed to load events");
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
+
+  // ✅ Shared loader for resources, also keeps documentCount in sync
+  const loadResources = useCallback(async () => {
+    try {
+      const all = await optimizedApi.getMemberResources();
+      setResources(all || []);
+    } catch (err) {
+      console.error("Failed to load resources:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadResources();
+  }, [loadResources]);
+
+  // Load counts for all dashboard navigation buttons
+  const loadCounts = useCallback(async () => {
+    const tables = [
+      { name: "events_v2", setter: setEventCount },
+      { name: "news_articles", setter: setNewsCount },
+      { name: "officers", setter: setOfficerCount },
+      { name: "testimonials", setter: setTestimonialCount },
+      { name: "snippets", setter: setSnippetCount },
+      { name: "faq_items", setter: setFaqCount },
+      { name: "pages", setter: setPageCount },
+      { name: "lodge_documents", setter: setDocumentCount },
+      { name: "meeting_minutes", setter: setMinutesCount },
+    ];
+
+    for (const { name, setter } of tables) {
+      try {
+        const { count } = await supabase
+          .from(name as any)
+          .select("*", { count: "exact", head: true });
+        setter(count || 0);
+      } catch (err) {
+        console.error(`Failed to load count for ${name}:`, err);
+        setter(0);
+      }
+    }
+
+    // Count Pillars (blog posts with category='blog')
+    try {
+      const { count } = await supabase
+        .from("blog_posts")
+        .select("*", { count: "exact", head: true })
+        .eq("category", "blog");
+      setPillarCount(count || 0);
+    } catch (err) {
+      console.error("Failed to load pillars count:", err);
+      setPillarCount(0);
+    }
+
+    // Count media files in cms-media bucket
+    try {
+      const { data } = await supabase.storage
+        .from("cms-media")
+        .list("", { limit: 5000 });
+      setMediaCount((data || []).length);
+    } catch (err) {
+      console.error("Failed to load media count:", err);
+      setMediaCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCounts();
+  }, [loadCounts]);
+
+  // ---------------------------------------------------------------------------
+  // CENTRAL REFRESH FUNCTION  (must ALWAYS be declared BEFORE any handlers use it)
+  // ---------------------------------------------------------------------------
+  const refreshAll = useCallback(async () => {
+    try {
+      const [
+        eventsData,
+        newsData,
+        snippetsData,
+        officersData,
+        testimonialsData,
+        faqData,
+        settingsData,
+        pageContentData,
+        resourcesData,
+      ] = await Promise.all([
+        cmsApi.getEvents(),
+        cmsApi.getNewsArticles(),
+        optimizedApi.getSnippets(),
+        cmsApi.getOfficers(),
+        cmsApi.getTestimonials(),
+        cmsApi.getFAQItems(),
+        cmsApi.getSiteSettings(),
+        cmsApi.getPageContent(),
+        optimizedApi.getMemberResources(),
+      ]);
+
+      setEvents(eventsData);
+      setNews(newsData);
+      setSnippets(snippetsData);
+      setOfficers(officersData);
+      setTestimonials(testimonialsData);
+      setFaqItems(faqData);
+      setSiteSettings(settingsData);
+      setPageContent(pageContentData);
+      setResources(resourcesData);
+    } catch (err) {
+      console.error("❌ refreshAll failed:", err);
+      showError("Could not refresh content.");
+    }
+  }, []);
+  // ---------------------------------------------------------------------------
+  // END refreshAll
+  // ---------------------------------------------------------------------------
+
+  // Lightweight wrapper used by some child managers
+  const loadData = useCallback(async () => {
+    await refreshAll();
+  }, [refreshAll]);
+
+  // Load everything on mount
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
+
+  // ===========================================================================
+  // EVENTS HANDLERS
+  // ===========================================================================
   const handleEventSubmit = async (
     data: Omit<LodgeEvent, "id" | "created_at" | "updated_at">
   ) => {
@@ -385,573 +536,171 @@ const CMSAdminPage: React.FC = () => {
       await optimizedApi.createEvent(data);
     }
 
-    await loadEvents();
+    await refreshAll();
     setShowEventForm(false);
     setEditingEvent(null);
   };
 
   const handleDeleteEvent = async (id: string) => {
-    const ok = confirm("Delete this event?");
-    if (!ok) return;
-    try {
-      await optimizedApi.deleteEvent(id);
-      await loadEvents();
-      success("Event deleted successfully");
-    } catch (err) {
-      console.error("Failed to delete event:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete event");
-      showError("Failed to delete event");
-    }
+    if (!confirm("Delete this event?")) return;
+    await optimizedApi.deleteEvent(id);
+    await refreshAll();
+    success("Event deleted");
   };
 
-  // Loader for events (fetch from optimizedApi)
-  const loadEvents = async () => {
-    try {
-      const list = await optimizedApi.getEvents();
-      setEvents(list || []);
-    } catch (err) {
-      console.error("Failed to load events:", err);
-      setError(err instanceof Error ? err.message : "Failed to load events");
-    }
-  };
-
-  useEffect(() => {
-    loadEvents();
-    // Intentionally run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Load counts for all dashboard navigation buttons
-  useEffect(() => {
-    const loadCounts = async () => {
-      const tables = [
-        { name: "events", setter: setEventCount },
-        { name: "officers", setter: setOfficerCount },
-        { name: "testimonials", setter: setTestimonialCount },
-        { name: "snippets", setter: setSnippetCount },
-        { name: "faq_items", setter: setFaqCount },
-        { name: "page_content", setter: setPageCount },
-        { name: "lodge_documents", setter: setDocumentCount },
-        { name: "member_resources", setter: setResourceCount },
-      ];
-
-      for (const { name, setter } of tables) {
-        try {
-          const { count } = await supabase
-            .from(name as any)
-            .select("*", { count: "exact", head: true });
-          setter(count || 0);
-        } catch (err) {
-          console.error(`Failed to load count for ${name}:`, err);
-          setter(0);
-        }
-      }
-
-      try {
-        const { count } = await supabase
-          .from("meeting_minutes")
-          .select("*", { count: "exact", head: true });
-        setMinutesCount(count || 0);
-      } catch (err) {
-        console.error("Failed to load minutes count:", err);
-        setMinutesCount(0);
-      }
-
-      // Count news posts (blog_posts with category='news')
-      try {
-        const { count } = await supabase
-          .from("blog_posts")
-          .select("*", { count: "exact", head: true })
-          .eq("category", "news");
-        setNewsCount(count || 0);
-      } catch (err) {
-        console.error("Failed to load news count:", err);
-        setNewsCount(0);
-      }
-
-      // Count Pillars (blog posts with category='blog')
-      try {
-        const { count } = await supabase
-          .from("blog_posts")
-          .select("*", { count: "exact", head: true })
-          .eq("category", "blog");
-        setPillarCount(count || 0);
-      } catch (err) {
-        console.error("Failed to load pillars count:", err);
-        setPillarCount(0);
-      }
-
-      // Count media files in cms-media bucket
-      try {
-        const { data } = await supabase.storage
-          .from("cms-media")
-          .list("", { limit: 5000 });
-        setMediaCount((data || []).length);
-      } catch (err) {
-        console.error("Failed to load media count:", err);
-        setMediaCount(0);
-      }
-    };
-
-    loadCounts();
-  }, []);
-
+  // ===========================================================================
+  // NEWS HANDLERS
+  // ===========================================================================
   const handleNewsSubmit = useCallback(
-    async (newsData: Omit<CMSBlogPost, "id" | "created_at" | "updated_at">) => {
-      try {
-        if (usingDemoData) {
-          const newNews: CMSBlogPost = {
-            ...newsData,
-            id: `demo-${Date.now()}`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-
-          if (editingNews) {
-            setNews((prev) =>
-              prev.map((n) =>
-                n.id === editingNews.id ? { ...newNews, id: editingNews.id } : n
-              )
-            );
-            success("News article updated successfully (demo mode)");
-          } else {
-            setNews((prev) => [...prev, newNews]);
-            success("News article created successfully (demo mode)");
-          }
-        } else {
-          if (editingNews) {
-            await cmsApi.updateNewsArticle(editingNews.id, newsData);
-            success("News article updated successfully");
-          } else {
-            await cmsApi.createNewsArticle(newsData);
-            success("News article created successfully");
-          }
-
-          const updatedNews = await cmsApi.getNewsArticles();
-          setNews(updatedNews);
-        }
-
-        setShowNewsForm(false);
-        setEditingNews(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        showError("Failed to save news article");
+    async (data: Omit<CMSBlogPost, "id" | "created_at" | "updated_at">) => {
+      if (editingNews) {
+        await cmsApi.updateNewsArticle(editingNews.id, data);
+      } else {
+        await cmsApi.createNewsArticle(data);
       }
+      await refreshAll();
+      setShowNewsForm(false);
+      setEditingNews(null);
+      success("News saved");
     },
-    [usingDemoData, editingNews, success, showError]
+    [editingNews, refreshAll]
   );
 
   const handleDeleteNews = useCallback(
     async (id: string) => {
-      setConfirmDialog({
-        isOpen: true,
-        title: "Delete News Article",
-        message:
-          "Are you sure you want to delete this news article? This action cannot be undone.",
-        onConfirm: async () => {
-          try {
-            if (usingDemoData) {
-              setNews((prev) => prev.filter((n) => n.id !== id));
-              success("News article deleted successfully (demo mode)");
-            } else {
-              await cmsApi.deleteNewsArticle(id);
-              const updatedNews = await cmsApi.getNewsArticles();
-              setNews(updatedNews);
-              success("News article deleted successfully");
-            }
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            showError("Failed to delete news article");
-          }
-          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-        },
-      });
+      if (!confirm("Delete this article?")) return;
+      await cmsApi.deleteNewsArticle(id);
+      await refreshAll();
+      success("News deleted");
     },
-    [usingDemoData, success, showError]
+    [refreshAll]
   );
 
-  // Testimonial handlers with useCallback
-  const handleTestimonialSubmit = useCallback(
-    async (
-      testimonialData: Omit<Testimonial, "id" | "created_at" | "updated_at">
-    ) => {
+  // ===========================================================================
+  // SITE SETTINGS HANDLER
+  // ===========================================================================
+  const handleSiteSettingsSubmit = useCallback(
+    async (data: Record<string, string>) => {
       try {
-        if (usingDemoData) {
-          const newTestimonial: Testimonial = {
-            ...testimonialData,
-            id: `demo-${Date.now()}`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-
-          if (editingTestimonial) {
-            setTestimonials((prev) =>
-              prev.map((t) =>
-                t.id === editingTestimonial.id
-                  ? { ...newTestimonial, id: editingTestimonial.id }
-                  : t
-              )
-            );
-            success("Testimonial updated successfully (demo mode)");
-          } else {
-            setTestimonials((prev) => [...prev, newTestimonial]);
-            success("Testimonial created successfully (demo mode)");
-          }
-        } else {
-          if (editingTestimonial) {
-            await cmsApi.updateTestimonial(
-              editingTestimonial.id,
-              testimonialData
-            );
-            success("Testimonial updated successfully");
-          } else {
-            await cmsApi.createTestimonial(testimonialData);
-            success("Testimonial created successfully");
-          }
-
-          const updatedTestimonials = await cmsApi.getTestimonials();
-          setTestimonials(updatedTestimonials);
-        }
-
-        setShowTestimonialForm(false);
-        setEditingTestimonial(null);
+        await Promise.all(
+          Object.entries(data).map(([key, value]) =>
+            cmsApi.updateSiteSetting(key, value)
+          )
+        );
+        await refreshAll();
+        success("Settings saved");
+        setShowSettingsForm(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        showError("Failed to save testimonial");
+        console.error("Failed to save settings:", err);
+        showError("Failed to save settings");
       }
     },
-    [usingDemoData, editingTestimonial, success, showError]
+    [refreshAll, success, showError]
+  );
+
+  // ===========================================================================
+  // TESTIMONIALS HANDLERS
+  // ===========================================================================
+  const handleTestimonialSubmit = useCallback(
+    async (data: Omit<Testimonial, "id" | "created_at" | "updated_at">) => {
+      if (editingTestimonial) {
+        await cmsApi.updateTestimonial(editingTestimonial.id, data);
+      } else {
+        await cmsApi.createTestimonial(data);
+      }
+      await refreshAll();
+      setShowTestimonialForm(false);
+      setEditingTestimonial(null);
+    },
+    [editingTestimonial, refreshAll]
   );
 
   const handleDeleteTestimonial = useCallback(
     async (id: string) => {
-      setConfirmDialog({
-        isOpen: true,
-        title: "Delete Testimonial",
-        message:
-          "Are you sure you want to delete this testimonial? This action cannot be undone.",
-        onConfirm: async () => {
-          try {
-            if (usingDemoData) {
-              setTestimonials((prev) => prev.filter((t) => t.id !== id));
-              success("Testimonial deleted successfully (demo mode)");
-            } else {
-              await cmsApi.deleteTestimonial(id);
-              const updatedTestimonials = await cmsApi.getTestimonials();
-              setTestimonials(updatedTestimonials);
-              success("Testimonial deleted successfully");
-            }
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            showError("Failed to delete testimonial");
-          }
-          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-        },
-      });
+      if (!confirm("Delete this testimonial?")) return;
+      await cmsApi.deleteTestimonial(id);
+      await refreshAll();
+      success("Testimonial deleted");
     },
-    [usingDemoData, success, showError]
+    [refreshAll]
   );
 
-  // FAQ handlers with useCallback
+  // ===========================================================================
+  // FAQ HANDLERS
+  // ===========================================================================
   const handleFAQSubmit = useCallback(
-    async (faqData: Omit<FAQItem, "id" | "created_at" | "updated_at">) => {
-      try {
-        if (usingDemoData) {
-          const newFAQ: FAQItem = {
-            ...faqData,
-            id: `demo-${Date.now()}`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-
-          if (editingFAQ) {
-            setFaqItems((prev) =>
-              prev.map((f) =>
-                f.id === editingFAQ.id ? { ...newFAQ, id: editingFAQ.id } : f
-              )
-            );
-            success("FAQ updated successfully (demo mode)");
-          } else {
-            setFaqItems((prev) => [...prev, newFAQ]);
-            success("FAQ created successfully (demo mode)");
-          }
-        } else {
-          if (editingFAQ) {
-            await cmsApi.updateFAQItem(editingFAQ.id, faqData);
-            success("FAQ updated successfully");
-          } else {
-            await cmsApi.createFAQItem(faqData);
-            success("FAQ created successfully");
-          }
-
-          const updatedFAQs = await cmsApi.getFAQItems();
-          setFaqItems(updatedFAQs);
-        }
-
-        setShowFAQForm(false);
-        setEditingFAQ(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        showError("Failed to save FAQ");
+    async (data: Omit<FAQItem, "id" | "created_at" | "updated_at">) => {
+      if (editingFAQ) {
+        await cmsApi.updateFAQItem(editingFAQ.id, data);
+      } else {
+        await cmsApi.createFAQItem(data);
       }
+      await refreshAll();
+      setShowFAQForm(false);
+      setEditingFAQ(null);
     },
-    [usingDemoData, editingFAQ, success, showError]
+    [editingFAQ, refreshAll]
   );
 
   const handleDeleteFAQ = useCallback(
     async (id: string) => {
-      setConfirmDialog({
-        isOpen: true,
-        title: "Delete FAQ",
-        message:
-          "Are you sure you want to delete this FAQ? This action cannot be undone.",
-        onConfirm: async () => {
-          try {
-            if (usingDemoData) {
-              setFaqItems((prev) => prev.filter((f) => f.id !== id));
-              success("FAQ deleted successfully (demo mode)");
-            } else {
-              await cmsApi.deleteFAQItem(id);
-              const updatedFAQs = await cmsApi.getFAQItems();
-              setFaqItems(updatedFAQs);
-              success("FAQ deleted successfully");
-            }
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            showError("Failed to delete FAQ");
-          }
-          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-        },
-      });
+      if (!confirm("Delete this FAQ?")) return;
+      await cmsApi.deleteFAQItem(id);
+      await refreshAll();
+      success("FAQ deleted");
     },
-    [usingDemoData, success, showError]
+    [refreshAll]
   );
 
-  // Page Content handlers with useCallback
+  // ===========================================================================
+  // PAGE CONTENT HANDLERS
+  // ===========================================================================
   const handlePageContentSubmit = useCallback(
-    async (pageContentData: Omit<PageContent, "id" | "updated_at">) => {
-      try {
-        if (usingDemoData) {
-          const newPageContent: PageContent = {
-            ...pageContentData,
-            id: `demo-${Date.now()}`,
-            updated_at: new Date().toISOString(),
-          };
-
-          if (editingPageContent) {
-            setPageContent((prev) =>
-              prev.map((p) =>
-                p.id === editingPageContent.id
-                  ? { ...newPageContent, id: editingPageContent.id }
-                  : p
-              )
-            );
-            success("Page content updated successfully (demo mode)");
-          } else {
-            setPageContent((prev) => [...prev, newPageContent]);
-            success("Page content created successfully (demo mode)");
-          }
-        } else {
-          if (editingPageContent) {
-            await optimizedApi.updatePageContent(
-              editingPageContent.id,
-              pageContentData
-            );
-            success("Page content updated successfully");
-          } else {
-            await optimizedApi.createPageContent(pageContentData);
-            success("Page content created successfully");
-          }
-
-          const updated = await optimizedApi.getPageContent();
-          setPageContent(updated);
-        }
-
-        setShowPageContentForm(false);
-        setEditingPageContent(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        showError("Failed to save page content");
+    async (data: Omit<PageContent, "id" | "updated_at">) => {
+      if (editingPageContent) {
+        await cmsApi.updatePageContentByKey(
+          data.page_name,
+          data.section_name ?? "",
+          data.content
+        );
+      } else {
+        await cmsApi.createPageContent(data);
       }
+      await refreshAll();
+      setShowPageContentForm(false);
+      setEditingPageContent(null);
     },
-    [usingDemoData, editingPageContent, success, showError]
+    [editingPageContent, refreshAll]
   );
 
-  // Site Settings handlers with useCallback
-  const handleSiteSettingsSubmit = useCallback(
-    async (settingsData: Record<string, string>) => {
-      try {
-        if (usingDemoData) {
-          // Update demo settings
-          const updatedSettings = siteSettings.map((setting) => {
-            const newValue = settingsData[setting.setting_key];
-            if (newValue !== undefined) {
-              return {
-                ...setting,
-                setting_value: newValue,
-                updated_at: new Date().toISOString(),
-              };
-            }
-            return setting;
-          });
-
-          setSiteSettings(updatedSettings);
-          success("Site settings updated successfully (demo mode)");
-        } else {
-          // Update real settings
-          const updatePromises = Object.entries(settingsData).map(
-            ([key, value]) => cmsApi.updateSiteSetting(key, value)
-          );
-
-          await Promise.all(updatePromises);
-
-          const updatedSettings = await cmsApi.getSiteSettings();
-          setSiteSettings(updatedSettings);
-          success("Site settings updated successfully");
-        }
-
-        setShowSettingsForm(false);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        showError("Failed to save site settings");
-      }
-    },
-    [usingDemoData, siteSettings, success, showError]
-  );
-
-  // Optimized data loading with proper dependency management
-  const loadData = useCallback(async () => {
-    if (loading || !user || dataLoaded) return;
-
-    try {
-      // No local loading state to set
-      setError(null);
-
-      // Try to load real data first
-      try {
-        const [
-          eventsData,
-          newsData,
-          snippetsData,
-          officersData,
-          testimonialsData,
-          faqData,
-          settingsData,
-          pageContentData,
-        ] = await Promise.all([
-          cmsApi.getEvents(),
-          cmsApi.getNewsArticles(),
-          optimizedApi.getSnippets(), // Use optimizedApi for snippets table
-          cmsApi.getOfficers(),
-          cmsApi.getTestimonials(),
-          cmsApi.getFAQItems(),
-          cmsApi.getSiteSettings(),
-          cmsApi.getPageContent(),
-        ]);
-
-        setEvents(eventsData);
-        setNews(newsData);
-        setSnippets(snippetsData || []);
-        setOfficers(officersData);
-        setTestimonials(testimonialsData);
-        setFaqItems(faqData);
-        setSiteSettings(settingsData);
-        setPageContent(pageContentData);
-        setUsingDemoData(false);
-      } catch (dbError) {
-        console.warn("Database not connected, using demo data:", dbError);
-
-        // Fall back to demo data
-        setEvents(demoEvents);
-        setNews(demoNews);
-        setOfficers(demoOfficers);
-        setTestimonials(demoTestimonials);
-        setFaqItems(demoFAQItems);
-        setSiteSettings(demoSiteSettings);
-        setPageContent(demoPageContent);
-        setUsingDemoData(true);
-      }
-
-      setDataLoaded(true);
-    } catch (err) {
-      console.error("Error loading CMS data:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load data";
-      setError(errorMessage);
-      showError("Failed to load data");
-
-      // Still show demo data even if there's an error
-      setEvents(demoEvents);
-      setNews(demoNews);
-      setOfficers(demoOfficers);
-      setTestimonials(demoTestimonials);
-      setFaqItems(demoFAQItems);
-      setSiteSettings(demoSiteSettings);
-      setPageContent(demoPageContent);
-      setUsingDemoData(true);
-      setDataLoaded(true);
-    } finally {
-      // No local loading state to set
-    }
-  }, [user, loading, dataLoaded, showError]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // ✅ Load all resources from Supabase
-  useEffect(() => {
-    const loadResources = async () => {
-      try {
-        const all = await optimizedApi.getMemberResources();
-        setResources(all);
-      } catch (err) {
-        console.error("Failed to load resources:", err);
-      }
-    };
-    loadResources();
-  }, []);
-
-  // ✅ Handle creating or updating a resource
+  // ===========================================================================
+  // RESOURCES HANDLERS
+  // ===========================================================================
   const handleResourceSubmit = useCallback(
     async (data: any) => {
-      try {
-        const {
-          title,
-          category,
-          description,
-          content,
-          file_url,
-          publish_date,
-        } = data;
-        const payload = {
-          title,
-          category,
-          description,
-          content,
-          file_url,
-          publish_date: publish_date || new Date().toISOString().slice(0, 10),
-        };
+      const payload = {
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        content: data.content,
+        file_url: data.file_url,
+        publish_date:
+          data.publish_date || new Date().toISOString().slice(0, 10),
+      };
 
-        if (editingResource) {
-          await optimizedApi.updateResource(editingResource.id, payload);
-          success("Resource updated successfully!");
-        } else {
-          await optimizedApi.createResource(payload);
-          success("Resource created successfully!");
-        }
-
-        // Refresh
-        const all = await optimizedApi.getMemberResources();
-        setResources(all);
-        setShowResourceForm(false);
-        setEditingResource(null);
-      } catch (err) {
-        console.error("❌ Resource save error:", err);
-        showError("Failed to save resource.");
+      if (editingResource) {
+        await optimizedApi.updateResource(editingResource.id, payload);
+        success("Resource updated");
+      } else {
+        await optimizedApi.createResource(payload);
+        success("Resource created");
       }
+
+      await refreshAll();
+      setShowResourceForm(false);
+      setEditingResource(null);
     },
-    [editingResource, success, showError]
+    [editingResource, refreshAll]
   );
 
   // Officer handlers with useCallback
@@ -1256,7 +1005,15 @@ const CMSAdminPage: React.FC = () => {
   );
 
   // Show loading while auth is loading
-  // AuthContext loading state is now handled by 'loading'
+  if (authLoading) {
+    return (
+      <div className="min-h-screen pt-8 pb-20 bg-white">
+        <div className="container mx-auto px-4 md:px-6 text-center pt-12">
+          <LoadingSpinner subtle={true} />
+        </div>
+      </div>
+    );
+  }
 
   // Show loading while data is loading (but only if user is authenticated)
   if (user && loading && !dataLoaded) {
@@ -1269,7 +1026,6 @@ const CMSAdminPage: React.FC = () => {
     );
   }
 
-  // Don't render anything if redirecting
   // If the current user is not an admin, show an access denied message
   if (!isAdmin) {
     return (
@@ -1296,7 +1052,7 @@ const CMSAdminPage: React.FC = () => {
             onClick={handleSignOut}
             className="bg-red-600 hover:bg-red-700 text-white transition px-4 py-2 rounded-md text-sm font-medium shadow-sm"
           >
-            Sign Out
+            {isSigningOut ? "Signing Out..." : "Sign Out"}
           </button>
         </div>
 
@@ -1304,8 +1060,6 @@ const CMSAdminPage: React.FC = () => {
         {usingDemoData && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              {/* Snippets Tab (removed from demo notice) */}
-
               <Database className="w-5 h-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
                 <h3 className="font-medium text-blue-800 mb-1">Demo Mode</h3>
@@ -1336,7 +1090,6 @@ const CMSAdminPage: React.FC = () => {
 
         {/* Dashboard Navigation */}
         <div className="flex flex-wrap gap-3 mb-8">
-          {/* Helper component for dashboard buttons */}
           {(() => {
             const DashboardButton = ({
               icon,
@@ -1413,7 +1166,7 @@ const CMSAdminPage: React.FC = () => {
                 />
                 <DashboardButton
                   icon={<FolderOpen className="w-4 h-4" />}
-                  label={`Resources (${counts.resources})`}
+                  label={`Resources (${resources.length})`}
                   onClick={() => setActiveTab("resources")}
                   isActive={activeTab === "resources"}
                 />
@@ -1597,7 +1350,6 @@ const CMSAdminPage: React.FC = () => {
           </div>
         )}
 
-        {/* Other tabs would be implemented similarly... */}
         {/* Events Tab */}
         {activeTab === "events" && (
           <div>
@@ -1730,7 +1482,6 @@ const CMSAdminPage: React.FC = () => {
                         <button
                           className="p-2 text-neutral-500 hover:text-secondary-500 transition-colors"
                           onClick={() => {
-                            // Set the editing event and show the form
                             setEditingEvent({ ...event });
                             setShowEventForm(true);
                           }}
@@ -1754,7 +1505,6 @@ const CMSAdminPage: React.FC = () => {
           </div>
         )}
 
-        {/* Other tabs placeholder */}
         {/* News Tab */}
         {activeTab === "news" && (
           <div>
@@ -1921,7 +1671,7 @@ const CMSAdminPage: React.FC = () => {
             <h2 className="text-xl font-heading font-semibold text-[#BFA76F] mb-4">
               Member Resources
             </h2>
-            <p className="text-sm text-neutral-300 mb-6">
+            <p className="text-sm text-neutral-600 mb-6">
               Manage Byelaws, Forms, Ritual, and other lodge documents.
             </p>
 
@@ -1937,67 +1687,96 @@ const CMSAdminPage: React.FC = () => {
             {showResourceForm && (
               <ResourceForm
                 onSubmit={handleResourceSubmit}
-                onCancel={() => setShowResourceForm(false)}
+                onCancel={() => {
+                  setShowResourceForm(false);
+                  setEditingResource(null);
+                }}
                 initialData={editingResource || undefined}
               />
             )}
 
             <div className="mt-6 space-y-4">
-              {resources.map((r) => (
-                <div
-                  key={r.id}
-                  className="bg-[#0B1831] border border-[#BFA76F]/30 rounded-lg p-4 text-white"
-                >
-                  <h3 className="text-lg font-semibold text-[#D8C48C]">
-                    {r.title}
-                  </h3>
-                  <p className="text-sm text-neutral-400">
-                    Category: {r.category} | Publish:{" "}
-                    {r.publish_date
-                      ? new Date(r.publish_date).toLocaleDateString()
-                      : "N/A"}
+              {resources.length === 0 ? (
+                <div className="text-center py-8 bg-[#0B1831] rounded-lg border border-[#BFA76F]/30">
+                  <FolderOpen className="w-10 h-10 mx-auto mb-3 text-[#BFA76F]/50" />
+                  <p className="text-sm text-neutral-200">
+                    No resources found. Click &quot;Add Resource&quot; to create
+                    your first document.
                   </p>
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(r.file_url, "_blank")}
-                      disabled={!r.file_url}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingResource(r);
-                        setShowResourceForm(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                      onClick={async () => {
-                        if (window.confirm("Delete this resource?")) {
-                          await optimizedApi.deleteResource(r.id, r.file_url);
-                          setResources((prev) =>
-                            prev.filter((res) => res.id !== r.id)
-                          );
-                        }
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
                 </div>
-              ))}
+              ) : (
+                resources.map((r) => (
+                  <div
+                    key={r.id}
+                    className="bg-[#0B1831] border border-[#BFA76F]/30 rounded-lg p-4 text-white"
+                  >
+                    <h3 className="text-lg font-semibold text-[#D8C48C]">
+                      {r.title}
+                    </h3>
+                    <p className="text-sm text-neutral-400 mb-1">
+                      Category: {r.category} | Publish:{" "}
+                      {r.publish_date
+                        ? new Date(r.publish_date).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                    {r.description && (
+                      <p className="text-sm text-neutral-200 mb-2">
+                        {r.description}
+                      </p>
+                    )}
+
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (r.file_url) {
+                            window.open(r.file_url, "_blank");
+                          }
+                        }}
+                        disabled={!r.file_url}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingResource(r);
+                          setShowResourceForm(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={async () => {
+                          if (!window.confirm("Delete this resource?")) return;
+                          try {
+                            if (r.file_url) {
+                              await optimizedApi.deleteResource(r.file_url);
+                            }
+                            await loadResources();
+                            success("Resource deleted");
+                          } catch (err) {
+                            console.error("Failed to delete resource:", err);
+                            showError("Failed to delete resource");
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
 
+        {/* Testimonials Tab */}
         {activeTab === "testimonials" && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -2091,7 +1870,7 @@ const CMSAdminPage: React.FC = () => {
                         <div className="flex-grow">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-medium text-primary-600">
-                              {testimonial.member_name}
+                              {testimonial.member_name || testimonial.name}
                             </h3>
                             {!testimonial.is_published && (
                               <span className="text-xs font-medium bg-neutral-100 text-neutral-600 px-2 py-1 rounded">
@@ -2261,8 +2040,6 @@ const CMSAdminPage: React.FC = () => {
                         className="mt-1 block w-full border border-neutral-300 rounded-md px-3 py-2"
                       />
                     </div>
-
-                    {/* Note: image_url field removed - not supported in snippets table */}
 
                     <div className="flex items-center space-x-2">
                       <input
@@ -2554,10 +2331,29 @@ const CMSAdminPage: React.FC = () => {
 
         {/* Media Tab */}
         {activeTab === "media" && (
-          <MediaManager
-            isOpen={true}
-            onClose={() => setActiveTab("dashboard")}
-          />
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-heading font-semibold text-primary-600">
+                Media Manager
+              </h2>
+            </div>
+
+            <div className="bg-neutral-50 rounded-lg p-8 text-center">
+              <Image className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
+              <h3 className="text-lg font-semibold text-primary-600 mb-2">
+                Media Management
+              </h3>
+              <p className="text-neutral-600 max-w-lg mx-auto mb-6">
+                The Media Manager allows you to upload, organize, and manage all
+                images and documents used throughout the website.
+              </p>
+              <div className="mx-auto">
+                <MediaManager
+                  onUpload={(url) => alert(`✅ File uploaded!\n${url}`)}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Settings Tab */}
@@ -2679,13 +2475,6 @@ const CMSAdminPage: React.FC = () => {
           </div>
         )}
 
-        {/* MEDIA TAB */}
-        {activeTab === "media" && (
-          <MediaManager
-            isOpen={true}
-            onClose={() => setActiveTab("dashboard")}
-          />
-        )}
         {/* Placeholder for any remaining tabs */}
         {activeTab !== "officers" &&
           activeTab !== "events" &&
@@ -2695,7 +2484,8 @@ const CMSAdminPage: React.FC = () => {
           activeTab !== "faq" &&
           activeTab !== "pages" &&
           activeTab !== "media" &&
-          activeTab !== "settings" && (
+          activeTab !== "settings" &&
+          activeTab !== "resources" && (
             <div className="text-center py-12 bg-neutral-50 rounded-lg">
               <h3 className="text-lg font-semibold text-primary-600 mb-2">
                 {(activeTab as string).charAt(0).toUpperCase() +
@@ -2711,19 +2501,10 @@ const CMSAdminPage: React.FC = () => {
       </div>
 
       {/* Modals */}
-      <ContentPreviewModal
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        title={previewItem?.title}
-        htmlContent={previewItem?.content}
-        imageUrl={previewItem?.image_url}
-      />
-
       <MediaManager
         isOpen={showMediaManager}
         onClose={() => setShowMediaManager(false)}
         onSelectMedia={(url) => {
-          // This would be used when selecting media from within a form
           console.log("Selected media URL:", url);
           setShowMediaManager(false);
         }}
@@ -2741,12 +2522,21 @@ const CMSAdminPage: React.FC = () => {
         }
       />
 
+      {/* Preview Modal */}
+      <ContentPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        title={previewItem?.title}
+        htmlContent={previewItem?.content}
+        imageUrl={previewItem?.image_url ?? null}
+      />
+
       {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         title={confirmDialog.title}
         message={confirmDialog.message}
-        onConfirm={confirmDialog.onConfirm ?? (() => {})}
+        onConfirm={confirmDialog.onConfirm}
         onCancel={() =>
           setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
         }
@@ -2763,13 +2553,6 @@ const CMSAdminPage: React.FC = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
-      <ContentPreviewModal
-        isOpen={!!previewItem}
-        onClose={() => setPreviewItem(null)}
-        title={previewItem?.title}
-        htmlContent={previewItem?.content}
-        imageUrl={previewItem?.image_url}
-      />
     </div>
   );
 };

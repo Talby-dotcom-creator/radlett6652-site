@@ -185,7 +185,7 @@ function PillarsPageInner() {
 
         {/* Faded Columns/Pillars Background */}
         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-          <Columns3 className="w-[600px] h-[600px] text-amber-400" />
+          <Columns3 className="w-[min(600px,80vw)] h-[min(600px,80vw)] text-amber-400" />
         </div>
 
         {/* Floating Particles */}
@@ -231,7 +231,7 @@ function PillarsPageInner() {
                   ease: "easeInOut",
                 }}
               >
-                <Columns3 className="w-96 h-96 text-amber-500" />
+                <Columns3 className="w-64 h-64 md:w-96 md:h-96 text-amber-500" />
               </motion.div>
 
               <div className="relative">
@@ -253,7 +253,7 @@ function PillarsPageInner() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.2 }}
-                  className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold text-center tracking-[0.15em] select-none relative mb-6"
+                  className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight font-serif font-bold text-center tracking-[0.15em] select-none relative mb-6"
                 >
                   <span className="text-white drop-shadow-2xl">The </span>
                   <motion.span

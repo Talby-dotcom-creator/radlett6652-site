@@ -80,7 +80,7 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({ target }) => {
   };
 
   return (
-    <div className="absolute z-50 bg-white shadow-xl border rounded-lg p-3 flex flex-wrap gap-2 w-[310px]">
+    <div className="absolute z-50 bg-white shadow-xl border rounded-lg p-3 flex flex-wrap gap-2 w-[min(310px,95vw)]">
       {/* Alignment */}
       <button
         className="px-2 py-1 border rounded"

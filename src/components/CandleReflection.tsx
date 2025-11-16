@@ -53,7 +53,22 @@ const CandleReflection: React.FC = () => {
       {/* Background Elements */}
       <div className="absolute inset-0">
         {/* Faded lodge room background */}
-        <div className="absolute inset-0 bg-[url('/slate-texture-background.png')] bg-cover bg-center opacity-10" />
+        <div className="absolute inset-0 opacity-10">
+          <picture>
+            <source
+              media="(min-width: 768px)"
+              srcSet="/reflections-wall-desktop.webp"
+              type="image/webp"
+            />
+            <img
+              src="/reflections-wall-mobile.webp"
+              alt=""
+              className="w-full h-full object-cover object-center"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+        </div>
 
         {/* Radial gradient */}
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-slate-900/50 to-slate-950" />

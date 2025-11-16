@@ -1,17 +1,14 @@
-// src/pages/SnippetsPage.tsx
+﻿// src/pages/SnippetsPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatedBook } from "../components";
 import { motion } from "framer-motion";
-import {
-  BookOpen,
-  Sparkles,
-  Calendar,
-  Clock,
-  ChevronRight,
-} from "lucide-react";
+import { BookOpen, Sparkles, Calendar, Clock, ChevronRight } from "lucide-react";
 import { optimizedApi } from "../lib/optimizedApi";
 import type { CMSBlogPost } from "../types";
+import ContentPreviewModal from "../components/ContentPreviewModal";
+import { Link } from "react-router-dom";
 
+// Copy used when no live snippet is available
 const FALLBACK_HERO_TEXT =
   "Click the book to reveal this week's snippet - a carefully curated message designed to inspire reflection, promote brotherhood, and illuminate the timeless principles of Freemasonry.";
 const FALLBACK_ARCHIVE_TEXT =
@@ -28,6 +25,20 @@ const formatDate = (value?: string | null) => {
   });
 };
 
+
+
+const getExcerpt = (snippet?: CMSBlogPost | null, limit = 320) => {
+  if (!snippet) return "";
+  const source =
+    snippet.summary?.trim() ??
+    snippet.excerpt?.trim() ??
+    snippet.content?.trim() ??
+    "";
+  if (!source) return "";
+  if (source.length <= limit) return source;
+  return `${source.slice(0, limit).trim()}...`;
+};
+
 const formatTime = (value?: string | null) => {
   if (!value) return "";
   const parsed = new Date(value);
@@ -40,17 +51,6 @@ const formatTime = (value?: string | null) => {
   });
 };
 
-const getExcerpt = (snippet?: CMSBlogPost | null, limit = 320) => {
-  if (!snippet) return "";
-  const source =
-    snippet.summary?.trim() ??
-    snippet.excerpt?.trim() ??
-    snippet.content?.trim() ??
-    "";
-  if (!source) return "";
-  if (source.length <= limit) return source;
-  return `${source.slice(0, limit).trim()}…`;
-};
 
 const estimateReadTime = (snippet?: CMSBlogPost | null) => {
   const text =
@@ -77,6 +77,7 @@ const SnippetsPage: React.FC = () => {
   const [archiveSnippets, setArchiveSnippets] = useState<CMSBlogPost[]>([]);
   const [loadingSnippets, setLoadingSnippets] = useState(true);
   const [snippetError, setSnippetError] = useState<string | null>(null);
+  const [selectedSnippet, setSelectedSnippet] = useState<CMSBlogPost | null>(null);
 
   const floatingBooks = useMemo(() => {
     const hasWindow = typeof window !== "undefined";
@@ -173,7 +174,23 @@ const SnippetsPage: React.FC = () => {
   );
   const heroReadTime = estimateReadTime(latestSnippet ?? nextSnippet ?? null);
 
+  // Limit archive preview to 6 items; rest go to full archive page
+  const VISIBLE_LIMIT = 6;
+  const visibleArchive = archiveSnippets.slice(0, VISIBLE_LIMIT);
+  const hasMoreArchive = archiveSnippets.length > VISIBLE_LIMIT;
+
+  const buildSnippetHtml = (s?: CMSBlogPost | null) => {
+    if (!s) return "";
+    if (s.content && s.content.trim()) return s.content;
+    const text = s.summary || s.excerpt || "";
+    return text
+      .split(/\n+/)
+      .map((p) => `<p>${p.trim()}</p>`)
+      .join("");
+  };
+
   return (
+    <>
     <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 overflow-hidden">
       {/* Background texture */}
       <div className="absolute inset-0 opacity-10">
@@ -367,88 +384,83 @@ const SnippetsPage: React.FC = () => {
           {archiveSnippets.length === 0 && !loadingSnippets ? (
             <p className="text-center text-slate-400">{FALLBACK_ARCHIVE_TEXT}</p>
           ) : (
-            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-10 mb-12">
-              {archiveSnippets.map((snippet, index) => {
-                const excerpt = getExcerpt(snippet) || FALLBACK_ARCHIVE_TEXT;
-                const { lead, remainder } = splitLeadLetter(excerpt);
-                return (
-                  <motion.div
-                    key={snippet.id ?? `${snippet.title}-${index}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 + index * 0.1 }}
-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    className="group cursor-pointer"
-                  >
-                    <div className="h-full min-h-[320px] max-w-4xl mx-auto backdrop-blur-md bg-slate-800/40 rounded-3xl border border-slate-700/50 p-10 hover:border-amber-500/30 transition-all duration-300 relative overflow-hidden">
-                      {/* Hover glow */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/5 group-hover:to-transparent transition-all duration-300" />
-
-                      <div className="relative z-10">
-                        {/* Date and read time */}
-                        <div className="flex items-center gap-3 mb-3 text-sm text-slate-500">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{formatDate(snippet.publish_date)}</span>
+            <div className="mb-12 max-h-[60vh] overflow-y-auto pr-1">
+              <ul className="divide-y divide-slate-700/40">
+                {visibleArchive.map((snippet, index) => {
+                  const excerpt = getExcerpt(snippet) || FALLBACK_ARCHIVE_TEXT;
+                  return (
+                    <li key={snippet.id ?? `${snippet.title}-${index}`}>
+                      <button
+                        className="w-full text-left px-4 py-5 hover:bg-slate-800/40 transition-colors"
+                        onClick={() => setSelectedSnippet(snippet)}
+                        aria-label={`Open snippet: ${snippet.title ?? "Snippet"}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-1 text-amber-300">
+                            <ChevronRight className="w-4 h-4" />
                           </div>
-                          <div className="w-1 h-1 rounded-full bg-slate-600" />
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{estimateReadTime(snippet)}</span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-3 text-sm text-slate-400 mb-1">
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" />
+                                <span>{formatDate(snippet.publish_date)}</span>
+                              </div>
+                              <span className="w-1 h-1 rounded-full bg-slate-600 inline-block" />
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{estimateReadTime(snippet)}</span>
+                              </div>
+                            </div>
+                            <h3 className="text-base sm:text-lg font-semibold text-amber-200 mb-1 break-words">
+                              {snippet.title || "Untitled snippet"}
+                            </h3>
+                            <p className="text-slate-300 text-sm sm:text-base leading-relaxed line-clamp-3">
+                              {excerpt}
+                            </p>
                           </div>
                         </div>
-
-                        {/* Title */}
-                        <h3
-                          className="text-lg font-semibold text-amber-200 mb-2 group-hover:text-amber-300 transition-colors break-words max-w-full"
-                          style={{ wordBreak: "break-word", whiteSpace: "normal" }}
-                        >
-                          {snippet.title || "Untitled snippet"}
-                        </h3>
-
-                        {/* Excerpt */}
-                        <p className="text-slate-300 text-base leading-relaxed mb-6">
-                          {lead && (
-                            <span className="font-semibold text-amber-200">
-                              {lead}
-                            </span>
-                          )}
-                          {remainder}
-                        </p>
-
-                        {/* Read more link */}
-                        <div className="flex items-center gap-1.5 text-amber-400 text-sm font-medium group-hover:gap-2.5 transition-all">
-                          <span>Read snippet</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
-                      </div>
-
-                      {/* Corner accent */}
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-bl-full" />
-                    </div>
-                  </motion.div>
-                );
-              })}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
 
           {/* View All Archive CTA */}
+          {hasMoreArchive && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
             className="text-center"
           >
-            <button className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300 transform hover:scale-105">
+            <Link to="/snippets/archive" className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300 transform hover:scale-105">
               <BookOpen className="w-5 h-5" />
               <span>View Full Archive</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </Link>
           </motion.div>
+          )}
         </motion.div>
       </div>
     </div>
+    {/* Snippet Modal */}
+    <ContentPreviewModal
+      isOpen={!!selectedSnippet}
+      onClose={() => setSelectedSnippet(null)}
+      title={selectedSnippet?.title || "Snippet"}
+      htmlContent={buildSnippetHtml(selectedSnippet)}
+      imageUrl={undefined}
+    />
+    </>
   );
 };
 
 export default SnippetsPage;
+
+
+
+
+
+

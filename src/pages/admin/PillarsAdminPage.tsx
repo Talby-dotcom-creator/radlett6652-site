@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import Button from "../../components/Button";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -23,6 +24,7 @@ type BlogPost = {
 };
 
 const PillarsAdminPage: React.FC = () => {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<BlogPost | null>(null);
@@ -65,6 +67,20 @@ const PillarsAdminPage: React.FC = () => {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/admin")}
+            className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
+          >
+            Back to Admin
+          </button>
+          <button
+            onClick={() => navigate("/members")}
+            className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
+          >
+            Back to Members
+          </button>
+        </div>
         <h1 className="text-2xl font-semibold text-primary-700">The Pillars</h1>
         <Button onClick={() => setCreating(true)} className="flex items-center">
           <Plus className="w-4 h-4 mr-2" /> New Article
@@ -117,9 +133,7 @@ const PillarsAdminPage: React.FC = () => {
                   <td className="px-3 py-2">{r.subcategory || "—"}</td>
                   <td className="px-3 py-2">{r.author_name || "—"}</td>
                   <td className="px-3 py-2">
-                    {r.publish_date
-                      ? new Date(r.publish_date).toLocaleString()
-                      : "—"}
+                    {r.publish_date ? new Date(r.publish_date).toLocaleString() : "—"}
                   </td>
                   <td className="px-3 py-2">{r.is_published ? "Yes" : "No"}</td>
                   <td className="px-3 py-2">
@@ -170,3 +184,4 @@ const PillarsAdminPage: React.FC = () => {
 };
 
 export default PillarsAdminPage;
+

@@ -18,6 +18,7 @@ import NewsDetailsModal from "../components/NewsDetailsModal";
 import SacredChamber from "../components/SacredChamber";
 import WelcomeToOurLodge from "../components/WelcomeToOurLodge";
 import SectionBreather from "../components/SectionBreather";
+import { preloadAndSwap, injectPreloadLink } from "../utils/imagePreload";
 
 const HomePage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -30,6 +31,25 @@ const HomePage: React.FC = () => {
   // Parallax for hero background
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 400], [0, 60]);
+  const [heroBg, setHeroBg] = useState<string>("/masonic-pillars.png");
+
+  useEffect(() => {
+    // Choose best WebP hero by viewport + DPR and preload
+    const sources = [
+      { w: 1280, url: "/masonic-pillars-1280.webp" },
+      { w: 1920, url: "/masonic-pillars-1920.webp" },
+      { w: 2560, url: "/masonic-pillars-2560.webp" },
+    ];
+
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    const target = Math.min(3840, Math.max(640, Math.round(vw * Math.max(1, dpr))));
+    const candidate = sources.find((s) => s.w >= target) || sources[sources.length - 1];
+
+    const srcset = sources.map((s) => `${s.url} ${s.w}w`).join(", ");
+    injectPreloadLink(candidate.url, { as: "image", imageSrcSet: srcset, imageSizes: "100vw" });
+    preloadAndSwap(setHeroBg, candidate.url, "/masonic-pillars.png");
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -91,7 +111,10 @@ const HomePage: React.FC = () => {
       />
 
       {/* 🏛 HERO */}
-      <section className="relative min-h-screen text-white overflow-hidden bg-[url('/masonic-pillars.png')] bg-cover bg-bottom">
+      <section
+        className="relative min-h-screen text-white overflow-hidden bg-cover bg-bottom"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      >
         <motion.div
           aria-hidden
           className="absolute inset-0 bg-primary-800/25"
