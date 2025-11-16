@@ -1,0 +1,9 @@
+dist
+build
+node_modules
+supabase/types
+src/_restored_*
+src/**/__generated__/*
+coverage
+.vite
+

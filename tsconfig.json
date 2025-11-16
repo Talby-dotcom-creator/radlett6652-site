@@ -24,6 +24,8 @@
     "**/backup*",
     "**/src_backup*",
     "**/_restored_cms_171458/**",
-    "node_modules"
+    "node_modules",
+    "dist",
+    "build"
   ]
 }
