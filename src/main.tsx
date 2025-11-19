@@ -42,7 +42,8 @@ if (import.meta.env.DEV) {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <GoogleReCaptchaProvider
-      reCaptchaKey="6Le51QosAAAAAEBZSKZXIMTfzuBhMaV5e6B1vpJd"
+      // Temporary: use Google's public test key to suppress warnings in non-prod
+      reCaptchaKey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
       scriptProps={{
         async: true,
         defer: true,

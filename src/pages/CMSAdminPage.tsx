@@ -3,14 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { cmsApi } from "../lib/cmsApi";
 import { supabase } from "../lib/supabase";
-import {
-  CMSBlogPost,
-  Officer,
-  Testimonial,
-  FAQItem,
-  SiteSetting,
-  PageContent,
-} from "../types";
+import MembersAdminSection from "../components/admin/MembersAdminSection";
+import { CMSBlogPost, Officer, Testimonial, FAQItem, SiteSetting, PageContent } from "../types";
 import type { LodgeEvent } from "../types";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -67,7 +61,8 @@ type TabType =
   | "faq"
   | "settings"
   | "pages"
-  | "media";
+  | "media"
+  | "members";
 
 // Demo data for when database is not connected
 const demoEvents: LodgeEvent[] = [
@@ -264,6 +259,7 @@ const CMSAdminPage: React.FC = () => {
   const [siteSettings, setSiteSettings] = useState<SiteSetting[]>([]);
   const [pageContent, setPageContent] = useState<PageContent[]>([]);
   const [resources, setResources] = useState<any[]>([]);
+  const [memberCount, setMemberCount] = useState<number>(0);
 
   // Form states
   const [showEventForm, setShowEventForm] = useState(false);
@@ -366,6 +362,17 @@ const CMSAdminPage: React.FC = () => {
       pageContent.length,
     ]
   );
+
+  // Fetch member count for dashboard tab labels
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { count, error } = await supabase
+        .from("member_profiles")
+        .select("id", { count: "exact", head: true });
+      if (!error && typeof count === "number") setMemberCount(count);
+    };
+    fetchCount();
+  }, []);
 
   // Handle navigation for non-admin users
   useEffect(() => {
@@ -1135,6 +1142,14 @@ const CMSAdminPage: React.FC = () => {
                   onClick={() => setActiveTab("officers")}
                   isActive={activeTab === "officers"}
                 />
+                <DashboardButton
+                  icon={<Users className="w-4 h-4" />}
+                  label={`Members (${memberCount})`}
+                  onClick={() => setActiveTab("members")}
+                  isActive={activeTab === "members"}
+                />
+                  {/* Members Tab */}
+                  {activeTab === "members" && <MembersAdminSection />}
                 <DashboardButton
                   icon={<MessageSquare className="w-4 h-4" />}
                   label={`Testimonials (${counts.testimonials})`}

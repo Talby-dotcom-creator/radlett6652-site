@@ -162,7 +162,8 @@ const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
       if (error) throw error;
 
       const mapped: Entry[] = (data ?? []).map((i: any) => {
-        const isFolder = i.id === null;
+        // Supabase storage sets `metadata` to null for folders; id is non-null
+        const isFolder = !i.metadata;
         const path = prefix ? `${prefix}/${i.name}` : i.name;
         if (isFolder) {
           return { name: i.name, type: "folder", path };
