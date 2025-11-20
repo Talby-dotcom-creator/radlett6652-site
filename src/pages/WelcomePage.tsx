@@ -13,7 +13,7 @@ const WelcomePage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl rounded-2xl p-8 w-full max-w-xl text-white text-center"
+        className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-8 max-w-xl w-full text-white text-center"
       >
         <img src={logoUrl} alt="Radlett Lodge Logo" className="w-24 mx-auto mb-6 drop-shadow-xl" />
 
@@ -23,9 +23,10 @@ const WelcomePage: React.FC = () => {
           Your onboarding information has been successfully submitted.
           <br />
           <br />
-          If any member has anything they would like to contribute — news, blogs, updates, or ideas
-          — please get in touch with me. Likewise, if you spot any issues with the system, I would
-          be grateful if you could let me know.
+          If you have anything to contribute — news, blogs, updates, ideas — please reach out
+          anytime.
+          <br />
+          Likewise, if you find any issues with the system, I would be grateful if you let me know.
         </p>
 
         <div className="text-white/90 mb-6">
