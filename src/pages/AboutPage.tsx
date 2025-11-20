@@ -27,6 +27,7 @@ const AboutPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingCached, setUsingCached] = useState(false);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   useEffect(() => {
     // Try to hydrate quickly from cache for mobile/offline
@@ -48,6 +49,7 @@ const AboutPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
+        setErrorDetails(null);
         const officersData = await optimizedApi.getOfficers();
         const active = officersData
           .filter((o: any) => o.is_active !== false)
@@ -63,6 +65,13 @@ const AboutPage: React.FC = () => {
       } catch (err) {
         console.error("Error loading officers:", err);
         setError("Failed to load officers.");
+        setErrorDetails(
+          err instanceof Error
+            ? err.message
+            : typeof err === "string"
+            ? err
+            : "Unknown error"
+        );
         setOfficers([]);
       } finally {
         setLoading(false);
@@ -1020,6 +1029,11 @@ const AboutPage: React.FC = () => {
             {error && (
               <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-6 text-red-300 text-center">
                 {error}
+                {errorDetails ? (
+                  <p className="mt-2 text-xs text-red-200/80">
+                    Details: {errorDetails}
+                  </p>
+                ) : null}
               </div>
             )}
 
