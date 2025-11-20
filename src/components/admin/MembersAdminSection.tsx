@@ -63,7 +63,7 @@ const MembersAdminSection: React.FC = () => {
   // ---------------------------------------------------------
   const handleResendInvite = async (email: string) => {
     try {
-      const redirectTo = `${window.location.origin}/login?mode=signup&from=invite`;
+      const redirectTo = `${window.location.origin}/login?mode=signin&from=invite`;
       const { error } = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo });
       if (error) throw error;
       alert("Invite resent");

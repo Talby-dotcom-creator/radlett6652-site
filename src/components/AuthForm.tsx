@@ -99,10 +99,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         console.log("✅ AuthForm: Input validation passed");
         console.log("Creating new account for:", email);
 
-        const { data, error: authError } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-        });
+        const { data, error: authError } = await supabase.auth.signUp(
+          {
+            email: email.trim(),
+            password,
+          },
+          {
+            emailRedirectTo: `${window.location.origin}/login?mode=signin&from=signup-email`,
+          }
+        );
 
         console.log("📤 AuthForm: Supabase signup response received");
         console.log("📤 AuthForm: Data:", data);

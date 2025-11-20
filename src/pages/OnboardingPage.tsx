@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
-const logoUrl = "/radlett-logo.png";
+const logoUrl = "/lodge-logo.png ";
 
 const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();

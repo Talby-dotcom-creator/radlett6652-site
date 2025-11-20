@@ -3,7 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-const logoUrl = "/radlett-logo.png";
+const logoUrl = "/lodge-logo.png ";
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
