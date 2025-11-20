@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { api } from "../lib/api";
 import { useToast } from "../hooks/useToast";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Button from "./Button";
 
 interface AuthFormProps {
@@ -12,14 +12,31 @@ interface AuthFormProps {
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   // ...existing code...
   // supabase client is now a singleton imported above
-  const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialMode =
+    params.get("mode") === "signup" || params.get("invite") === "1"
+      ? "signup"
+      : "signin";
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const { error, success } = useToast();
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const updatedParams = new URLSearchParams(location.search);
+    if (
+      updatedParams.get("mode") === "signup" ||
+      updatedParams.get("invite") === "1"
+    ) {
+      setMode("signup");
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

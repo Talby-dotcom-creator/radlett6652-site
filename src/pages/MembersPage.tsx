@@ -194,9 +194,12 @@ export default function MembersPage() {
 
           // Prefer Installation
           const installation = normalized.find(({ title }) => title.includes("installation"));
-          const regular = normalized.find(
-            ({ title }) => title.includes("regular meeting") || (title.includes("regular") && title.includes("meeting"))
-          ) || normalized[0];
+          const regular =
+            normalized.find(
+              ({ title }) =>
+                title.includes("regular meeting") ||
+                (title.includes("regular") && title.includes("meeting"))
+            ) || normalized[0];
 
           const pick = installation ?? regular;
 
@@ -395,7 +398,11 @@ export default function MembersPage() {
                           <FileText className="w-4 h-4 text-[#0B1831]" />
                           <span className="text-sm text-[#0B1831]">{cat.label}</span>
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded border border-[#BFA76F] ${isSel ? "bg-[#BFA76F]/40" : "bg-[#BFA76F]/25"}`}>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded border border-[#BFA76F] ${
+                            isSel ? "bg-[#BFA76F]/40" : "bg-[#BFA76F]/25"
+                          }`}
+                        >
                           {count}
                         </span>
                       </button>
@@ -412,9 +419,19 @@ export default function MembersPage() {
             <section className="mb-4">
               <h2 className="text-lg font-semibold text-primary-800 mb-2">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                <QuickActionTile to="/members/profile" title="Profile & Settings" subtitle="Update your details" Icon={Settings} />
+                <QuickActionTile
+                  to="/members/profile"
+                  title="Profile & Settings"
+                  subtitle="Update your details"
+                  Icon={Settings}
+                />
                 <QuickActionTile to="/events" title="Events Calendar" subtitle="What’s coming up" Icon={Calendar} />
-                <QuickActionTile to="/members/directory" title="Member Directory" subtitle="Find and connect" Icon={Users} />
+                <QuickActionTile
+                  to="/members/directory"
+                  title="Member Directory"
+                  subtitle="Find and connect"
+                  Icon={Users}
+                />
               </div>
             </section>
 
@@ -449,7 +466,10 @@ export default function MembersPage() {
                     Recent
                   </button>
                   {selected.map((k) => (
-                    <span key={k} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#BFA76F]/25 text-[#0B1831] text-xs border border-[#BFA76F]">
+                    <span
+                      key={k}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#BFA76F]/25 text-[#0B1831] text-xs border border-[#BFA76F]"
+                    >
                       {labelFromKey(k)}
                       <button
                         type="button"
@@ -471,10 +491,12 @@ export default function MembersPage() {
 
               {loading ? (
                 <div className="p-8 text-center text-neutral-800">Loading documents…</div>
-              ) : (!showRecent && selected.length === 0) ? (
+              ) : !showRecent && selected.length === 0 ? (
                 <div className="p-12 text-center text-neutral-800">
                   <div className="text-lg font-semibold text-neutral-900 mb-1">Document Browser</div>
-                  <div className="text-sm text-neutral-800 mb-4">Select one or more categories from the left to load items.</div>
+                  <div className="text-sm text-neutral-800 mb-4">
+                    Select one or more categories from the left to load items.
+                  </div>
                   <button
                     type="button"
                     onClick={selectAll}
@@ -488,7 +510,10 @@ export default function MembersPage() {
               ) : (
                 <div className="">
                   {pageItems.map((d) => (
-                    <div key={`${d.source}:${d.id}`} className="group p-4 flex items-center justify-between gap-4 rounded-xl border border-[#BFA76F] bg-white hover:bg-[#BFA76F]/10 transition shadow-sm hover:shadow-md focus-within:ring-2 focus-within:ring-[#BFA76F] mx-3 my-2">
+                    <div
+                      key={`${d.source}:${d.id}`}
+                      className="group p-4 flex items-center justify-between gap-4 rounded-xl border border-[#BFA76F] bg-white hover:bg-[#BFA76F]/10 transition shadow-sm hover:shadow-md focus-within:ring-2 focus-within:ring-[#BFA76F] mx-3 my-2"
+                    >
                       <div className="min-w-0">
                         <div className="font-medium text-[#0B1831] truncate">{d.title}</div>
                         <div className="text-xs text-[#0B1831] opacity-90">
@@ -513,8 +538,8 @@ export default function MembersPage() {
               {(selected.length > 0 || showRecent) && filtered.length > 0 && (
                 <div className="p-4 border-t border-[#BFA76F] flex items-center justify-between text-sm">
                   <div>
-                    Showing {(page - 1) * PAGE_SIZE + 1}–
-                    {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of{" "}
+                    {filtered.length}
                   </div>
                   <div className="flex items-center gap-2">
                     <button

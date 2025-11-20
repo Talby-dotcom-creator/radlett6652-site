@@ -6,6 +6,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 // Public pages
 import HomePage from "./pages/HomePage";
+import WelcomePage from "./pages/WelcomePage";
 import AboutPage from "./pages/AboutPage";
 import JoinPage from "./pages/JoinPage";
 import EventsPage from "./pages/EventsPage";
@@ -67,24 +68,12 @@ const App: React.FC = () => {
                 <Route path="/news/:slug" element={<NewsPostPage />} />
                 <Route path="/blog" element={<PillarsPage />} />
                 <Route path="/blog/:slug" element={<PillarPostDetail />} />
-                <Route
-                  path="/pillars"
-                  element={<Navigate to="/blog" replace />}
-                />
-                <Route
-                  path="/pillars/archive"
-                  element={<PillarsArchivePage />}
-                />
-                <Route
-                  path="/pillars/:slug"
-                  element={<Navigate to="/blog" replace />}
-                />
+                <Route path="/pillars" element={<Navigate to="/blog" replace />} />
+                <Route path="/pillars/archive" element={<PillarsArchivePage />} />
+                <Route path="/pillars/:slug" element={<Navigate to="/blog" replace />} />
                 <Route path="/snippets" element={<SnippetsPage />} />
                 <Route path="/snippets/archive" element={<SnippetArchivePage />} />
-                <Route
-                  path="/faq"
-                  element={<Navigate to="/join#faq" replace />}
-                />
+                <Route path="/faq" element={<Navigate to="/join#faq" replace />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
@@ -119,6 +108,7 @@ const App: React.FC = () => {
                   }
                 />
 
+                <Route path="/welcome" element={<WelcomePage />} />
                 {/* Fallback redirect for unknown public routes */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
@@ -193,20 +183,13 @@ const App: React.FC = () => {
         />
 
         {/* Redirect old path just in case */}
-        <Route
-          path="/members/admin"
-          element={<Navigate to="/admin" replace />}
-        />
+        <Route path="/members/admin" element={<Navigate to="/admin" replace />} />
 
         {/* DEV DEBUG PAGE */}
-        {import.meta.env.DEV && (
-          <Route path="/dev-debug" element={<DevDebugPage />} />
-        )}
+        {import.meta.env.DEV && <Route path="/dev-debug" element={<DevDebugPage />} />}
       </Routes>
     </>
   );
 };
 
 export default App;
-
-

@@ -20,12 +20,30 @@ import {
   Trophy,
 } from "lucide-react";
 
+const OFFICERS_CACHE_KEY = "about.officers.cache";
+
 const AboutPage: React.FC = () => {
   const [officers, setOfficers] = useState<CMSOfficer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usingCached, setUsingCached] = useState(false);
 
   useEffect(() => {
+    // Try to hydrate quickly from cache for mobile/offline
+    try {
+      const cached = localStorage.getItem(OFFICERS_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setOfficers(parsed);
+          setUsingCached(true);
+          setLoading(false);
+        }
+      }
+    } catch {
+      /* ignore cache errors */
+    }
+
     const loadOfficers = async () => {
       try {
         setLoading(true);
@@ -35,6 +53,13 @@ const AboutPage: React.FC = () => {
           .filter((o: any) => o.is_active !== false)
           .sort((a: any, b: any) => a.sort_order - b.sort_order);
         setOfficers(active);
+        setUsingCached(false);
+        // Persist a lightweight cache to help mobile loads
+        try {
+          localStorage.setItem(OFFICERS_CACHE_KEY, JSON.stringify(active));
+        } catch {
+          /* ignore cache write errors */
+        }
       } catch (err) {
         console.error("Error loading officers:", err);
         setError("Failed to load officers.");
@@ -1001,25 +1026,20 @@ const AboutPage: React.FC = () => {
             {loading ? (
               <LoadingSpinner subtle={true} className="py-4" />
             ) : officers.length > 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-6">
+                {usingCached && (
+                  <div className="sm:col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-6">
+                    <p className="text-xs text-amber-200/70 mb-2">
+                      Showing last saved officers list while we reconnect…
+                    </p>
+                  </div>
+                )}
                 {officers.map((o, index) => (
-                  <motion.div
-                    key={o.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                  >
+                  <div key={o.id || index} className="h-full">
                     <OfficerCard officer={convertOfficerData(o)} />
-                  </motion.div>
+                  </div>
                 ))}
-              </motion.div>
+              </div>
             ) : (
               <div className="bg-slate-800/30 backdrop-blur-md border border-amber-500/10 rounded-2xl p-12 text-center">
                 <Users className="w-16 h-16 mx-auto mb-4 text-amber-400/30" />

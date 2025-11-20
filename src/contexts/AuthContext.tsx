@@ -1,5 +1,6 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { MemberProfile } from "../types";
@@ -25,13 +26,12 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
+  const navigate = useNavigate();
 
   // ---------------------------------------------------------------------------
   // 🔍 Load member profile from Supabase
@@ -42,12 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const prof = await api.getMemberProfile(user.id);
 
       if (prof) {
-        console.log(
-          "✅ Profile loaded:",
-          prof.full_name,
-          prof.role,
-          prof.status
-        );
+        console.log("✅ Profile loaded:", prof.full_name, prof.role, prof.status);
         setProfile(prof);
       } else {
         console.warn("⚠️ No profile found for user:", user.id);
@@ -85,6 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // ✅ Detect temporary password state
           const pwReset = !!currentUser?.app_metadata?.provider_token;
           setNeedsPasswordReset(pwReset);
+
+          // 🚦 Redirect to onboarding if invite_pending
+          if (currentUser.user_metadata?.invite_pending) {
+            navigate("/onboarding");
+          }
 
           // ✅ Load the profile asynchronously
           setTimeout(() => loadProfile(currentUser), 0);
