@@ -9,6 +9,8 @@ import LoadingSpinner from "../LoadingSpinner";
 type MemberProfile = Database["public"]["Tables"]["member_profiles"]["Row"] & {
   // Derived from auth users list; not stored on member_profiles
   email: string | null;
+  // Optional photo url (not present in generated type in some envs)
+  profile_photo_url?: string | null;
 };
 
 const MembersAdminSection: React.FC = () => {

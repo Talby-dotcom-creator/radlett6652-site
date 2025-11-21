@@ -6,6 +6,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 // Public pages
 import HomePage from "./pages/HomePage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import WelcomePage from "./pages/WelcomePage";
 import AboutPage from "./pages/AboutPage";
@@ -82,6 +83,7 @@ const App: React.FC = () => {
                 {/* ---------------- AUTH ROUTES ---------------- */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/pending" element={<PendingApprovalPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
                 {/* ---------------- MEMBERS AREA ---------------- */}
                 <Route
