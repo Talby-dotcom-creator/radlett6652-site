@@ -425,13 +425,14 @@ const CMSAdminPage: React.FC = () => {
   // Load counts for all dashboard navigation buttons
   const loadCounts = useCallback(async () => {
     const tables = [
-      { name: "events_v2", setter: setEventCount },
-      { name: "news_articles", setter: setNewsCount },
+      // Use actual table names that exist in the current schema
+      { name: "events", setter: setEventCount },
+      { name: "blog_posts", setter: setNewsCount }, // news lives in blog_posts
       { name: "officers", setter: setOfficerCount },
       { name: "testimonials", setter: setTestimonialCount },
       { name: "snippets", setter: setSnippetCount },
       { name: "faq_items", setter: setFaqCount },
-      { name: "pages", setter: setPageCount },
+      { name: "page_content", setter: setPageCount },
       { name: "lodge_documents", setter: setDocumentCount },
       { name: "meeting_minutes", setter: setMinutesCount },
     ];
@@ -1148,8 +1149,6 @@ const CMSAdminPage: React.FC = () => {
                   onClick={() => setActiveTab("members")}
                   isActive={activeTab === "members"}
                 />
-                  {/* Members Tab */}
-                  {activeTab === "members" && <MembersAdminSection />}
                 <DashboardButton
                   icon={<MessageSquare className="w-4 h-4" />}
                   label={`Testimonials (${counts.testimonials})`}
@@ -1211,6 +1210,26 @@ const CMSAdminPage: React.FC = () => {
             );
           })()}
         </div>
+
+        {/* Members Tab */}
+        {activeTab === "members" && (
+          <div className="bg-white rounded-lg border border-neutral-200 p-6 mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-heading font-semibold text-primary-600">
+                Members Management
+              </h2>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/admin/members")}
+                className="flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                Open full page
+              </Button>
+            </div>
+            <MembersAdminSection />
+          </div>
+        )}
 
         {/* Officers Tab */}
         {activeTab === "officers" && (

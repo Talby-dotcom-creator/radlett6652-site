@@ -288,6 +288,12 @@ const AdminDashboard: React.FC = () => {
           />
 
           <DashboardButton
+            icon={<Users className="w-4 h-4" />}
+            label="Members"
+            onClick={() => navigate("/admin/members")}
+          />
+
+          <DashboardButton
             icon={<FileText className="w-4 h-4" />}
             label="Lodge Documents"
             count={documentCount}

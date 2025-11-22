@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { uploadMedia } from "../../lib/supabaseUpload";
 import type { Database } from "../../types/supabase";
-import { Pencil, Mail, RefreshCcw, UserMinus, UserPlus } from "lucide-react";
+import { Pencil, Mail, RefreshCcw, UserMinus, UserPlus, Shield } from "lucide-react";
 import Button from "../Button";
 import LoadingSpinner from "../LoadingSpinner";
+import { setupAdminProfile } from "../../utils/setupAdmin";
 
 type MemberProfile = Database["public"]["Tables"]["member_profiles"]["Row"] & {
   // Derived from auth users list; not stored on member_profiles
@@ -21,6 +22,31 @@ const MembersAdminSection: React.FC = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+
+  // Call Netlify function that uses the service role key for admin-only actions
+  const callAdminFn = useCallback(async (action: string, payload: Record<string, unknown> = {}) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error("No active session");
+    }
+    const res = await fetch("/.netlify/functions/admin-members", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const msg = body?.error || `Request failed (${res.status})`;
+      throw new Error(msg);
+    }
+    return res.json();
+  }, []);
 
   // ---------------------------------------------------------
   // Load members + profile info
@@ -28,30 +54,41 @@ const MembersAdminSection: React.FC = () => {
   const loadMembers = useCallback(async () => {
     setLoading(true);
 
-    const { data: profiles, error } = await supabase
-      .from("member_profiles")
-      .select("*")
-      .order("full_name", { ascending: true });
+    try {
+      const { data: profiles, error } = await supabase
+        .from("member_profiles")
+        .select("*")
+        .order("full_name", { ascending: true });
 
-    if (error) {
-      console.error("Failed loading members:", error);
+      if (error) {
+        throw error;
+      }
+
+      // Try to enrich with auth user emails via service-role function, but don't fail the list if that call fails
+      let authUsers: any[] = [];
+      try {
+        const adminResp = await callAdminFn("listUsers");
+        authUsers = Array.isArray(adminResp.users) ? adminResp.users : [];
+      } catch (e) {
+        console.warn("Admin listUsers failed, falling back to profile emails only:", e);
+      }
+
+      const merged: MemberProfile[] = (profiles ?? []).map((p) => {
+        const match = authUsers.find((u: any) => u.id === p.user_id);
+        return {
+          ...(p as MemberProfile),
+          email: match?.email ?? p.contact_email ?? null,
+        };
+      });
+
+      setMembers(merged);
+    } catch (err) {
+      console.error("Failed loading members:", err);
+      alert("Failed to load members");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data: authUsers } = await supabase.auth.admin.listUsers();
-
-    const merged: MemberProfile[] = (profiles ?? []).map((p) => {
-      const match = authUsers.users.find((u) => u.id === p.user_id);
-      return {
-        ...(p as MemberProfile),
-        email: match?.email ?? p.contact_email ?? null,
-      };
-    });
-
-    setMembers(merged);
-    setLoading(false);
-  }, []);
+  }, [callAdminFn]);
 
   useEffect(() => {
     loadMembers();
@@ -65,9 +102,10 @@ const MembersAdminSection: React.FC = () => {
   // ---------------------------------------------------------
   const handleResendInvite = async (email: string) => {
     try {
-      const redirectTo = `${window.location.origin}/login?mode=signin&from=invite`;
-      const { error } = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo });
-      if (error) throw error;
+      await callAdminFn("invite", {
+        email,
+        redirectTo: `${window.location.origin}/login?mode=signin&from=invite`,
+      });
       alert("Invite resent");
     } catch (err: any) {
       alert("Failed to resend invite: " + err.message);
@@ -79,7 +117,8 @@ const MembersAdminSection: React.FC = () => {
   // ---------------------------------------------------------
   const handleResetPassword = async (email: string) => {
     try {
-      await supabase.auth.resetPasswordForEmail(email, {
+      await callAdminFn("resetPassword", {
+        email,
         redirectTo: window.location.origin + "/reset-password",
       });
       alert("Password reset email sent");
@@ -174,6 +213,31 @@ const MembersAdminSection: React.FC = () => {
       <h2 className="text-xl font-heading font-semibold text-primary-600 mb-6">
         Members ({members.length})
       </h2>
+      <div className="flex flex-wrap gap-3 mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            try {
+              setActionBusy(true);
+              await setupAdminProfile();
+              alert("Admin profile refreshed");
+              loadMembers();
+            } catch (err: any) {
+              alert(err?.message || "Failed to refresh admin profile");
+            } finally {
+              setActionBusy(false);
+            }
+          }}
+          disabled={actionBusy}
+        >
+          <Shield size={14} className="mr-2" />
+          {actionBusy ? "Updating…" : "Refresh my admin profile"}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => loadMembers()} disabled={loading}>
+          Reload list
+        </Button>
+      </div>
 
       {/* -----------------------------------------------------
            CARDS (Desktop)

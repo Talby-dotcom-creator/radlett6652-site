@@ -38,6 +38,7 @@ import PillarsAdminPage from "./pages/admin/PillarsAdminPage";
 import MinutesAdminPage from "./pages/admin/MinutesAdminPage";
 import DocumentsAdminPage from "./pages/admin/DocumentsAdminPage";
 import SnippetsAdminPage from "./pages/admin/SnippetsAdminPage";
+import MembersAdminPage from "./pages/admin/MembersAdminPage";
 
 // Developer utility
 import DevDebugPage from "./pages/DevDebugPage";
@@ -183,6 +184,15 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute requiredRole="admin">
               <SnippetsAdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/members"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <MembersAdminPage />
             </ProtectedRoute>
           }
         />
