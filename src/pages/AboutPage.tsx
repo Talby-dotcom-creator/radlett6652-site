@@ -834,7 +834,7 @@ const AboutPage: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Excellence */}
+              {/* Service (swapped with Excellence) */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -843,10 +843,10 @@ const AboutPage: React.FC = () => {
                 whileHover={{ y: -8, scale: 1.02 }}
                 className="group relative"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-rose-600/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
 
                 <div className="relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-amber-500/20 rounded-2xl p-8 shadow-xl h-full">
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
 
                   <motion.div
                     animate={{ scale: [1, 1.05, 1] }}
@@ -858,21 +858,21 @@ const AboutPage: React.FC = () => {
                     }}
                     className="mb-6"
                   >
-                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-full flex items-center justify-center border border-amber-500/30">
-                      <Trophy className="w-8 h-8 text-amber-400" />
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-rose-500/20 to-rose-600/20 rounded-full flex items-center justify-center border border-rose-500/30">
+                      <Heart className="w-8 h-8 text-rose-400" />
                     </div>
                   </motion.div>
 
                   <h3 className="text-2xl font-serif font-bold text-white mb-4 text-center">
-                    Excellence
+                    Service
                   </h3>
 
                   <p className="text-amber-100/70 text-center leading-relaxed">
-                    We strive for personal improvement and excellence in our
-                    Masonic practice and daily lives.
+                    We are committed to charitable work and serving our
+                    community with compassion.
                   </p>
 
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
                 </div>
               </motion.div>
 
@@ -960,7 +960,7 @@ const AboutPage: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Service */}
+              {/* Excellence (swapped with Service) */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -969,10 +969,10 @@ const AboutPage: React.FC = () => {
                 whileHover={{ y: -8, scale: 1.02 }}
                 className="group relative"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-rose-600/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-0 group-hover:opacity-100" />
 
                 <div className="relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-amber-500/20 rounded-2xl p-8 shadow-xl h-full">
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
 
                   <motion.div
                     animate={{ scale: [1, 1.05, 1] }}
@@ -984,21 +984,21 @@ const AboutPage: React.FC = () => {
                     }}
                     className="mb-6"
                   >
-                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-rose-500/20 to-rose-600/20 rounded-full flex items-center justify-center border border-rose-500/30">
-                      <Heart className="w-8 h-8 text-rose-400" />
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-full flex items-center justify-center border border-amber-500/30">
+                      <Trophy className="w-8 h-8 text-amber-400" />
                     </div>
                   </motion.div>
 
                   <h3 className="text-2xl font-serif font-bold text-white mb-4 text-center">
-                    Service
+                    Excellence
                   </h3>
 
                   <p className="text-amber-100/70 text-center leading-relaxed">
-                    We are committed to charitable work and serving our
-                    community with compassion.
+                    We strive for personal improvement and excellence in our
+                    Masonic practice and daily lives.
                   </p>
 
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
                 </div>
               </motion.div>
             </div>
