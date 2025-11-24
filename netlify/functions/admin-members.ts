@@ -116,7 +116,7 @@ const handler: Handler = async (event) => {
 
       const redirectTo =
         body.redirectTo ||
-        `${event.headers.origin || ""}/login?mode=signin&from=invite`;
+        "https://radlettfreemasons.org.uk/login?mode=signin&from=invite";
 
       const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
         email,
