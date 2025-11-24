@@ -23,6 +23,9 @@ const MembersAdminSection: React.FC = () => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviting, setInviting] = useState(false);
 
   // Call Netlify function that uses the service role key for admin-only actions
   const callAdminFn = useCallback(async (action: string, payload: Record<string, unknown> = {}) => {
@@ -237,6 +240,63 @@ const MembersAdminSection: React.FC = () => {
         <Button variant="outline" size="sm" onClick={() => loadMembers()} disabled={loading}>
           Reload list
         </Button>
+      </div>
+
+      {/* Invite Form */}
+      <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-semibold text-primary-600 mb-3">Invite a member</h3>
+        <form
+          className="flex flex-col md:flex-row gap-3 items-start md:items-end"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!inviteEmail) {
+              alert("Email is required");
+              return;
+            }
+            setInviting(true);
+            try {
+              await callAdminFn("invite", {
+                email: inviteEmail,
+                full_name: inviteName,
+              });
+              alert("Invite sent and profile created as active member");
+              setInviteEmail("");
+              setInviteName("");
+              loadMembers();
+            } catch (err: any) {
+              alert(err?.message || "Failed to send invite");
+            } finally {
+              setInviting(false);
+            }
+          }}
+        >
+          <div className="flex-1 w-full">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Email *</label>
+            <input
+              type="email"
+              required
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="w-full border border-neutral-300 rounded-md px-3 py-2"
+              placeholder="member@example.com"
+            />
+          </div>
+          <div className="flex-1 w-full">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Full name</label>
+            <input
+              type="text"
+              value={inviteName}
+              onChange={(e) => setInviteName(e.target.value)}
+              className="w-full border border-neutral-300 rounded-md px-3 py-2"
+              placeholder="Full name (optional)"
+            />
+          </div>
+          <div>
+            <Button type="submit" disabled={inviting}>
+              {inviting ? "Sending…" : "Send invite"}
+            </Button>
+          </div>
+        </form>
       </div>
 
       {/* -----------------------------------------------------
