@@ -44,30 +44,30 @@ export const handler: Handler = async (event) => {
         : "alt";
     const prompt = PROMPTS[promptKey].trim();
 
-    const result = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content: [{ type: "input_text", text: prompt }],
-        },
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: prompt },
         {
           role: "user",
           content: [
             {
-              type: "input_text",
+              type: "text",
               text: "Please analyse the attached image and respond accordingly.",
             },
-            { type: "input_image", image_url },
+            { type: "image_url", image_url: { url: image_url } },
           ],
         },
       ],
     });
 
+    const textResponse =
+      completion.choices?.[0]?.message?.content ?? "No response generated.";
+
     return {
       statusCode: 200,
       body: JSON.stringify({
-        result: result.output_text,
+        result: textResponse,
         mode: promptKey,
       }),
     };

@@ -1,8 +1,9 @@
 import fetch from "node-fetch";
 
-const SUPABASE_URL = "https://neoquuejwgcqueqlcbwj.supabase.co";
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const FUNCTION_PATH = "/functions/v1/send-contact-email";
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_O-ctKvniQHQpoCrmQqQ4iA_eeAYLszt"; // replace if needed
+const SUPABASE_ANON_KEY =
+  process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY; // supply via env when testing
 
 async function test() {
   try {

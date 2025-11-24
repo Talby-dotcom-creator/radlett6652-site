@@ -9,7 +9,7 @@
 
 ```bash
 # Deploy the send-contact-email function
-supabase functions deploy send-contact-email --project-ref neoquuejwgcqueqlcbwj
+supabase functions deploy send-contact-email --project-ref <your-project-ref>
 ```
 
 ## Step 2: Set Environment Variables (Secrets)
@@ -18,13 +18,13 @@ The function needs these secrets in Supabase:
 
 ```bash
 # Set Resend API Key
-supabase secrets set RESEND_API_KEY=re_JpsQErMt_9dMnJyj8WmCRfVhpLVdodC7E --project-ref neoquuejwgcqueqlcbwj
+supabase secrets set RESEND_API_KEY=<your-resend-key> --project-ref <your-project-ref>
 
 # Set email sender (verified domain in Resend)
-supabase secrets set EMAIL_SENDER_ADDRESS=contact@radlettfreemasons.org.uk --project-ref neoquuejwgcqueqlcbwj
+supabase secrets set EMAIL_SENDER_ADDRESS=contact@radlettfreemasons.org.uk --project-ref <your-project-ref>
 
 # Set email recipient
-supabase secrets set EMAIL_RECIPIENT_ADDRESS=radlettlodge6652@gmail.com --project-ref neoquuejwgcqueqlcbwj
+supabase secrets set EMAIL_RECIPIENT_ADDRESS=radlettlodge6652@gmail.com --project-ref <your-project-ref>
 ```
 
 ## Step 3: Verify Deployment
@@ -32,14 +32,14 @@ supabase secrets set EMAIL_RECIPIENT_ADDRESS=radlettlodge6652@gmail.com --projec
 Test the function URL in your browser or Postman:
 
 ```
-https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email
+https://<your-project-ref>.supabase.co/functions/v1/send-contact-email
 ```
 
 Or test with curl:
 
 ```bash
 curl -X POST \
-  https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email \
+  https://<your-project-ref>.supabase.co/functions/v1/send-contact-email \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Test User",
@@ -53,7 +53,7 @@ curl -X POST \
 
 ## Alternative: Deploy via Supabase Dashboard
 
-1. Go to https://supabase.com/dashboard/project/neoquuejwgcqueqlcbwj/functions
+1. Go to https://supabase.com/dashboard/project/<your-project-ref>/functions
 2. Click "Deploy new function"
 3. Upload the `send-contact-email` folder
 4. Set secrets in: Settings → Edge Functions → Secrets
@@ -62,7 +62,7 @@ curl -X POST \
 
 After deployment, the contact form at `/contact` will:
 
-1. Submit to: `https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email`
+1. Submit to: `https://<your-project-ref>.supabase.co/functions/v1/send-contact-email`
 2. Send emails via Resend API
 3. Deliver to: `radlettlodge6652@gmail.com`
 
@@ -73,17 +73,17 @@ If emails don't arrive:
 ### Check Resend API Key
 
 - Login to https://resend.com
-- Verify API key is active: `re_JpsQErMt_9dMnJyj8WmCRfVhpLVdodC7E`
+- Verify API key is active: `<your-resend-key>`
 - Check domain verification status for `radlettfreemasons.org.uk`
 
 ### Check Function Logs
 
 ```bash
-supabase functions logs send-contact-email --project-ref neoquuejwgcqueqlcbwj
+supabase functions logs send-contact-email --project-ref <your-project-ref>
 ```
 
 Or view in dashboard:
-https://supabase.com/dashboard/project/neoquuejwgcqueqlcbwj/logs/edge-functions
+https://supabase.com/dashboard/project/<your-project-ref>/logs/edge-functions
 
 ### Common Issues
 

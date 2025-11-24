@@ -26,7 +26,7 @@ Write-Host ""
 
 # Step 2: Link to project
 Write-Host "Step 2: Linking to project..." -ForegroundColor Yellow
-supabase link --project-ref neoquuejwgcqueqlcbwj
+supabase link --project-ref <your-project-ref>
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to link project" -ForegroundColor Red
@@ -38,7 +38,7 @@ Write-Host ""
 
 # Step 3: Deploy function
 Write-Host "Step 3: Deploying send-contact-email function..." -ForegroundColor Yellow
-supabase functions deploy send-contact-email --project-ref neoquuejwgcqueqlcbwj
+supabase functions deploy send-contact-email --project-ref <your-project-ref>
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to deploy function" -ForegroundColor Red
@@ -52,13 +52,13 @@ Write-Host ""
 Write-Host "Step 4: Setting environment secrets..." -ForegroundColor Yellow
 
 Write-Host "  Setting RESEND_API_KEY..." -ForegroundColor Gray
-supabase secrets set RESEND_API_KEY=re_JpsQErMt_9dMnJyj8WmCRfVhpLVdodC7E --project-ref neoquuejwgcqueqlcbwj
+supabase secrets set RESEND_API_KEY=<your-resend-key> --project-ref <your-project-ref>
 
 Write-Host "  Setting EMAIL_SENDER_ADDRESS..." -ForegroundColor Gray
-supabase secrets set EMAIL_SENDER_ADDRESS=contact@radlettfreemasons.org.uk --project-ref neoquuejwgcqueqlcbwj
+supabase secrets set EMAIL_SENDER_ADDRESS=contact@radlettfreemasons.org.uk --project-ref <your-project-ref>
 
 Write-Host "  Setting EMAIL_RECIPIENT_ADDRESS..." -ForegroundColor Gray
-supabase secrets set EMAIL_RECIPIENT_ADDRESS=radlettlodge6652@gmail.com --project-ref neoquuejwgcqueqlcbwj
+supabase secrets set EMAIL_RECIPIENT_ADDRESS=radlettlodge6652@gmail.com --project-ref <your-project-ref>
 
 Write-Host "✅ Secrets configured" -ForegroundColor Green
 Write-Host ""
@@ -75,4 +75,4 @@ Write-Host "Your contact form should now work at:" -ForegroundColor Cyan
 Write-Host "https://radlettfreemasons.org.uk/contact" -ForegroundColor White
 Write-Host ""
 Write-Host "Function URL:" -ForegroundColor Cyan
-Write-Host "https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email" -ForegroundColor White
+Write-Host "https://<your-project-ref>.supabase.co/functions/v1/send-contact-email" -ForegroundColor White
