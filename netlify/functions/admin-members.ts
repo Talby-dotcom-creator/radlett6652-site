@@ -101,21 +101,47 @@ const handler: Handler = async (event) => {
     }
 
     if (action === "invite") {
-      const email = body.email as string | undefined;
+      const email = (body.email as string | undefined)?.trim().toLowerCase();
+      const fullName =
+        (body.full_name as string | undefined)?.trim() ||
+        (body.name as string | undefined)?.trim() ||
+        "";
+
       if (!email) {
         return {
           statusCode: 400,
           body: JSON.stringify({ error: "Email is required" }),
         };
       }
+
       const redirectTo =
         body.redirectTo ||
         `${event.headers.origin || ""}/login?mode=signin&from=invite`;
+
       const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
         email,
         { redirectTo }
       );
       if (error) throw error;
+
+      // Upsert an active member profile immediately so invited users skip "pending"
+      const userId = data?.user?.id;
+      if (userId) {
+        const safeName =
+          fullName ||
+          email.replace(/@.*/, "").replace(/[._-]+/g, " ").trim() ||
+          "Member";
+        await adminClient
+          .from("member_profiles")
+          .upsert({
+            user_id: userId,
+            full_name: safeName,
+            role: "member",
+            status: "active",
+            contact_email: email,
+          });
+      }
+
       return { statusCode: 200, body: JSON.stringify({ user: data.user }) };
     }
 
