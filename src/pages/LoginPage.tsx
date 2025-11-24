@@ -9,6 +9,7 @@ const LoginPage: React.FC = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const expired = params.get('expired') === '1';
+  const invite = params.get('invite') === '1';
 
   if (user) {
     return <Navigate to="/members" replace />;
@@ -26,7 +27,7 @@ const LoginPage: React.FC = () => {
               Member Access
             </h1>
             <p className="text-neutral-600">
-              Sign in to access the Members Area or create a new account
+              Sign in to access the Members Area or create a new account.
             </p>
           </div>
 
@@ -34,6 +35,12 @@ const LoginPage: React.FC = () => {
           {expired && (
             <div className="mb-4 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 text-sm">
               ⚠️ Your session expired. Please log in again.
+            </div>
+          )}
+
+          {invite && (
+            <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 p-3 text-sm">
+              You’ve been invited — click “Create Account” below to finish setting up your access.
             </div>
           )}
 

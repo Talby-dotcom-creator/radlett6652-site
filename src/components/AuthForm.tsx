@@ -25,6 +25,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+  const [showPassword, setShowPassword] = useState(false);
   const { error, success } = useToast();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -187,17 +188,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             >
               Full Name *
             </label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required={mode === "signup"}
-              placeholder="Enter your full name"
-              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
-            />
-          </div>
-        )}
+          <input
+            id="fullName"
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required={mode === "signup"}
+            placeholder="Enter your full name"
+            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
+          />
+        </div>
+      )}
 
         <div>
           <label
@@ -213,7 +214,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="Enter your email"
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
           />
         </div>
 
@@ -229,19 +230,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               </span>
             )}
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder={
-              mode === "signup"
-                ? "Create a password (min 6 characters)"
-                : "Enter your password"
-            }
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
-          />
+          <div className="mt-1 flex items-center gap-2">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder={
+                mode === "signup"
+                  ? "Create a password (min 6 characters)"
+                  : "Enter your password"
+              }
+              className="block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="px-3 py-2 rounded-md border border-neutral-300 text-sm text-primary-700 hover:bg-neutral-50"
+            >
+              {showPassword ? "Hide" : "View"}
+            </button>
+          </div>
         </div>
 
         <div>
