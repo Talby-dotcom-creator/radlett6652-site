@@ -134,19 +134,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           try {
             // API currently expects (userId, fullName)
             await api.createMemberProfile(data.user.id, fullName);
-            success(
-              "🎉 Account created! Your membership is pending approval by the Secretary."
-            );
-            navigate("/pending");
+            success("Account created and activated. Welcome!");
+            navigate("/members");
           } catch (profileError) {
             console.warn(
               "⚠️ AuthForm: Could not create member profile:",
               profileError
             );
-            success(
-              "🎉 Account created! Your membership is pending approval by the Secretary."
-            );
-            navigate("/pending");
+            success("Account created! Redirecting you to the Members area.");
+            navigate("/members");
           }
         } else {
           console.warn("⚠️ AuthForm: No user returned from signup");
