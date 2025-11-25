@@ -156,6 +156,16 @@ export const optimizedApi: any = {
       return null;
     }
   },
+  async deleteResourceRow(id: string) {
+    try {
+      const { error } = await supabase.from("member_resources").delete().eq("id", id);
+      if (error) handleError(error, "deleteResourceRow");
+      return true;
+    } catch (err) {
+      handleError(err, "deleteResourceRow");
+      return false;
+    }
+  },
   /* ---------------- MEMBER RESOURCES (correct) ---------------- */
   async getMemberResources() {
     try {

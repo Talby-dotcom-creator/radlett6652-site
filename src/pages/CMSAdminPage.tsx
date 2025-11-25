@@ -686,27 +686,32 @@ const CMSAdminPage: React.FC = () => {
   // ===========================================================================
   const handleResourceSubmit = useCallback(
     async (data: any) => {
-      const payload = {
-        title: data.title,
-        category: data.category,
-        description: data.description,
-        content: data.content,
-        file_url: data.file_url,
-        publish_date:
-          data.publish_date || new Date().toISOString().slice(0, 10),
-      };
+      try {
+        const payload = {
+          title: data.title,
+          category: data.category,
+          description: data.description,
+          content: data.content,
+          file_url: data.file_url,
+          publish_date:
+            data.publish_date || new Date().toISOString().slice(0, 10),
+        };
 
-      if (editingResource) {
-        await optimizedApi.updateResource(editingResource.id, payload);
-        success("Resource updated");
-      } else {
-        await optimizedApi.createResource(payload);
-        success("Resource created");
+        if (editingResource) {
+          await optimizedApi.updateResource(editingResource.id, payload);
+          success("Resource updated");
+        } else {
+          await optimizedApi.createResource(payload);
+          success("Resource created");
+        }
+
+        await refreshAll();
+        setShowResourceForm(false);
+        setEditingResource(null);
+      } catch (err) {
+        console.error("Failed to save resource:", err);
+        showError("Failed to save resource");
       }
-
-      await refreshAll();
-      setShowResourceForm(false);
-      setEditingResource(null);
     },
     [editingResource, refreshAll]
   );
@@ -1792,6 +1797,7 @@ const CMSAdminPage: React.FC = () => {
                             if (r.file_url) {
                               await optimizedApi.deleteResource(r.file_url);
                             }
+                            await optimizedApi.deleteResourceRow(r.id);
                             await loadResources();
                             success("Resource deleted");
                           } catch (err) {

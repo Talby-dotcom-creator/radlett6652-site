@@ -392,7 +392,7 @@ const MembersAdminSection: React.FC = () => {
                   type="text"
                   name="full_name"
                   defaultValue={editingMember.full_name}
-                  className="w-full border rounded-md px-3 py-2 mt-1"
+                  className="w-full border rounded-md px-3 py-2 mt-1 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
                   required
                 />
               </div>
@@ -403,7 +403,7 @@ const MembersAdminSection: React.FC = () => {
                   type="text"
                   name="position"
                   defaultValue={editingMember.position || ""}
-                  className="w-full border rounded-md px-3 py-2 mt-1"
+                  className="w-full border rounded-md px-3 py-2 mt-1 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
                 />
               </div>
 
@@ -412,7 +412,7 @@ const MembersAdminSection: React.FC = () => {
                 <select
                   name="role"
                   defaultValue={editingMember.role}
-                  className="w-full border rounded-md px-3 py-2 mt-1"
+                  className="w-full border rounded-md px-3 py-2 mt-1 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
@@ -425,7 +425,7 @@ const MembersAdminSection: React.FC = () => {
                   type="text"
                   name="phone"
                   defaultValue={editingMember.contact_phone || ""}
-                  className="w-full border rounded-md px-3 py-2 mt-1"
+                  className="w-full border rounded-md px-3 py-2 mt-1 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
                 />
               </div>
 
@@ -454,7 +454,7 @@ const MembersAdminSection: React.FC = () => {
                   value={photoUrl ?? ""}
                   onChange={(e) => setPhotoUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border rounded-md px-3 py-2 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
                 />
                 {photoUrl && (
                   <div className="mt-2 flex items-center gap-3">
@@ -473,7 +473,7 @@ const MembersAdminSection: React.FC = () => {
                 <select
                   name="status"
                   defaultValue={editingMember.status || "active"}
-                  className="w-full border rounded-md px-3 py-2 mt-1"
+                  className="w-full border rounded-md px-3 py-2 mt-1 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
                 >
                   <option value="active">Active</option>
                   <option value="pending">Pending</option>
