@@ -19,6 +19,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     params.get("mode") === "signup" || params.get("invite") === "1"
       ? "signup"
       : "signin";
+  const isInviteFlow =
+    params.get("invite") === "1" || params.get("from") === "invite";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,6 +71,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
         if (data.user) {
           console.log("Sign in successful:", data.user.email);
+
+          if (isInviteFlow) {
+            try {
+              await api.updateMemberProfile(data.user.id, {
+                status: "active",
+                full_name: fullName || data.user.user_metadata?.full_name || "",
+                role: "member",
+              });
+            } catch (profileErr) {
+              console.warn("Invite flow: could not auto-activate profile", profileErr);
+            }
+          }
+
           success("✅ Welcome back! Successfully signed in.");
 
           // Give the auth context time to update and force refresh profile
@@ -132,17 +147,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
           // inside AuthContext.tsx
           try {
-            // API currently expects (userId, fullName)
-            await api.createMemberProfile(data.user.id, fullName);
+            // Try update first (if profile exists), else create, and force active
+            try {
+              await api.updateMemberProfile(data.user.id, {
+                full_name: fullName,
+                status: "active",
+                role: "member",
+              });
+            } catch {
+              await api.createMemberProfile(data.user.id, fullName);
+            }
             success("Account created and activated. Welcome!");
-            navigate("/members");
+            navigate("/welcome");
           } catch (profileError) {
             console.warn(
               "⚠️ AuthForm: Could not create member profile:",
               profileError
             );
             success("Account created! Redirecting you to the Members area.");
-            navigate("/members");
+            navigate("/welcome");
           }
         } else {
           console.warn("⚠️ AuthForm: No user returned from signup");

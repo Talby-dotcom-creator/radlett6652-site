@@ -133,6 +133,29 @@ export const optimizedApi: any = {
       return null;
     }
   },
+  async updateResource(id: string, resource: Partial<{
+    title: string;
+    category?: string;
+    description?: string;
+    file_url: string;
+    publish_date?: string;
+    content?: string;
+  }>) {
+    try {
+      const payload: any = { ...resource, updated_at: new Date().toISOString() };
+      const { data, error } = await supabase
+        .from("member_resources")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) handleError(error, "updateResource");
+      return data;
+    } catch (err) {
+      handleError(err, "updateResource");
+      return null;
+    }
+  },
   /* ---------------- MEMBER RESOURCES (correct) ---------------- */
   async getMemberResources() {
     try {
