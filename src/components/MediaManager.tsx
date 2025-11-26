@@ -149,7 +149,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
     setError(null);
 
     try {
-      const prefix = cwd;
+      const prefix = cwd || defaultFolder || "";
       const { data, error } = await supabase.storage.from(BUCKET).list(prefix, {
         limit: pageSize,
         offset: (page - 1) * pageSize,

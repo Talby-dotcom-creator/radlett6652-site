@@ -100,7 +100,7 @@ const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
 }) => {
   // State
   const [rootEl, setRootEl] = useState<HTMLElement | null>(null);
-  const [cwd, setCwd] = useState<string>("");
+  const [cwd, setCwd] = useState<string>(defaultFolder ?? "");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -153,7 +153,7 @@ const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const prefix = cwd;
+      const prefix = cwd || defaultFolder || "";
       const { data, error } = await supabase.storage.from(BUCKET).list(prefix, {
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,

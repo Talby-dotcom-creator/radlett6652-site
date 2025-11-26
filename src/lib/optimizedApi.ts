@@ -142,15 +142,19 @@ export const optimizedApi: any = {
     content?: string;
   }>) {
     try {
+      if (!id) throw new Error("updateResource requires a valid id");
       const payload: any = { ...resource, updated_at: new Date().toISOString() };
       const { data, error } = await supabase
         .from("member_resources")
         .update(payload)
         .eq("id", id)
-        .select()
-        .single();
+        .select();
+
       if (error) handleError(error, "updateResource");
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error(`No resource found with id ${id}`);
+      }
+      return data[0] ?? null;
     } catch (err) {
       handleError(err, "updateResource");
       return null;

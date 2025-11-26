@@ -14,6 +14,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   onChange?: (content: string) => void;
   height?: number;
+  defaultFolder?: string;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -23,6 +24,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Start typing here...",
   onChange,
   height = 350,
+  defaultFolder,
 }) => {
   const [showMediaManager, setShowMediaManager] = useState(false);
   const quillRef = useRef<any>(null);
@@ -150,6 +152,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
               isOpen={true}
               onClose={() => setShowMediaManager(false)}
               onSelectMedia={handleMediaSelect}
+              defaultFolder={defaultFolder}
             />
           </div>
         </div>

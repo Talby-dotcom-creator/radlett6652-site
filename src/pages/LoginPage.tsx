@@ -1,17 +1,39 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import AuthForm from '../components/AuthForm';
-import { LogIn } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import AuthForm from "../components/AuthForm";
+import { LogIn } from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const LoginPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const expired = params.get('expired') === '1';
-  const invite = params.get('invite') === '1';
+  const expired = params.get("expired") === "1";
+  const invite = params.get("invite") === "1";
+  const forceLogin = invite || params.get("from") === "invite" || params.get("mode") === "signin";
+  const [clearingSession, setClearingSession] = useState(false);
 
-  if (user) {
+  // If an invite link is used, clear any existing session so the user always lands on the login form
+  useEffect(() => {
+    if (forceLogin && user) {
+      setClearingSession(true);
+      signOut()
+        .catch(() => {})
+        .finally(() => setClearingSession(false));
+    }
+  }, [forceLogin, signOut, user]);
+
+  if (clearingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+        <span className="ml-3 text-neutral-600">Preparing sign-in…</span>
+      </div>
+    );
+  }
+
+  if (user && !forceLogin) {
     return <Navigate to="/members" replace />;
   }
 

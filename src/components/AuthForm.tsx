@@ -86,11 +86,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
           success("✅ Welcome back! Successfully signed in.");
 
-          // Give the auth context time to update and force refresh profile
+          // Give the auth context time to update and route invite flows to onboarding
           setTimeout(() => {
             if (onSuccess) onSuccess();
-            // Force a page reload to ensure clean state
-            window.location.reload();
+            if (isInviteFlow) {
+              window.location.href = "/onboarding";
+            } else {
+              // Force a page reload to ensure clean state
+              window.location.reload();
+            }
           }, 500);
         } else {
           throw new Error("No user returned from sign in");
