@@ -131,15 +131,20 @@ const handler: Handler = async (event) => {
           fullName ||
           email.replace(/@.*/, "").replace(/[._-]+/g, " ").trim() ||
           "Member";
-        await adminClient
+        const role = (body.role as string) === "admin" ? "admin" : "member";
+        const { error: upsertError } = await adminClient
           .from("member_profiles")
-          .upsert({
-            user_id: userId,
-            full_name: safeName,
-            role: "member",
-            status: "active",
-            contact_email: email,
-          });
+          .upsert(
+            {
+              user_id: userId,
+              full_name: safeName,
+              role,
+              status: "active",
+              contact_email: email,
+            },
+            { onConflict: "user_id" }
+          );
+        if (upsertError) throw upsertError;
       }
 
       return { statusCode: 200, body: JSON.stringify({ user: data.user }) };

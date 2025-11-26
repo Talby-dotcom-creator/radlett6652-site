@@ -238,7 +238,7 @@ const demoPageContent: PageContent[] = [
 const CMSAdminPage: React.FC = () => {
   // ALL HOOKS MUST BE DECLARED FIRST - BEFORE ANY CONDITIONAL RETURNS
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading, signOut } = useAuth();
   const { toasts, removeToast, success, error: showError } = useToast();
 
   // Core state
@@ -248,6 +248,7 @@ const CMSAdminPage: React.FC = () => {
   const [usingDemoData, setUsingDemoData] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [showSessionInfo, setShowSessionInfo] = useState(false);
 
   // Data states
   const [events, setEvents] = useState<LodgeEvent[]>([]);
@@ -1068,6 +1069,44 @@ const CMSAdminPage: React.FC = () => {
             {isSigningOut ? "Signing Out..." : "Sign Out"}
           </button>
         </div>
+
+        {/* Admin session debug helper */}
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSessionInfo((v) => !v)}
+            className="text-sm"
+          >
+            {showSessionInfo ? "Hide session info" : "Show session info"}
+          </Button>
+        </div>
+        {showSessionInfo && (
+          <div className="mb-6 bg-neutral-50 border border-neutral-200 rounded-lg p-4 text-sm">
+            <div className="grid gap-2 md:grid-cols-2">
+              <div>
+                <div className="font-medium text-neutral-700">Auth user</div>
+                <div className="text-neutral-600">
+                  ID: <span className="font-mono break-all">{user?.id || "none"}</span>
+                </div>
+                <div className="text-neutral-600">Email: {user?.email || "none"}</div>
+              </div>
+              <div>
+                <div className="font-medium text-neutral-700">Profile</div>
+                <div className="text-neutral-600">Role: {profile?.role || "unknown"}</div>
+                <div className="text-neutral-600">Status: {profile?.status || "unknown"}</div>
+                <div className="text-neutral-600">
+                  Invite pending:{" "}
+                  {user?.user_metadata?.invite_pending ? "yes" : "no"}
+                </div>
+              </div>
+            </div>
+            <div className="text-neutral-600 mt-2">
+              If role is not <code>admin</code> or status is not <code>active</code>, update
+              the <code>member_profiles</code> row for this <code>user_id</code>.
+            </div>
+          </div>
+        )}
 
         {/* Demo Data Notice */}
         {usingDemoData && (
