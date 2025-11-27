@@ -2,6 +2,7 @@ import React from "react";
 import { X, ExternalLink, Copy } from "lucide-react";
 import Button from "../Button";
 import { useToast } from "../../hooks/useToast";
+import { formatDateUK } from "../../utils/date";
 
 interface ContentPreviewProps {
   isOpen: boolean;
@@ -65,7 +66,7 @@ const ContentPreview: React.FC<ContentPreviewProps> = ({
                 {content.title}
               </h3>
               <div className="flex items-center space-x-4 text-sm text-neutral-600 mb-3">
-                <span>{new Date(content.event_date).toLocaleDateString()}</span>
+                <span>{formatDateUK(content.event_date)}</span>
                 <span>{new Date(content.event_date).toLocaleTimeString()}</span>
                 <span>{content.location}</span>
               </div>

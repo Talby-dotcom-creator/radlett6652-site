@@ -3,6 +3,7 @@ import React from "react";
 import Button from "../Button";
 import { Pencil, Trash2, PlusCircle } from "lucide-react";
 import type { CMSBlogPost } from "../../types";
+import { formatDateUK } from "../../utils/date";
 
 interface SnippetsManagerProps {
   snippets: CMSBlogPost[];
@@ -56,7 +57,7 @@ const SnippetsManager: React.FC<SnippetsManagerProps> = ({
                 </p>
                 <p className="text-sm text-neutral-500">
                   {snip.publish_date
-                    ? new Date(snip.publish_date).toLocaleDateString()
+                    ? formatDateUK(snip.publish_date)
                     : "No date"}{" "}
                   • {snip.is_published ? "Active" : "Inactive"}
                 </p>

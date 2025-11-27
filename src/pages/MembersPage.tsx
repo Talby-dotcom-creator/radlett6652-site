@@ -5,6 +5,7 @@ import { optimizedApi, getMemberResources } from "../lib/optimizedApi";
 import type { LodgeDocument, MeetingMinutes, Event as LodgeEvent } from "../types";
 import HeroWelcome from "../components/members/HeroWelcome";
 import QuickActionTile from "../components/members/QuickActionTile";
+import { formatDateUK } from "../utils/date";
 
 type MemberDoc = {
   id: string;
@@ -80,14 +81,7 @@ function labelFromKey(key: string): string {
 }
 
 function formatDate(d: string | null | undefined): string {
-  if (!d) return "";
-  try {
-    const dt = new Date(d);
-    if (Number.isNaN(dt.getTime())) return d;
-    return dt.toLocaleDateString();
-  } catch {
-    return d;
-  }
+  return formatDateUK(d);
 }
 
 const PAGE_SIZE = 20;
@@ -205,7 +199,7 @@ export default function MembersPage() {
 
           if (pick) {
             const { e, d, title } = pick;
-            const dateStr = d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
+            const dateStr = formatDateUK(d, { day: "2-digit", month: "short" });
             const label = title.includes("installation")
               ? "Installation"
               : title.includes("regular")

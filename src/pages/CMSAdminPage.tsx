@@ -47,6 +47,7 @@ import ContentPreviewModal from "../components/ContentPreviewModal";
 import ContentScheduler from "../components/cms/ContentScheduler";
 import ResourceForm from "../components/ResourceForm";
 import { optimizedApi } from "../lib/optimizedApi";
+import { formatDateUK } from "../utils/date";
 
 // Quick runtime marker to help debug lazy-loading in dev
 console.log("✅ CMSAdminPage loaded");
@@ -1685,9 +1686,7 @@ const CMSAdminPage: React.FC = () => {
                             <span>
                               Published:{" "}
                               {article.publish_date
-                                ? new Date(
-                                    article.publish_date
-                                  ).toLocaleDateString()
+                                ? formatDateUK(article.publish_date)
                                 : "—"}
                             </span>
                             {article.image_url && (
@@ -1794,7 +1793,7 @@ const CMSAdminPage: React.FC = () => {
                     <p className="text-sm text-neutral-400 mb-1">
                       Category: {r.category} | Publish:{" "}
                       {r.publish_date
-                        ? new Date(r.publish_date).toLocaleDateString()
+                        ? formatDateUK(r.publish_date)
                         : "N/A"}
                     </p>
                     {r.description && (
@@ -2637,3 +2636,5 @@ const CMSAdminPage: React.FC = () => {
 };
 
 export default CMSAdminPage;
+
+

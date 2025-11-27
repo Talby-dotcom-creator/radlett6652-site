@@ -16,6 +16,7 @@ import TestimonialForm from "../components/admin/TestimonialForm";
 import Button from "../components/Button";
 import { FileText, Clock } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { formatDateUK } from "../utils/date";
 
 const AdminPage: React.FC = () => {
   const toast = useToast();
@@ -197,7 +198,7 @@ const AdminPage: React.FC = () => {
             <ul className="mb-4">
               {minutes.map((m) => (
                 <li key={m.id} className="border-b py-2">
-                  {m.title} — {new Date(m.meeting_date).toLocaleDateString()}
+                  {m.title} — {formatDateUK(m.meeting_date)}
                 </li>
               ))}
             </ul>
