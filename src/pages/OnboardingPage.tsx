@@ -47,7 +47,7 @@ const OnboardingPage: React.FC = () => {
       })
       .eq("user_id", user.id);
 
-    navigate("/welcome");
+    navigate("/members");
   };
 
   return (

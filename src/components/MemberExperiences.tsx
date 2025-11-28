@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Quote, Sparkles } from "lucide-react";
+import { Users, Quote, Sparkles, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "./Button";
 import { optimizedApi } from "../lib/optimizedApi";
@@ -172,10 +172,18 @@ const MemberExperiences: React.FC = () => {
                     {/* Member Photo/Icon */}
                     <div className="flex justify-center mb-6">
                       <div className="relative">
-                        {/* Circular Frame */}
+                        {/* Circular Frame with optional photo */}
                         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-1 shadow-lg">
                           <div className="w-full h-full rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
-                            <Users className="w-12 h-12 text-amber-400/80" />
+                            {t.image_url ? (
+                              <img
+                                src={t.image_url}
+                                alt={t.member_name || t.name || "Member"}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-12 h-12 text-amber-200" />
+                            )}
                           </div>
                         </div>
 
