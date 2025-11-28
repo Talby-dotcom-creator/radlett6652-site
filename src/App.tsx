@@ -13,6 +13,7 @@ import AboutPage from "./pages/AboutPage";
 import JoinPage from "./pages/JoinPage";
 import EventsPage from "./pages/EventsPage";
 import NewsPage from "./pages/NewsPage";
+import PasswordResetPage from "./pages/PasswordResetPage";
 import NewsPostPage from "./pages/NewsPostPage";
 import PillarsPage from "./pages/PillarsPage";
 import PillarsArchivePage from "./pages/PillarsArchivePage";
@@ -80,6 +81,7 @@ const App: React.FC = () => {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/reset-password" element={<PasswordResetPage />} />
 
                 {/* ---------------- AUTH ROUTES ---------------- */}
                 <Route path="/login" element={<LoginPage />} />

@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
-const logoUrl =
-  "/https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/images/icon-192.png ";
+const logoUrl = "/lodge-logo.png";
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate();

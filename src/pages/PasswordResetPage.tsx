@@ -9,6 +9,8 @@ import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { KeyRound, AlertTriangle } from "lucide-react";
 
+const logoUrl = "/lodge-logo.png";
+
 const PasswordResetPage: React.FC = () => {
   // ...existing code...
   // supabase client is now a singleton imported above
@@ -98,6 +100,7 @@ const PasswordResetPage: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
+            <img src={logoUrl} alt="Radlett Lodge Logo" className="w-16 h-16 mx-auto mb-4" />
             <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary-500 rounded-full mb-4">
               <KeyRound className="w-8 h-8 text-primary-800" />
             </div>
