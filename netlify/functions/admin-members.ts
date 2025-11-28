@@ -33,7 +33,12 @@ const handler: Handler = async (event) => {
     }
 
     // Require a bearer token so we can check the caller is an admin
-    const authHeader = event.headers.authorization || "";
+    // Netlify may preserve header casing; normalize to be safe
+    const authHeader =
+      event.headers.authorization ||
+      (event.headers as any)?.Authorization ||
+      (event.headers as any)?.AUTHORIZATION ||
+      "";
     const token = authHeader.startsWith("Bearer ")
       ? authHeader.slice("Bearer ".length)
       : null;
@@ -116,7 +121,7 @@ const handler: Handler = async (event) => {
 
       const redirectTo =
         body.redirectTo ||
-        "https://radlettfreemasons.org.uk/login?mode=signup&invite=1";
+        "https://radlettfreemasons.org.uk/login?mode=signin&from=invite";
 
       const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
         email,
