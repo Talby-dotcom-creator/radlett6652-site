@@ -1,13 +1,22 @@
 // src/pages/WelcomePage.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const logoUrl =
   "/https://neoquuejwgcqueqlcbwj.supabase.co/storage/v1/object/public/cms-media/images/icon-192.png ";
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+
+  useEffect(() => {
+    // If a signed-in, active member hits this page, send them to the Members area
+    if (user && profile?.status === "active") {
+      navigate("/members", { replace: true });
+    }
+  }, [user, profile, navigate]);
 
   return (
     <div className="min-h-screen bg-[#0b1a33] flex items-center justify-center p-4">
@@ -40,10 +49,10 @@ const WelcomePage: React.FC = () => {
         </div>
 
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/members")}
           className="bg-[#f5d486] text-[#0b1a33] font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-[#eac06b] transition"
         >
-          Return Home
+          Go to Members Area
         </button>
       </motion.div>
     </div>

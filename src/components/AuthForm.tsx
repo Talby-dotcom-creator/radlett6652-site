@@ -162,14 +162,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
               await api.createMemberProfile(data.user.id, fullName);
             }
             success("Account created and activated. Welcome!");
-            navigate("/welcome");
+            navigate("/members");
           } catch (profileError) {
             console.warn(
               "⚠️ AuthForm: Could not create member profile:",
               profileError
             );
             success("Account created! Redirecting you to the Members area.");
-            navigate("/welcome");
+            navigate("/members");
           }
         } else {
           console.warn("⚠️ AuthForm: No user returned from signup");
@@ -309,3 +309,4 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 };
 
 export default AuthForm;
+
