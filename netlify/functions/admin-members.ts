@@ -128,29 +128,30 @@ const handler: Handler = async (event) => {
         { redirectTo }
       );
       if (error) throw error;
+      if (!data?.user?.id) {
+        throw new Error("Invite did not return a user id (invite may have failed)");
+      }
 
       // Upsert an active member profile immediately so invited users skip "pending"
-      const userId = data?.user?.id;
-      if (userId) {
-        const safeName =
-          fullName ||
-          email.replace(/@.*/, "").replace(/[._-]+/g, " ").trim() ||
-          "Member";
-        const role = (body.role as string) === "admin" ? "admin" : "member";
-        const { error: upsertError } = await adminClient
-          .from("member_profiles")
-          .upsert(
-            {
-              user_id: userId,
-              full_name: safeName,
-              role,
-              status: "active",
-              contact_email: email,
-            },
-            { onConflict: "user_id" }
-          );
-        if (upsertError) throw upsertError;
-      }
+      const userId = data.user.id;
+      const safeName =
+        fullName ||
+        email.replace(/@.*/, "").replace(/[._-]+/g, " ").trim() ||
+        "Member";
+      const role = (body.role as string) === "admin" ? "admin" : "member";
+      const { error: upsertError } = await adminClient
+        .from("member_profiles")
+        .upsert(
+          {
+            user_id: userId,
+            full_name: safeName,
+            role,
+            status: "active",
+            contact_email: email,
+          },
+          { onConflict: "user_id" }
+        );
+      if (upsertError) throw upsertError;
 
       return { statusCode: 200, body: JSON.stringify({ user: data.user }) };
     }
