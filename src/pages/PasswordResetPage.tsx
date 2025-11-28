@@ -18,6 +18,7 @@ const PasswordResetPage: React.FC = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const { success, error: showError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [processingLink, setProcessingLink] = useState(true);
 
   const {
     register,
@@ -33,18 +34,49 @@ const PasswordResetPage: React.FC = () => {
 
   const newPassword = watch("newPassword");
 
-  // Redirect logic
+  // Process Supabase recovery link and then handle redirects
   useEffect(() => {
+    const run = async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        const hashParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+        const access_token = hashParams.get("access_token");
+        const refresh_token = hashParams.get("refresh_token");
+        const type = hashParams.get("type");
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        } else if (access_token && refresh_token && type === "recovery") {
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+          if (error) throw error;
+        }
+      } catch (err) {
+        console.error("Error processing recovery link:", err);
+        navigate("/login", { replace: true });
+        return;
+      } finally {
+        setProcessingLink(false);
+      }
+    };
+
+    run();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (processingLink) return;
     if (!authLoading) {
       if (!user) {
-        // If not logged in, redirect to login
         navigate("/login", { replace: true });
       } else if (profile && !profile.needs_password_reset) {
-        // If logged in but password reset not needed, redirect to members area
         navigate("/members", { replace: true });
       }
     }
-  }, [authLoading, user, profile, navigate]);
+  }, [authLoading, user, profile, navigate, processingLink]);
 
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -79,7 +111,7 @@ const PasswordResetPage: React.FC = () => {
   };
 
   // Show loading spinner while authentication status is being determined
-  if (authLoading || (user && !profile)) {
+  if (processingLink || authLoading || (user && !profile)) {
     return (
       <div className="min-h-screen pt-28 pb-20 bg-white">
         <div className="container mx-auto px-4 md:px-6 text-center pt-12">
