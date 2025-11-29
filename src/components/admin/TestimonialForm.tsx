@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Image, X } from "lucide-react";
 import { Testimonial } from "../../types";
 import Button from "../Button";
 import MediaManagerModal from "../media/MediaManagerModal";
-import { Image, X } from "lucide-react";
 
 interface TestimonialFormProps {
   onSubmit: (
@@ -13,36 +13,32 @@ interface TestimonialFormProps {
   initialData?: Partial<Testimonial>;
 }
 
+type FormFields = Omit<Testimonial, "id" | "created_at" | "updated_at">;
+
 const TestimonialForm: React.FC<TestimonialFormProps> = ({
   onSubmit,
   onCancel,
   initialData,
 }) => {
-  const [showMediaManager, setShowMediaManager] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState(
-    initialData?.image_url || ""
-  );
-
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors, isSubmitting },
-  } = useForm<Omit<Testimonial, "id" | "created_at" | "updated_at">>({
+    setValue,
+  } = useForm<FormFields>({
     defaultValues: {
       member_name: initialData?.member_name || "",
       content: initialData?.content || "",
       image_url: initialData?.image_url || "",
-      sort_order: initialData?.sort_order || 0,
-      is_published:
-        initialData?.is_published !== undefined
-          ? initialData.is_published
-          : true,
+      sort_order: initialData?.sort_order ?? 0,
+      is_published: initialData?.is_published ?? true,
     },
   });
 
-  const watchedImageUrl = watch("image_url");
+  const [showMediaManager, setShowMediaManager] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState(
+    initialData?.image_url || ""
+  );
 
   const handleMediaSelect = (url: string) => {
     setSelectedImageUrl(url);
@@ -55,7 +51,7 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
     setValue("image_url", "", { shouldDirty: true });
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: FormFields) => {
     await onSubmit({
       ...data,
       image_url: selectedImageUrl || data.image_url,
@@ -66,10 +62,12 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
     <>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div>
+          <label
+            htmlFor="member_name"
             className="block text-sm font-medium text-primary-600"
           >
             Member Name
-          <label
+          </label>
           <input
             id="member_name"
             {...register("member_name", {
@@ -77,35 +75,27 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
             })}
             className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
           />
-            {...register("member_name", {
-              required: "Member name is required",
-            })}
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
-          />
           {errors.member_name && (
             <p className="mt-1 text-sm text-red-600">
               {errors.member_name.message as string}
             </p>
           )}
         </div>
-                className="block text-sm font-medium text-primary-600"
-              >
-                Testimonial Content
 
-              <textarea
-                id="content"
-                {...register("content", {
-                  required: "Testimonial content is required",
-                })}
-                rows={4}
-                className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
-              />
+        <div>
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium text-primary-600"
+          >
+            Testimonial Content
           </label>
           <textarea
             id="content"
-            {...register("content", { required: "Content is required" })}
+            {...register("content", {
+              required: "Testimonial content is required",
+            })}
             rows={4}
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
           />
           {errors.content && (
             <p className="mt-1 text-sm text-red-600">
@@ -120,12 +110,8 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
             className="block text-sm font-medium text-primary-600"
           >
             Member Photo
-              className="block text-sm font-medium text-primary-600"
-            >
-              Member Photo
           </label>
           <div className="mt-1 space-y-3">
-            {/* Image URL Input with Media Manager Button */}
             <div className="flex space-x-2">
               <input
                 id="image_url"
@@ -136,7 +122,7 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
                   setSelectedImageUrl(e.target.value);
                   setValue("image_url", e.target.value, { shouldDirty: true });
                 }}
-                className="flex-1 rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+                className="flex-1 rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
                 placeholder="https://example.com/photo.jpg or use Media Manager"
               />
               <Button
@@ -160,7 +146,6 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
               )}
             </div>
 
-            {/* Image Preview */}
             {selectedImageUrl && (
               <div className="mt-3">
                 <p className="text-sm font-medium text-neutral-700 mb-2">
@@ -205,26 +190,23 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
             id="sort_order"
             type="number"
             {...register("sort_order", { valueAsNumber: true })}
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
             placeholder="0"
           />
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center space-x-2">
           <input
             id="is_published"
             type="checkbox"
-              className="block text-sm font-medium text-primary-600"
-            >
-              Sort Order
             {...register("is_published")}
-            <input
-              id="sort_order"
-              type="number"
-              {...register("sort_order", { valueAsNumber: true })}
-              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
-              placeholder="0"
-            />
+            className="h-4 w-4 rounded border-neutral-300 text-secondary-600 focus:ring-secondary-500"
+          />
+          <label
+            htmlFor="is_published"
+            className="text-sm font-medium text-primary-600"
+          >
+            Published
           </label>
         </div>
 
@@ -238,7 +220,6 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
         </div>
       </form>
 
-      {/* Media Manager Modal */}
       <MediaManagerModal
         isOpen={showMediaManager}
         onClose={() => setShowMediaManager(false)}
