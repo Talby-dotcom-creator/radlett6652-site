@@ -20,7 +20,7 @@ const ContentPreviewModal: React.FC<ContentPreviewModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const cleanHtml = htmlContent ? DOMPurify.sanitize(htmlContent) : "";
+  const cleanHtml = htmlContent ? sanitizeHtml(htmlContent) : "";
 
   return (
     <div
@@ -60,7 +60,7 @@ const ContentPreviewModal: React.FC<ContentPreviewModalProps> = ({
         {/* Rich Text Content */}
         <div
           className="prose prose-invert max-w-none leading-relaxed text-[#EAEAEA]"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(cleanHtml) }}
+          dangerouslySetInnerHTML={{ __html: cleanHtml }}
         />
 
         <div className="mt-6 text-center">
