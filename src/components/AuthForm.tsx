@@ -74,11 +74,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
           if (isInviteFlow) {
             try {
-              await api.updateMemberProfile(data.user.id, {
-                status: "active",
-                full_name: fullName || data.user.user_metadata?.full_name || "",
-                role: "member",
-              });
+              const resolvedName =
+                fullName ||
+                (data.user.user_metadata?.full_name as string | undefined) ||
+                data.user.email ||
+                "";
+
+              // Try to update; if missing, create an active profile
+              await api
+                .updateMemberProfile(data.user.id, {
+                  status: "active",
+                  full_name: resolvedName,
+                  role: "member",
+                })
+                .catch(async () => {
+                  await api.createMemberProfile(data.user.id, resolvedName);
+                });
             } catch (profileErr) {
               console.warn("Invite flow: could not auto-activate profile", profileErr);
             }
