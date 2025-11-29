@@ -39,11 +39,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadProfile = async (user: User) => {
     try {
       console.log("🔍 loadProfile() running for:", user.email);
-      const prof = await api.getMemberProfile(user.id);
+      let prof = await api.getMemberProfile(user.id);
+
+      // Backfill missing names to avoid blank directory entries
+      if (
+        prof &&
+        (!prof.full_name || !prof.full_name.trim()) &&
+        user.email
+      ) {
+        const fallbackName = user.email.split("@")[0] || "Member";
+        try {
+          await api.updateMemberProfile(user.id, {
+            full_name: fallbackName,
+            status: prof.status ?? "active",
+          });
+          prof = { ...prof, full_name: fallbackName, status: "active" };
+        } catch (backfillErr) {
+          console.warn("⚠️ Could not backfill full_name:", backfillErr);
+        }
+      }
 
       if (prof) {
         console.log("✅ Profile loaded:", prof.full_name, prof.role, prof.status);
         setProfile(prof);
+
+        // If the profile is missing a name, push to onboarding to complete it
+        if ((!prof.full_name || !prof.full_name.trim()) && window.location.pathname !== "/onboarding") {
+          navigate("/onboarding", { replace: true });
+        }
       } else {
         console.warn("⚠️ No profile found for user:", user.id);
         setProfile(null);
