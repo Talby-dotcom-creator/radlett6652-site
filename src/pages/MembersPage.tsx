@@ -443,19 +443,22 @@ export default function MembersPage() {
             </section>
 
             {/* LOI Diary embed */}
-            <section id="loi-diary" className="mb-6 bg-white border border-[#BFA76F] rounded-lg overflow-hidden">
+            <section
+              id="loi-diary"
+              className="mb-6 bg-white border border-[#BFA76F] rounded-lg overflow-hidden scroll-mt-28"
+            >
               <div className="p-4 border-b border-[#BFA76F] bg-[#BFA76F]/10 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-[#0B1831]">LOI Diary</h3>
                   <p className="text-sm text-neutral-700">Lodge of Instruction calendar</p>
                 </div>
               </div>
-              <div className="aspect-[4/3] min-h-[400px] bg-neutral-50">
+              <div className="bg-neutral-50 w-full h-[900px]">
                 <iframe
                   title="LOI Diary"
                   src="https://loi-calendar.netlify.app/"
                   width="100%"
-                  height="800"
+                  height="100%"
                   style={{
                     border: "none",
                     borderRadius: "12px",
