@@ -1,12 +1,13 @@
 // src/pages/AboutPage.tsx - Enhanced Version with Hero Image
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Button from "../components/Button";
 import OfficerCard from "../components/OfficerCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
 import { CMSOfficer } from "../types";
+import { createRng } from "../utils/deterministic";
 import {
   Sparkles,
   Users,
@@ -28,6 +29,7 @@ const AboutPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [usingCached, setUsingCached] = useState(false);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     // Try to hydrate quickly from cache for mobile/offline
@@ -102,25 +104,37 @@ const AboutPage: React.FC = () => {
 
       {/* Floating Book Icons Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(6)].map((_, i) => (
+        {React.useMemo(() => {
+          const rng = createRng("about-floating-books");
+          return Array.from({ length: 6 }).map(() => ({
+            left: `${Math.round(rng() * 100)}%`,
+            top: `${Math.round(rng() * 100)}%`,
+            duration: 6 + rng() * 4,
+            delay: rng() * 5,
+          }));
+        }, []).map((config, i) => (
           <motion.div
             key={i}
             className="absolute opacity-5"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: config.left,
+              top: config.top,
             }}
-            animate={{
-              y: [0, -40, 0],
-              opacity: [0.03, 0.08, 0.03],
-              rotate: [0, 15, 0],
-            }}
-            transition={{
-              duration: 6 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "easeInOut",
-            }}
+            animate={
+              prefersReducedMotion
+                ? { opacity: 0.05 }
+                : { y: [0, -40, 0], opacity: [0.03, 0.08, 0.03], rotate: [0, 15, 0] }
+            }
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : {
+                    duration: config.duration,
+                    repeat: Infinity,
+                    delay: config.delay,
+                    ease: "easeInOut",
+                  }
+            }
           >
             <BookOpen className="w-32 h-32 text-amber-400" />
           </motion.div>
@@ -129,25 +143,37 @@ const AboutPage: React.FC = () => {
 
       {/* Golden Dust Particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(15)].map((_, i) => (
+        {React.useMemo(() => {
+          const rng = createRng("about-golden-dust");
+          return Array.from({ length: 15 }).map(() => ({
+            left: `${Math.round(rng() * 100)}%`,
+            top: `${Math.round(rng() * 100)}%`,
+            duration: 5 + rng() * 5,
+            delay: rng() * 5,
+          }));
+        }, []).map((config, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-amber-400/30 rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: config.left,
+              top: config.top,
             }}
-            animate={{
-              y: [0, -150, 0],
-              opacity: [0, 1, 0],
-              scale: [0, 2, 0],
-            }}
-            transition={{
-              duration: 5 + Math.random() * 5,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "easeInOut",
-            }}
+            animate={
+              prefersReducedMotion
+                ? { opacity: 0.3 }
+                : { y: [0, -150, 0], opacity: [0, 1, 0], scale: [0, 2, 0] }
+            }
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : {
+                    duration: config.duration,
+                    repeat: Infinity,
+                    delay: config.delay,
+                    ease: "easeInOut",
+                  }
+            }
           />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import {
   Calendar,
@@ -21,6 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import SEOHead from "../components/SEOHead";
 import EventDetailsModal from "../components/EventDetailsModal";
+import { createRng } from "../utils/deterministic";
 
 interface Event {
   id: string;
@@ -93,6 +94,7 @@ function EventsPageInner() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     fetchEvents();
@@ -239,25 +241,37 @@ function EventsPageInner() {
 
         {/* Floating Moon Phases (Masonic tradition) */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(12)].map((_, i) => (
+          {React.useMemo(() => {
+            const rng = createRng("events-moons");
+            return Array.from({ length: 12 }).map(() => ({
+              left: `${Math.round(rng() * 100)}%`,
+              top: `${Math.round(rng() * 100)}%`,
+              duration: 4 + rng() * 3,
+              delay: rng() * 5,
+            }));
+          }, []).map((config, i) => (
             <motion.div
               key={i}
               className="absolute"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: config.left,
+                top: config.top,
               }}
-              animate={{
-                y: [0, -50, 0],
-                opacity: [0.1, 0.3, 0.1],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 4 + Math.random() * 3,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "easeInOut",
-              }}
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 0.15 }
+                  : { y: [0, -50, 0], opacity: [0.1, 0.3, 0.1], scale: [1, 1.2, 1] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : {
+                      duration: config.duration,
+                      repeat: Infinity,
+                      delay: config.delay,
+                      ease: "easeInOut",
+                    }
+              }
             >
               <Moon className="w-8 h-8 text-amber-400/30" />
             </motion.div>
@@ -266,25 +280,37 @@ function EventsPageInner() {
 
         {/* Candlelight Particles */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {React.useMemo(() => {
+            const rng = createRng("events-particles");
+            return Array.from({ length: 20 }).map(() => ({
+              left: `${Math.round(rng() * 100)}%`,
+              top: `${Math.round(rng() * 100)}%`,
+              duration: 3 + rng() * 4,
+              delay: rng() * 5,
+            }));
+          }, []).map((config, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: config.left,
+                top: config.top,
               }}
-              animate={{
-                y: [0, -100, 0],
-                opacity: [0, 1, 0],
-                scale: [0, 1.5, 0],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 4,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "easeInOut",
-              }}
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 0.3 }
+                  : { y: [0, -100, 0], opacity: [0, 1, 0], scale: [0, 1.5, 0] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : {
+                      duration: config.duration,
+                      repeat: Infinity,
+                      delay: config.delay,
+                      ease: "easeInOut",
+                    }
+              }
             />
           ))}
         </div>

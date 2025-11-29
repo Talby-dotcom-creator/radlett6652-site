@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Users, Heart } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
-import SectionHeading from "../components/SectionHeading";
-import SectionDivider from "../components/SectionDivider";
 import SEOHead from "../components/SEOHead";
 import Button from "../components/Button";
 import NewsCard from "../components/NewsCard";
@@ -19,6 +17,7 @@ import SacredChamber from "../components/SacredChamber";
 import WelcomeToOurLodge from "../components/WelcomeToOurLodge";
 import SectionBreather from "../components/SectionBreather";
 import { preloadAndSwap, injectPreloadLink } from "../utils/imagePreload";
+import { createRng } from "../utils/deterministic";
 
 const HomePage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -27,6 +26,7 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
   const [selectedNews, setSelectedNews] = useState<CMSBlogPost | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   // Parallax for hero background
   const { scrollY } = useScroll();
@@ -250,25 +250,32 @@ const HomePage: React.FC = () => {
 
         {/* Floating Newspaper Icons */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(6)].map((_, i) => (
+          {React.useMemo(() => {
+            const rng = createRng("home-news-floaters");
+            return Array.from({ length: 6 }).map((_, i) => ({
+              left: `${Math.round(rng() * 100)}%`,
+              top: `${Math.round(rng() * 100)}%`,
+              duration: 5 + rng() * 3,
+              delay: rng() * 5,
+            }));
+          }, []).map((config, i) => (
             <motion.div
               key={i}
               className="absolute opacity-5"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: config.left,
+                top: config.top,
               }}
-              animate={{
-                y: [0, -25, 0],
-                opacity: [0.03, 0.07, 0.03],
-                rotate: [0, 8, 0],
-              }}
-              transition={{
-                duration: 5 + Math.random() * 3,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "easeInOut",
-              }}
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 0.05 }
+                  : { y: [0, -25, 0], opacity: [0.03, 0.07, 0.03], rotate: [0, 8, 0] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { duration: config.duration, repeat: Infinity, delay: config.delay, ease: "easeInOut" }
+              }
             >
               <Calendar className="w-20 h-20 text-amber-400" />
             </motion.div>

@@ -1,7 +1,8 @@
 // src/components/SacredChamber.tsx
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Sparkles, Flame } from "lucide-react";
+import { createRng } from "../utils/deterministic";
 
 interface SacredChamberProps {
   text?: string;
@@ -12,6 +13,19 @@ const SacredChamber: React.FC<SacredChamberProps> = ({
   text = "Freemasonry builds men — not in rank or wealth, but in character.",
   author = "A timeless path of integrity, service and brotherhood",
 }) => {
+  const prefersReducedMotion = useReducedMotion();
+  const particles = React.useMemo(() => {
+    if (prefersReducedMotion) return [];
+    const rng = createRng("sacred-chamber-particles");
+    return Array.from({ length: 15 }).map((_, i) => ({
+      id: `sacred-p-${i}`,
+      left: `${Math.round(rng() * 100)}%`,
+      top: `${Math.round(rng() * 100)}%`,
+      duration: 6 + rng() * 4,
+      delay: rng() * 5,
+    }));
+  }, [prefersReducedMotion]);
+
   return (
     <section className="relative py-24 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       {/* Texture Overlay */}
@@ -290,25 +304,29 @@ const SacredChamber: React.FC<SacredChamberProps> = ({
 
       {/* Floating Dust Particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(15)].map((_, i) => (
+        {particles.map((config) => (
           <motion.div
-            key={i}
+            key={config.id}
             className="absolute w-1 h-1 bg-amber-400/20 rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: config.left,
+              top: config.top,
             }}
-            animate={{
-              y: [0, -80, 0],
-              opacity: [0, 0.6, 0],
-              scale: [0, 1.5, 0],
-            }}
-            transition={{
-              duration: 6 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "easeInOut",
-            }}
+            animate={
+              prefersReducedMotion
+                ? { opacity: 0.4 }
+                : { y: [0, -80, 0], opacity: [0, 0.6, 0], scale: [0, 1.5, 0] }
+            }
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : {
+                    duration: config.duration,
+                    repeat: Infinity,
+                    delay: config.delay,
+                    ease: "easeInOut",
+                  }
+            }
           />
         ))}
       </div>

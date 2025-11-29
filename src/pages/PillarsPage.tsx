@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import {
   Calendar,
@@ -14,6 +14,7 @@ import {
 import { getPublicUrl } from "../lib/optimizedApi";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "../components/SEOHead"; // ✅ Added SEO component
+import { createRng } from "../utils/deterministic";
 
 interface BlogPost {
   id: string;
@@ -83,6 +84,7 @@ function PillarsPageInner() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
 
   const RECENT_POSTS_LIMIT = 7; // Show only 7 most recent posts
 
@@ -190,25 +192,37 @@ function PillarsPageInner() {
 
         {/* Floating Particles */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {React.useMemo(() => {
+            const rng = createRng("pillars-particles");
+            return Array.from({ length: 20 }).map(() => ({
+              left: `${Math.round(rng() * 100)}%`,
+              top: `${Math.round(rng() * 100)}%`,
+              duration: 3 + rng() * 4,
+              delay: rng() * 5,
+            }));
+          }, []).map((config, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: config.left,
+                top: config.top,
               }}
-              animate={{
-                y: [0, -100, 0],
-                opacity: [0, 1, 0],
-                scale: [0, 1.5, 0],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 4,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "easeInOut",
-              }}
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 0.3 }
+                  : { y: [0, -100, 0], opacity: [0, 1, 0], scale: [0, 1.5, 0] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : {
+                      duration: config.duration,
+                      repeat: Infinity,
+                      delay: config.delay,
+                      ease: "easeInOut",
+                    }
+              }
             />
           ))}
         </div>

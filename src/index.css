@@ -391,17 +391,11 @@
    🩶 Balanced Page Background
    ----------------------------------------------------- */
 
-/* Default (light) background for all pages */
+/* Unified base background for all shells */
 html,
 body {
-  background-color: #fdfaf7;
-  color: #222;
-}
-
-/* Override for HomePage only — keep it dark and dramatic */
-body.homepage {
-  background-color: #000;
-  color: #fefefe;
+  background-color: #0a174e;
+  color: #f5f5f5;
 }
 
 main {

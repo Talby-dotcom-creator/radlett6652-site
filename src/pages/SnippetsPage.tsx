@@ -1,12 +1,13 @@
 ﻿// src/pages/SnippetsPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { AnimatedBook } from "../components";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { BookOpen, Sparkles, Calendar, Clock, ChevronRight } from "lucide-react";
 import { optimizedApi } from "../lib/optimizedApi";
 import type { CMSBlogPost } from "../types";
 import ContentPreviewModal from "../components/ContentPreviewModal";
 import { Link } from "react-router-dom";
+import { createRng } from "../utils/deterministic";
 
 // Copy used when no live snippet is available
 const FALLBACK_HERO_TEXT =
@@ -78,31 +79,36 @@ const SnippetsPage: React.FC = () => {
   const [loadingSnippets, setLoadingSnippets] = useState(true);
   const [snippetError, setSnippetError] = useState<string | null>(null);
   const [selectedSnippet, setSelectedSnippet] = useState<CMSBlogPost | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const floatingBooks = useMemo(() => {
     const hasWindow = typeof window !== "undefined";
     const width = hasWindow ? window.innerWidth : 1440;
     const height = hasWindow ? window.innerHeight : 900;
+    const rng = createRng("snippets-floating-books");
     return Array.from({ length: 8 }).map((_, index) => ({
       id: `book-${index}`,
-      initialX: Math.random() * width,
-      initialY: Math.random() * height,
-      targetX: Math.random() * width,
-      targetY: Math.random() * height,
-      duration: 20 + Math.random() * 10,
-      size: 20 + Math.random() * 20,
+      initialX: rng() * width,
+      initialY: rng() * height,
+      targetX: rng() * width,
+      targetY: rng() * height,
+      duration: 20 + rng() * 10,
+      size: 20 + rng() * 20,
     }));
   }, []);
 
   const floatingParticles = useMemo(
     () =>
-      Array.from({ length: 12 }).map((_, index) => ({
-        id: `particle-${index}`,
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        duration: 3 + Math.random() * 2,
-        delay: Math.random() * 2,
-      })),
+      Array.from({ length: 12 }).map((_, index) => {
+        const rng = createRng(`snippets-particle-${index}`);
+        return {
+          id: `particle-${index}`,
+          left: rng() * 100,
+          top: rng() * 100,
+          duration: 3 + rng() * 2,
+          delay: rng() * 2,
+        };
+      }),
     []
   );
 
@@ -209,13 +215,21 @@ const SnippetsPage: React.FC = () => {
           key={book.id}
           className="absolute text-amber-500/10"
           initial={{ x: book.initialX, y: book.initialY }}
-          animate={{ x: book.targetX, y: book.targetY }}
-          transition={{
-            duration: book.duration,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "linear",
-          }}
+          animate={
+            prefersReducedMotion
+              ? { x: book.initialX, y: book.initialY }
+              : { x: book.targetX, y: book.targetY }
+          }
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : {
+                  duration: book.duration,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "linear",
+                }
+          }
         >
           <BookOpen size={book.size} />
         </motion.div>
@@ -230,16 +244,20 @@ const SnippetsPage: React.FC = () => {
             left: `${particle.left}%`,
             top: `${particle.top}%`,
           }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.2, 0.5, 0.2],
-            scale: [1, 1.5, 1],
-          }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            delay: particle.delay,
-          }}
+          animate={
+            prefersReducedMotion
+              ? { opacity: 0.3 }
+              : { y: [0, -30, 0], opacity: [0.2, 0.5, 0.2], scale: [1, 1.5, 1] }
+          }
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : {
+                  duration: particle.duration,
+                  repeat: Infinity,
+                  delay: particle.delay,
+                }
+          }
         />
       ))}
 

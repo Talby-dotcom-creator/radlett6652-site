@@ -310,7 +310,7 @@ const NewsPage: React.FC = () => {
                 </div>
               )}
 
-              {/* � Archive Toggle Button */}
+              {/* Archive Toggle Button */}
               {archivedArticles.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -405,7 +405,7 @@ const NewsPage: React.FC = () => {
                 )}
               </AnimatePresence>
 
-              {/* �💡 Tip Box */}
+              {/* Tip Box */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
