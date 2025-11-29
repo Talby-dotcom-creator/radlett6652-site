@@ -37,7 +37,7 @@ const CATEGORY_DEFS: { key: string; label: string }[] = [
   { key: "grand_lodge", label: "Grand Lodge" },
   { key: "provincial", label: "Provincial" },
   { key: "summons", label: "Summons" },
-  { key: "lodge_instruction", label: "Lodge of Instruction" },
+  { key: "lodge_instruction", label: "LOI Diary" },
   { key: "bylaws", label: "Bylaws" },
   { key: "resources", label: "Resources" },
   { key: "minutes", label: "Meeting Minutes" },
@@ -408,11 +408,11 @@ export default function MembersPage() {
           </aside>
 
           {/* Main: Document browser */}
-          <main className="lg:col-span-3">
-            {/* Quick Actions moved here to keep visible and avoid sidebar overlap */}
-            <section className="mb-4">
-              <h2 className="text-lg font-semibold text-primary-800 mb-2">Quick Actions</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <main className="lg:col-span-3">
+        {/* Quick Actions moved here to keep visible and avoid sidebar overlap */}
+        <section className="mb-4">
+          <h2 className="text-lg font-semibold text-primary-800 mb-2">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 <QuickActionTile
                   to="/members/profile"
                   title="Profile & Settings"
@@ -425,6 +425,40 @@ export default function MembersPage() {
                   title="Member Directory"
                   subtitle="Find and connect"
                   Icon={Users}
+                />
+                <QuickActionTile
+                  to="#loi-diary"
+                  title="LOI Diary"
+                  subtitle="Lodge of Instruction calendar"
+                  Icon={Calendar}
+                  onClick={() => {
+                    const el = document.getElementById("loi-diary");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                />
+              </div>
+            </section>
+
+            {/* LOI Diary embed */}
+            <section id="loi-diary" className="mb-6 bg-white border border-[#BFA76F] rounded-lg overflow-hidden">
+              <div className="p-4 border-b border-[#BFA76F] bg-[#BFA76F]/10 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#0B1831]">LOI Diary</h3>
+                  <p className="text-sm text-neutral-700">Lodge of Instruction calendar</p>
+                </div>
+              </div>
+              <div className="aspect-[4/3] min-h-[400px] bg-neutral-50">
+                <iframe
+                  title="LOI Diary"
+                  src="blob:https://094k8rjf9e8b0vtb76eqrndjeo71q7nzzmyweoscr2piuhjai8-h833788197.scf.usercontent.goog/1d10b8b0-fe85-40e8-8af1-d734ed09e1d3"
+                  width="100%"
+                  height="800"
+                  style={{
+                    border: "none",
+                    borderRadius: "12px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  }}
+                  allowFullScreen
                 />
               </div>
             </section>

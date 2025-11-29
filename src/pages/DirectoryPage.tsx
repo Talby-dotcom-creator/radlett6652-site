@@ -52,12 +52,12 @@ const DirectoryPage: React.FC = () => {
     return <Navigate to="/password-reset" replace />;
   }
 
-  const filteredMembers = members.filter(
-    (member) =>
-      member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (member.position &&
-        member.position.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const search = searchTerm.toLowerCase();
+  const filteredMembers = members.filter((member) => {
+    const name = (member.full_name || "").toLowerCase();
+    const position = (member.position || "").toLowerCase();
+    return name.includes(search) || position.includes(search);
+  });
 
   return (
     <div className="min-h-screen pb-20 bg-white">

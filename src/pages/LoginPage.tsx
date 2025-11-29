@@ -42,7 +42,8 @@ const LoginPage: React.FC = () => {
 
           {invite && (
             <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 p-3 text-sm">
-              You’ve been invited — click “Create Account” below to finish setting up your access.
+              You’ve been invited — to set your password, click “Create Account” below (do NOT use
+              the sign-in form until you’ve created the account).
             </div>
           )}
 
