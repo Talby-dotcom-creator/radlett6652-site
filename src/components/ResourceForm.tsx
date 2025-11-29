@@ -40,7 +40,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initial
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 bg-[#0B1831] text-white border border-[#BFA76F]/30 rounded-xl p-6"
+    className="space-y-4 bg-white text-neutral-900 border border-neutral-200 rounded-xl p-6 shadow-sm"
     >
       <div>
         <label className="block mb-1 text-sm font-medium text-[#BFA76F]">Title</label>
@@ -50,7 +50,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initial
           value={formData.title}
           onChange={handleChange}
           required
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
+          className="w-full p-2 rounded bg-white border border-neutral-300 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
         />
       </div>
 
@@ -60,7 +60,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initial
           name="category"
           value={formData.category}
           onChange={handleChange}
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
+          className="w-full p-2 rounded bg-white border border-neutral-300 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
         >
           <option value="byelaws">Byelaws</option>
           <option value="forms">Forms</option>
@@ -77,7 +77,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initial
           value={formData.description}
           onChange={handleChange}
           rows={3}
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
+          className="w-full p-2 rounded bg-white border border-neutral-300 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
         />
       </div>
 
@@ -91,7 +91,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initial
             type="text"
             value={formData.file_url}
             readOnly
-            className="flex-1 p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
+            className="flex-1 p-2 rounded bg-white border border-neutral-300 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
             placeholder="Select a file..."
           />
           <Button type="button" variant="outline" onClick={() => setShowMM(true)}>
@@ -132,7 +132,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initial
           name="publish_date"
           value={formData.publish_date}
           onChange={handleChange}
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
+          className="w-full p-2 rounded bg-white border border-neutral-300 text-neutral-900 focus:border-secondary-500 focus:ring-secondary-500"
         />
       </div>
 

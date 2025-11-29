@@ -461,6 +461,21 @@ main {
   height: auto;
   border-radius: 4px;
 }
+
+/* -----------------------------------------------------------
+   Form legibility (admin & public)
+----------------------------------------------------------- */
+input,
+textarea,
+select {
+  color: #111 !important;
+  background-color: #ffffff !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280;
+}
 /* -----------------------------------------------------
    📦 Content Callout Boxes (Admin Snippets)
    ----------------------------------------------------- */
