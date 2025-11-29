@@ -4,10 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 type Action = "listUsers" | "invite" | "resetPassword";
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-const ANON_KEY =
-  process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 // Fail fast if critical env vars are missing
 if (!SUPABASE_URL) {
@@ -26,8 +24,7 @@ const handler: Handler = async (event) => {
       return {
         statusCode: 500,
         body: JSON.stringify({
-          error:
-            "Server misconfigured: missing Supabase URL, anon key, or service role key.",
+          error: "Server misconfigured: missing Supabase URL, anon key, or service role key.",
         }),
       };
     }
@@ -39,9 +36,7 @@ const handler: Handler = async (event) => {
       (event.headers as any)?.Authorization ||
       (event.headers as any)?.AUTHORIZATION ||
       "";
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice("Bearer ".length)
-      : null;
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : null;
 
     if (!token) {
       return {
@@ -120,13 +115,9 @@ const handler: Handler = async (event) => {
       }
 
       const redirectTo =
-        body.redirectTo ||
-        "https://radlettfreemasons.org.uk/login?mode=signin&from=invite";
+        body.redirectTo || "https://radlettfreemasons.org.uk/login?mode=signin&from=invite";
 
-      const { data, error } = await adminClient.auth.admin.inviteUserByEmail(
-        email,
-        { redirectTo }
-      );
+      const { data, error } = await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo });
       if (error) throw error;
       if (!data?.user?.id) {
         throw new Error("Invite did not return a user id (invite may have failed)");
@@ -136,21 +127,22 @@ const handler: Handler = async (event) => {
       const userId = data.user.id;
       const safeName =
         fullName ||
-        email.replace(/@.*/, "").replace(/[._-]+/g, " ").trim() ||
+        email
+          .replace(/@.*/, "")
+          .replace(/[._-]+/g, " ")
+          .trim() ||
         "Member";
       const role = (body.role as string) === "admin" ? "admin" : "member";
-      const { error: upsertError } = await adminClient
-        .from("member_profiles")
-        .upsert(
-          {
-            user_id: userId,
-            full_name: safeName,
-            role,
-            status: "active",
-            contact_email: email,
-          },
-          { onConflict: "user_id" }
-        );
+      const { error: upsertError } = await adminClient.from("member_profiles").upsert(
+        {
+          user_id: userId,
+          full_name: safeName,
+          role,
+          status: "active",
+          contact_email: email,
+        },
+        { onConflict: "user_id" }
+      );
       if (upsertError) throw upsertError;
 
       return { statusCode: 200, body: JSON.stringify({ user: data.user }) };
@@ -165,12 +157,8 @@ const handler: Handler = async (event) => {
         };
       }
       const redirectTo =
-        body.redirectTo ||
-        `${event.headers.origin || ""}/reset-password?from=admin`;
-      const { data, error } = await adminClient.auth.resetPasswordForEmail(
-        email,
-        { redirectTo }
-      );
+        body.redirectTo || `${event.headers.origin || ""}/reset-password?from=admin`;
+      const { data, error } = await adminClient.auth.resetPasswordForEmail(email, { redirectTo });
       if (error) throw error;
       return { statusCode: 200, body: JSON.stringify({ data }) };
     }

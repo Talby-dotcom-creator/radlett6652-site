@@ -60,32 +60,23 @@ const HomePage: React.FC = () => {
         const [eventsData, newsData, testimonialsData] = await Promise.all([
           optimizedApi.getEvents(),
           optimizedApi.getBlogPosts(),
-          optimizedApi.getTestimonials
-            ? optimizedApi.getTestimonials()
-            : Promise.resolve([]),
+          optimizedApi.getTestimonials ? optimizedApi.getTestimonials() : Promise.resolve([]),
         ]);
 
-        const sortedEvents = (eventsData as Event[]).sort(
-          (a: Event, b: Event) => {
-            const ta = a?.event_date ? new Date(a.event_date).getTime() : 0;
-            const tb = b?.event_date ? new Date(b.event_date).getTime() : 0;
-            return ta - tb;
-          }
-        );
+        const sortedEvents = (eventsData as Event[]).sort((a: Event, b: Event) => {
+          const ta = a?.event_date ? new Date(a.event_date).getTime() : 0;
+          const tb = b?.event_date ? new Date(b.event_date).getTime() : 0;
+          return ta - tb;
+        });
 
-        const sortedNews = (newsData as CMSBlogPost[]).sort(
-          (a: CMSBlogPost, b: CMSBlogPost) => {
-            const ta = a?.publish_date ? new Date(a.publish_date).getTime() : 0;
-            const tb = b?.publish_date ? new Date(b.publish_date).getTime() : 0;
-            return tb - ta;
-          }
-        );
+        const sortedNews = (newsData as CMSBlogPost[]).sort((a: CMSBlogPost, b: CMSBlogPost) => {
+          const ta = a?.publish_date ? new Date(a.publish_date).getTime() : 0;
+          const tb = b?.publish_date ? new Date(b.publish_date).getTime() : 0;
+          return tb - ta;
+        });
 
-        const sortedTestimonials = (
-          (testimonialsData as Testimonial[]) || []
-        ).sort(
-          (a: Testimonial, b: Testimonial) =>
-            (a.sort_order ?? 0) - (b.sort_order ?? 0)
+        const sortedTestimonials = ((testimonialsData as Testimonial[]) || []).sort(
+          (a: Testimonial, b: Testimonial) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
         );
 
         setEvents(sortedEvents);
@@ -115,11 +106,7 @@ const HomePage: React.FC = () => {
         className="relative min-h-screen text-white overflow-hidden bg-cover bg-bottom"
         style={{ backgroundImage: `url(${heroBg})` }}
       >
-        <motion.div
-          aria-hidden
-          className="absolute inset-0 bg-primary-800/25"
-          style={{ y }}
-        />
+        <motion.div aria-hidden className="absolute inset-0 bg-primary-800/25" style={{ y }} />
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 pt-40 md:pt-52 pb-44 flex flex-col items-center text-center">
           <motion.img
@@ -165,8 +152,7 @@ const HomePage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.7 }}
             className="text-base md:text-lg text-secondary-100 mt-2"
           >
-            A Masonic Lodge under the jurisdiction of the United Grand Lodge of
-            England
+            A Masonic Lodge under the jurisdiction of the United Grand Lodge of England
           </motion.p>
 
           <motion.div
@@ -199,9 +185,7 @@ const HomePage: React.FC = () => {
         >
           <div className="bg-primary-900/60 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
             <Calendar className="w-6 h-6 text-secondary-400 mb-2" />
-            <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
-              Founded
-            </h3>
+            <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">Founded</h3>
             <p className="text-neutral-300 text-sm">1948</p>
           </div>
 
@@ -210,7 +194,7 @@ const HomePage: React.FC = () => {
             <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
               Active Members
             </h3>
-            <p className="text-neutral-300 text-sm">40+</p>
+            <p className="text-neutral-300 text-sm">28+</p>
           </div>
 
           <div className="bg-primary-900/60 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
@@ -218,7 +202,11 @@ const HomePage: React.FC = () => {
             <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
               Charity Raised
             </h3>
-            <p className="text-neutral-300 text-sm">£50,000+ annually</p>
+            <p className="text-neutral-300 text-sm">
+              <span>£52M+ From UGLE</span>
+              <br />
+              <span>We're moving £50,000 annually.</span>
+            </p>
           </div>
         </div>
       </section>
@@ -342,11 +330,7 @@ const HomePage: React.FC = () => {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 {news
-                  .filter(
-                    (n) =>
-                      n.category?.toLowerCase() === "news" &&
-                      n.is_published !== false
-                  )
+                  .filter((n) => n.category?.toLowerCase() === "news" && n.is_published !== false)
                   .slice(0, 3)
                   .map((n, index) => (
                     <motion.div
@@ -404,9 +388,7 @@ const HomePage: React.FC = () => {
               </motion.div>
             </>
           ) : (
-            <p className="text-center text-slate-400 mt-6">
-              No news articles yet.
-            </p>
+            <p className="text-center text-slate-400 mt-6">No news articles yet.</p>
           )}
         </div>
 
@@ -415,10 +397,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {selectedNews && (
-        <NewsDetailsModal
-          news={selectedNews}
-          onClose={() => setSelectedNews(null)}
-        />
+        <NewsDetailsModal news={selectedNews} onClose={() => setSelectedNews(null)} />
       )}
 
       <SectionBreather variant="minimal" />

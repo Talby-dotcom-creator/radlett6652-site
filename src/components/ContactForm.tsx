@@ -1,9 +1,9 @@
 // src/components/ContactForm.tsx
 import React, { useState } from "react";
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import Button from "./Button";
 
-const ContactForm: React.FC = () => {
+const ContactFormInner: React.FC = () => {
   // Toggle this to true while testing, false in production
   const debugMode = true;
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -18,16 +18,12 @@ const ContactForm: React.FC = () => {
     honey: "", // honeypot field
   });
 
-  const [formStatus, setFormStatus] = useState<
-    "idle" | "submitting" | "success" | "error"
-  >("idle");
+  const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [debugResponse, setDebugResponse] = useState<any>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -77,9 +73,7 @@ const ContactForm: React.FC = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `Server error (${response.status}): ${errorText || "Unknown"}`
-        );
+        throw new Error(`Server error (${response.status}): ${errorText || "Unknown"}`);
       }
 
       const result = await response.json();
@@ -105,9 +99,7 @@ const ContactForm: React.FC = () => {
       console.error("Error sending email:", error);
       setFormStatus("error");
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Failed to send message. Please try again."
+        error instanceof Error ? error.message : "Failed to send message. Please try again."
       );
     }
   };
@@ -128,10 +120,7 @@ const ContactForm: React.FC = () => {
 
       {/* Name */}
       <div>
-        <label
-          htmlFor="name"
-          className="block mb-2 text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="name" className="block mb-2 text-sm font-medium text-primary-600">
           Your Name <span className="text-red-500">*</span>
         </label>
         <input
@@ -148,10 +137,7 @@ const ContactForm: React.FC = () => {
 
       {/* Email */}
       <div>
-        <label
-          htmlFor="email"
-          className="block mb-2 text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="email" className="block mb-2 text-sm font-medium text-primary-600">
           Email Address <span className="text-red-500">*</span>
         </label>
         <input
@@ -168,10 +154,7 @@ const ContactForm: React.FC = () => {
 
       {/* Phone */}
       <div>
-        <label
-          htmlFor="phone"
-          className="block mb-2 text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="phone" className="block mb-2 text-sm font-medium text-primary-600">
           Phone Number
         </label>
         <input
@@ -187,10 +170,7 @@ const ContactForm: React.FC = () => {
 
       {/* Subject */}
       <div>
-        <label
-          htmlFor="subject"
-          className="block mb-2 text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="subject" className="block mb-2 text-sm font-medium text-primary-600">
           Subject <span className="text-red-500">*</span>
         </label>
         <select
@@ -214,10 +194,7 @@ const ContactForm: React.FC = () => {
 
       {/* Message */}
       <div>
-        <label
-          htmlFor="message"
-          className="block mb-2 text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="message" className="block mb-2 text-sm font-medium text-primary-600">
           Your Message <span className="text-red-500">*</span>
         </label>
         <textarea
@@ -252,18 +229,13 @@ const ContactForm: React.FC = () => {
           className="mt-1 mr-2 disabled:cursor-not-allowed"
         />
         <label htmlFor="interested" className="text-sm text-primary-600">
-          I am interested in becoming a Freemason and would like more
-          information
+          I am interested in becoming a Freemason and would like more information
         </label>
       </div>
 
       {/* Submit + status */}
       <div className="flex items-center space-x-4">
-        <Button
-          type="submit"
-          disabled={formStatus === "submitting"}
-          className="min-w-[150px]"
-        >
+        <Button type="submit" disabled={formStatus === "submitting"} className="min-w-[150px]">
           {formStatus === "submitting" ? "Sending..." : "Send Message"}
         </Button>
 
@@ -274,9 +246,7 @@ const ContactForm: React.FC = () => {
         )}
 
         {formStatus === "error" && (
-          <div className="text-red-600 font-medium animate-fadeIn">
-            ✗ {errorMessage}
-          </div>
+          <div className="text-red-600 font-medium animate-fadeIn">✗ {errorMessage}</div>
         )}
       </div>
 
@@ -287,6 +257,15 @@ const ContactForm: React.FC = () => {
         </pre>
       )}
     </form>
+  );
+};
+
+const ContactForm: React.FC = () => {
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <ContactFormInner />
+    </GoogleReCaptchaProvider>
   );
 };
 
