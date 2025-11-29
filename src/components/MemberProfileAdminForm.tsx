@@ -41,10 +41,7 @@ const MemberProfileAdminForm: React.FC<MemberProfileAdminFormProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <label
-          htmlFor="user_id"
-          className="block text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="user_id" className="block text-sm font-medium text-primary-600">
           User ID
         </label>
         <input
@@ -56,17 +53,12 @@ const MemberProfileAdminForm: React.FC<MemberProfileAdminFormProps> = ({
           }`}
         />
         {errors.user_id && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.user_id.message as string}
-          </p>
+          <p className="mt-1 text-sm text-red-600">{errors.user_id.message as string}</p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor="status"
-          className="block text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="status" className="block text-sm font-medium text-primary-600">
           Status
         </label>
         <select
@@ -84,29 +76,21 @@ const MemberProfileAdminForm: React.FC<MemberProfileAdminFormProps> = ({
       </div>
 
       <div>
-        <label
-          htmlFor="full_name"
-          className="block text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="full_name" className="block text-sm font-medium text-primary-600">
           Full Name
         </label>
         <input
           id="full_name"
           {...register("full_name", { required: "Full name is required" })}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
         />
         {errors.full_name && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.full_name.message as string}
-          </p>
+          <p className="mt-1 text-sm text-red-600">{errors.full_name.message as string}</p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor="position"
-          className="block text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="position" className="block text-sm font-medium text-primary-600">
           Lodge Position
         </label>
         <input
@@ -117,10 +101,7 @@ const MemberProfileAdminForm: React.FC<MemberProfileAdminFormProps> = ({
       </div>
 
       <div>
-        <label
-          htmlFor="role"
-          className="block text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="role" className="block text-sm font-medium text-primary-600">
           Role
         </label>
         <select
@@ -132,24 +113,19 @@ const MemberProfileAdminForm: React.FC<MemberProfileAdminFormProps> = ({
           <option value="admin">Admin</option>
         </select>
         {errors.role && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.role.message as string}
-          </p>
+          <p className="mt-1 text-sm text-red-600">{errors.role.message as string}</p>
         )}
       </div>
 
       <div>
-        <label
-          htmlFor="notes"
-          className="block text-sm font-medium text-primary-600"
-        >
+        <label htmlFor="notes" className="block text-sm font-medium text-primary-600">
           Admin Notes
         </label>
         <textarea
           id="notes"
           {...register("notes")}
           rows={3}
-          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500"
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
           placeholder="Private notes about this member (only visible to admins)"
         />
       </div>

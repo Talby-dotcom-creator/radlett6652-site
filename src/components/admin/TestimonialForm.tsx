@@ -66,14 +66,17 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
     <>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div>
-          <label
-            htmlFor="member_name"
             className="block text-sm font-medium text-primary-600"
           >
             Member Name
-          </label>
+          <label
           <input
             id="member_name"
+            {...register("member_name", {
+              required: "Member name is required",
+            })}
+            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
+          />
             {...register("member_name", {
               required: "Member name is required",
             })}
@@ -85,13 +88,18 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
             </p>
           )}
         </div>
+                className="block text-sm font-medium text-primary-600"
+              >
+                Testimonial Content
 
-        <div>
-          <label
-            htmlFor="content"
-            className="block text-sm font-medium text-primary-600"
-          >
-            Testimonial Content
+              <textarea
+                id="content"
+                {...register("content", {
+                  required: "Testimonial content is required",
+                })}
+                rows={4}
+                className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
+              />
           </label>
           <textarea
             id="content"
@@ -112,6 +120,9 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
             className="block text-sm font-medium text-primary-600"
           >
             Member Photo
+              className="block text-sm font-medium text-primary-600"
+            >
+              Member Photo
           </label>
           <div className="mt-1 space-y-3">
             {/* Image URL Input with Media Manager Button */}
@@ -203,14 +214,17 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({
           <input
             id="is_published"
             type="checkbox"
+              className="block text-sm font-medium text-primary-600"
+            >
+              Sort Order
             {...register("is_published")}
-            className="h-4 w-4 text-secondary-600 focus:ring-secondary-500 border-neutral-300 rounded"
-          />
-          <label
-            htmlFor="is_published"
-            className="ml-2 block text-sm text-neutral-700"
-          >
-            Published
+            <input
+              id="sort_order"
+              type="number"
+              {...register("sort_order", { valueAsNumber: true })}
+              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-secondary-500 focus:ring-secondary-500 text-black"
+              placeholder="0"
+            />
           </label>
         </div>
 

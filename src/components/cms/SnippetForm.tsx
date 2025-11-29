@@ -48,16 +48,11 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
   const onSubmit = async (vals: FormVals) => {
     const payload = {
       ...vals,
-      publish_date: vals.publish_date
-        ? new Date(vals.publish_date).toISOString()
-        : null,
+      publish_date: vals.publish_date ? new Date(vals.publish_date).toISOString() : null,
     };
 
     if (initialData?.id) {
-      const { error } = await supabase
-        .from("snippets")
-        .update(payload)
-        .eq("id", initialData.id);
+      const { error } = await supabase.from("snippets").update(payload).eq("id", initialData.id);
 
       if (error) return alert(error.message);
     } else {
@@ -69,17 +64,12 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-white rounded-xl border p-6 space-y-5"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-xl border p-6 space-y-5">
       <div>
-        <label className="block text-sm font-medium text-primary-700">
-          Title
-        </label>
+        <label className="block text-sm font-medium text-primary-700">Title</label>
         <input
           {...register("title", { required: true })}
-          className="mt-1 w-full border rounded-md px-3 py-2"
+          className="mt-1 w-full border rounded-md px-3 py-2 text-black"
         />
       </div>
 
@@ -89,14 +79,10 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
         </label>
         <input
           {...register("subtitle", { required: "Subtitle is required" })}
-          className="mt-1 w-full border rounded-md px-3 py-2"
+          className="mt-1 w-full border rounded-md px-3 py-2 text-black"
         />
         {/* Show validation error for subtitle */}
-        {errors.subtitle && (
-          <span className="text-red-500 text-sm">
-            {errors.subtitle.message}
-          </span>
-        )}
+        {errors.subtitle && <span className="text-red-500 text-sm">{errors.subtitle.message}</span>}
       </div>
 
       <div>
@@ -106,14 +92,12 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
         <input
           type="datetime-local"
           {...register("publish_date")}
-          className="mt-1 w-full border rounded-md px-3 py-2"
+          className="mt-1 w-full border rounded-md px-3 py-2 text-black"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-primary-700">
-          Content
-        </label>
+        <label className="block text-sm font-medium text-primary-700">Content</label>
         <QuillEditor
           value={watch("content")}
           onChange={(html) => setValue("content", html)}
@@ -122,12 +106,7 @@ const SnippetForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
         />
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => setShowMM(true)}
-        className="w-full"
-      >
+      <Button type="button" variant="outline" onClick={() => setShowMM(true)} className="w-full">
         Insert Image
       </Button>
 

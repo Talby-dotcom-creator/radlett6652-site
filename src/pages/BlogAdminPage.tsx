@@ -42,9 +42,7 @@ const BlogAdminPage: React.FC = () => {
         content: post.content ?? "",
         summary: post.summary ?? "",
         category:
-          post.category === "news" ||
-          post.category === "blog" ||
-          post.category === "snippet"
+          post.category === "news" || post.category === "blog" || post.category === "snippet"
             ? post.category
             : "news",
         author: post.author ?? "",
@@ -63,9 +61,7 @@ const BlogAdminPage: React.FC = () => {
   };
 
   // ✅ Handle form changes
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm({
       ...form,
@@ -101,9 +97,7 @@ const BlogAdminPage: React.FC = () => {
         .eq("id", editingId);
       error = updateError;
     } else {
-      const { error: insertError } = await supabase
-        .from("blog_posts")
-        .insert([{ ...payload }]);
+      const { error: insertError } = await supabase.from("blog_posts").insert([{ ...payload }]);
       error = insertError;
     }
 
@@ -172,14 +166,14 @@ const BlogAdminPage: React.FC = () => {
             value={form.title}
             onChange={handleChange}
             placeholder="Title"
-            className="border rounded-lg p-2"
+            className="border rounded-lg p-2 text-black"
             disabled={loading}
           />
           <select
             name="category"
             value={form.category}
             onChange={handleChange}
-            className="border rounded-lg p-2"
+            className="border rounded-lg p-2 text-black"
             disabled={loading}
           >
             <option value="news">News</option>
@@ -191,15 +185,13 @@ const BlogAdminPage: React.FC = () => {
             value={form.author}
             onChange={handleChange}
             placeholder="Author"
-            className="border rounded-lg p-2"
+            className="border rounded-lg p-2 text-black"
             disabled={loading}
           />
 
           <QuillEditor
             value={form.content}
-            onChange={(html: string) =>
-              setForm((s) => ({ ...s, content: html }))
-            }
+            onChange={(html: string) => setForm((s) => ({ ...s, content: html }))}
             placeholder="Write your article…"
           />
 
@@ -233,19 +225,14 @@ const BlogAdminPage: React.FC = () => {
               className="border rounded-lg p-4 bg-neutral-50 flex flex-col md:flex-row md:justify-between md:items-start gap-2"
             >
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-primary-700 truncate">
-                  {post.title}
-                </h3>
+                <h3 className="font-semibold text-primary-700 truncate">{post.title}</h3>
                 <p className="text-sm text-neutral-600 mb-1">
-                  {post.category === "snippet"
-                    ? "🪨 Reflections in Stone"
-                    : post.category}
+                  {post.category === "snippet" ? "🪨 Reflections in Stone" : post.category}
                 </p>
                 {/* No summary field in CMSBlogPost, so nothing to show here */}
                 {post.publish_date && (
                   <p className="text-xs text-neutral-400">
-                    Published:{" "}
-                    {new Date(post.publish_date).toLocaleDateString("en-GB")}
+                    Published: {new Date(post.publish_date).toLocaleDateString("en-GB")}
                   </p>
                 )}
               </div>

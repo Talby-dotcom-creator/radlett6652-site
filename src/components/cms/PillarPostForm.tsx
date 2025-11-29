@@ -37,11 +37,7 @@ interface Props {
   onSaved: () => void;
 }
 
-const PillarPostForm: React.FC<Props> = ({
-  initialData,
-  onCancel,
-  onSaved,
-}) => {
+const PillarPostForm: React.FC<Props> = ({ initialData, onCancel, onSaved }) => {
   const [showMM, setShowMM] = useState(false);
   const [img, setImg] = useState<string>(initialData?.image_url || "");
 
@@ -133,9 +129,7 @@ const PillarPostForm: React.FC<Props> = ({
       slug: finalSlug,
       category: "blog" as const,
       seo_description: vals.seo_description || vals.summary || "",
-      publish_date: vals.publish_date
-        ? new Date(vals.publish_date).toISOString()
-        : null,
+      publish_date: vals.publish_date ? new Date(vals.publish_date).toISOString() : null,
       image_url: img || null,
     };
 
@@ -146,9 +140,7 @@ const PillarPostForm: React.FC<Props> = ({
         .eq("id", initialData.id);
       if (error) return alert(error.message);
     } else {
-      const { error } = await supabase
-        .from("blog_posts")
-        .insert(payload as any);
+      const { error } = await supabase.from("blog_posts").insert(payload as any);
       if (error) return alert(error.message);
     }
 
@@ -189,27 +181,21 @@ const PillarPostForm: React.FC<Props> = ({
       {/* TITLE + SLUG */}
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-primary-700">
-            Title
-          </label>
+          <label className="block text-sm font-medium text-primary-700">Title</label>
           <input
             {...register("title", { required: "Title is required" })}
-            className="mt-1 w-full border rounded-md px-3 py-2"
+            className="mt-1 w-full border rounded-md px-3 py-2 text-black"
           />
           {errors.title && (
-            <p className="text-xs text-red-600 mt-1">
-              {errors.title.message as string}
-            </p>
+            <p className="text-xs text-red-600 mt-1">{errors.title.message as string}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-primary-700">
-            Slug
-          </label>
+          <label className="block text-sm font-medium text-primary-700">Slug</label>
           <input
             {...register("slug")}
-            className="mt-1 w-full border rounded-md px-3 py-2"
+            className="mt-1 w-full border rounded-md px-3 py-2 text-black"
           />
         </div>
       </div>
@@ -222,7 +208,7 @@ const PillarPostForm: React.FC<Props> = ({
         <textarea
           {...register("summary")}
           rows={3}
-          className="mt-1 w-full border rounded-md px-3 py-2"
+          className="mt-1 w-full border rounded-md px-3 py-2 text-black"
         />
       </div>
 
@@ -235,7 +221,7 @@ const PillarPostForm: React.FC<Props> = ({
           {...register("seo_description")}
           rows={3}
           placeholder="Google search result description…"
-          className="mt-1 w-full border rounded-md px-3 py-2"
+          className="mt-1 w-full border rounded-md px-3 py-2 text-black"
         />
       </div>
 
@@ -247,9 +233,7 @@ const PillarPostForm: React.FC<Props> = ({
             radlettlodge.org.uk/pillars/{slug || "your-post-slug"}
           </p>
 
-          <p className="text-lg text-blue-800 font-bold mt-1">
-            {title || "Post Title Preview"}
-          </p>
+          <p className="text-lg text-blue-800 font-bold mt-1">{title || "Post Title Preview"}</p>
 
           <p className="text-sm text-gray-700 mt-1">
             {watch("seo_description")?.length
@@ -276,14 +260,10 @@ const PillarPostForm: React.FC<Props> = ({
 
       {/* CONTENT */}
       <div>
-        <label className="block text-sm font-medium text-primary-700">
-          Content
-        </label>
+        <label className="block text-sm font-medium text-primary-700">Content</label>
         <QuillEditor
           value={watch("content")}
-          onChange={(html: string) =>
-            setValue("content", html, { shouldDirty: true })
-          }
+          onChange={(html: string) => setValue("content", html, { shouldDirty: true })}
           placeholder="Write your article…"
           showSnippets={true}
         />
@@ -292,19 +272,12 @@ const PillarPostForm: React.FC<Props> = ({
       {/* META (AUTHOR / SUBCATEGORY / READING TIME) */}
       <div className="grid md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-primary-700">
-            Author
-          </label>
-          <input
-            {...register("author")}
-            className="mt-1 w-full border rounded-md px-3 py-2"
-          />
+          <label className="block text-sm font-medium text-primary-700">Author</label>
+          <input {...register("author")} className="mt-1 w-full border rounded-md px-3 py-2" />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Category
-          </label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">Category</label>
           <select
             {...register("subcategory", { required: true })}
             className="w-full px-3 py-2 border rounded-md bg-white"
@@ -317,16 +290,12 @@ const PillarPostForm: React.FC<Props> = ({
             ))}
           </select>
           {errors.subcategory && (
-            <p className="text-xs text-red-600 mt-1">
-              Please choose a category.
-            </p>
+            <p className="text-xs text-red-600 mt-1">Please choose a category.</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-primary-700">
-            Reading time (min)
-          </label>
+          <label className="block text-sm font-medium text-primary-700">Reading time (min)</label>
           <input
             type="number"
             min={1}
@@ -340,9 +309,7 @@ const PillarPostForm: React.FC<Props> = ({
       <div className="grid md:grid-cols-3 gap-4">
         {/* Date picker */}
         <div>
-          <label className="block text-sm font-medium text-primary-700">
-            Publish date
-          </label>
+          <label className="block text-sm font-medium text-primary-700">Publish date</label>
           <DatePicker
             selected={getPublishDateAsDate()}
             onChange={(date: Date | null) => {
@@ -383,14 +350,9 @@ const PillarPostForm: React.FC<Props> = ({
           </label>
 
           <label className="text-sm flex items-center">
-            <input
-              type="checkbox"
-              {...register("is_published")}
-              className="mr-2"
-            />
+            <input type="checkbox" {...register("is_published")} className="mr-2" />
             <span>
-              <strong>Published</strong> – visible on website (
-              {isPublished ? "Yes" : "No"})
+              <strong>Published</strong> – visible on website ({isPublished ? "Yes" : "No"})
             </span>
           </label>
         </div>
@@ -398,9 +360,7 @@ const PillarPostForm: React.FC<Props> = ({
 
       {/* FEATURED IMAGE */}
       <div>
-        <label className="block text-sm font-medium text-primary-700">
-          Featured image
-        </label>
+        <label className="block text-sm font-medium text-primary-700">Featured image</label>
         <div className="flex items-center gap-2 mt-1">
           <input
             {...register("image_url")}
@@ -408,11 +368,7 @@ const PillarPostForm: React.FC<Props> = ({
             onChange={(e) => setImg(e.target.value)}
             className="flex-1 border rounded-md px-3 py-2"
           />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowMM(true)}
-          >
+          <Button type="button" variant="outline" onClick={() => setShowMM(true)}>
             <Image className="w-4 h-4 mr-1" /> Browse
           </Button>
           {img && (

@@ -10,11 +10,7 @@ interface ResourceFormProps {
   initialData?: any;
 }
 
-const ResourceForm: React.FC<ResourceFormProps> = ({
-  onSubmit,
-  onCancel,
-  initialData,
-}) => {
+const ResourceForm: React.FC<ResourceFormProps> = ({ onSubmit, onCancel, initialData }) => {
   const [showMM, setShowMM] = useState(false);
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -22,15 +18,11 @@ const ResourceForm: React.FC<ResourceFormProps> = ({
     description: initialData?.description || "",
     content: initialData?.content || "",
     file_url: initialData?.file_url || "",
-    publish_date: initialData?.publish_date
-      ? initialData.publish_date.slice(0, 10)
-      : "",
+    publish_date: initialData?.publish_date ? initialData.publish_date.slice(0, 10) : "",
   });
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -51,28 +43,24 @@ const ResourceForm: React.FC<ResourceFormProps> = ({
       className="space-y-4 bg-[#0B1831] text-white border border-[#BFA76F]/30 rounded-xl p-6"
     >
       <div>
-        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">
-          Title
-        </label>
+        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">Title</label>
         <input
           type="text"
           name="title"
           value={formData.title}
           onChange={handleChange}
           required
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20"
+          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
         />
       </div>
 
       <div>
-        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">
-          Category
-        </label>
+        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">Category</label>
         <select
           name="category"
           value={formData.category}
           onChange={handleChange}
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20"
+          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
         >
           <option value="byelaws">Byelaws</option>
           <option value="forms">Forms</option>
@@ -83,15 +71,13 @@ const ResourceForm: React.FC<ResourceFormProps> = ({
       </div>
 
       <div>
-        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">
-          Description
-        </label>
+        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">Description</label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleChange}
           rows={3}
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20"
+          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
         />
       </div>
 
@@ -105,14 +91,10 @@ const ResourceForm: React.FC<ResourceFormProps> = ({
             type="text"
             value={formData.file_url}
             readOnly
-            className="flex-1 p-2 rounded bg-[#142850] border border-[#BFA76F]/20"
+            className="flex-1 p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
             placeholder="Select a file..."
           />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowMM(true)}
-          >
+          <Button type="button" variant="outline" onClick={() => setShowMM(true)}>
             Browse
           </Button>
         </div>
@@ -138,23 +120,19 @@ const ResourceForm: React.FC<ResourceFormProps> = ({
         </label>
         <QuillEditor
           value={formData.content}
-          onChange={(html: string) =>
-            setFormData({ ...formData, content: html })
-          }
+          onChange={(html: string) => setFormData({ ...formData, content: html })}
         />
       </div>
 
       {/* Publish date */}
       <div>
-        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">
-          Publish Date
-        </label>
+        <label className="block mb-1 text-sm font-medium text-[#BFA76F]">Publish Date</label>
         <input
           type="date"
           name="publish_date"
           value={formData.publish_date}
           onChange={handleChange}
-          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20"
+          className="w-full p-2 rounded bg-[#142850] border border-[#BFA76F]/20 text-black"
         />
       </div>
 

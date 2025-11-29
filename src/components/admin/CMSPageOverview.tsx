@@ -102,11 +102,7 @@ const CMSPageOverview: React.FC = () => {
     return (
       <div>
         <div className="flex justify-end mb-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/admin/pillars")}
-          >
+          <Button variant="outline" size="sm" onClick={() => navigate("/admin/pillars")}>
             Open Pillars Editor
           </Button>
         </div>
@@ -123,16 +119,10 @@ const CMSPageOverview: React.FC = () => {
                 </h3>
                 <p className="text-sm text-neutral-600">
                   {p.section_count} sections:{" "}
-                  <span className="text-neutral-500">
-                    {p.sections.join(", ")}
-                  </span>
+                  <span className="text-neutral-500">{p.sections.join(", ")}</span>
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => openPage(p.page_name)}
-              >
+              <Button variant="outline" size="sm" onClick={() => openPage(p.page_name)}>
                 View / Edit
               </Button>
             </div>
@@ -147,9 +137,7 @@ const CMSPageOverview: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">
-            {activePage.replace(/-/g, " ")}
-          </h2>
+          <h2 className="text-lg font-semibold">{activePage.replace(/-/g, " ")}</h2>
           <p className="text-sm text-neutral-600">Editing page sections</p>
         </div>
         <div className="space-x-2">
@@ -177,7 +165,7 @@ const CMSPageOverview: React.FC = () => {
             {editingId === s.id && (
               <div className="mt-3">
                 <textarea
-                  className="w-full border rounded p-2 min-h-[120px]"
+                  className="w-full border rounded p-2 min-h-[120px] text-black"
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                 />
@@ -192,9 +180,7 @@ const CMSPageOverview: React.FC = () => {
               </div>
             )}
 
-            {editingId !== s.id && (
-              <div className="mt-2 text-sm text-neutral-700">{s.content}</div>
-            )}
+            {editingId !== s.id && <div className="mt-2 text-sm text-neutral-700">{s.content}</div>}
           </li>
         ))}
       </ul>
