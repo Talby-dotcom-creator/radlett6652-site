@@ -26,6 +26,7 @@ const PageContentForm: React.FC<PageContentFormProps> = ({
     defaultValues: {
       page_name: initialData?.page_name || "",
       section_name: initialData?.section_name || "",
+      content_type: initialData?.content_type || "html",
       content: initialData?.content || "",
     },
   });
@@ -52,9 +53,28 @@ const PageContentForm: React.FC<PageContentFormProps> = ({
           Section Name
         </label>
         <input
-          {...register("section_name")}
+          {...register("section_name", { required: "Section name is required" })}
           className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2"
         />
+        {errors.section_name && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.section_name.message as string}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-primary-600">
+          Content Type
+        </label>
+        <select
+          {...register("content_type")}
+          className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 bg-white text-black"
+        >
+          <option value="html">HTML</option>
+          <option value="text">Text</option>
+          <option value="json">JSON</option>
+        </select>
       </div>
 
       <div>

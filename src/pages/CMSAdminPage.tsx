@@ -667,20 +667,30 @@ const CMSAdminPage: React.FC = () => {
   // ===========================================================================
   const handlePageContentSubmit = useCallback(
     async (data: Omit<PageContent, "id" | "updated_at">) => {
-      if (editingPageContent) {
-        await cmsApi.updatePageContentByKey(
-          data.page_name,
-          data.section_name ?? "",
-          data.content
-        );
-      } else {
-        await cmsApi.createPageContent(data);
+      try {
+        const payload = {
+          page_name: data.page_name,
+          section_name: data.section_name ?? "",
+          content: data.content,
+          content_type: data.content_type || "html",
+        };
+
+        if (editingPageContent?.id) {
+          await cmsApi.updatePageContent(editingPageContent.id, payload);
+        } else {
+          await cmsApi.createPageContent(payload);
+        }
+
+        await refreshAll();
+        success("Page content saved");
+        setShowPageContentForm(false);
+        setEditingPageContent(null);
+      } catch (err) {
+        console.error("Failed to save page content:", err);
+        showError("Failed to save page content");
       }
-      await refreshAll();
-      setShowPageContentForm(false);
-      setEditingPageContent(null);
     },
-    [editingPageContent, refreshAll]
+    [editingPageContent, refreshAll, success, showError]
   );
 
   // ===========================================================================
