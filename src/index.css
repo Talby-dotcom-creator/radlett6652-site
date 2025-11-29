@@ -409,135 +409,58 @@ main {
 }
 
 /* -----------------------------------------------------------
-   ✅ GLOBAL QUILL STYLING — RADLETT BLUE & GOLD THEME
+   Unified Quill Editor Styling (light, readable forms)
 ----------------------------------------------------------- */
+.ql-toolbar.ql-snow {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px 6px 0 0;
+}
 
-.ql-container {
-  font-family: Helvetica, Arial, sans-serif;
-  background-color: #0b1635 !important; /* Oxford blue */
-  color: #f5f5f5 !important;
-  border: 1px solid #bfa76f !important; /* gold border */
-  border-radius: 6px;
-  min-height: 250px;
-  padding: 12px;
+.ql-container.ql-snow {
+  border: 1px solid #d1d5db !important;
+  border-top: none !important;
+  border-radius: 0 0 6px 6px;
+  background: #ffffff !important;
+  color: #111 !important;
 }
 
 .ql-editor {
-  min-height: 200px;
+  min-height: 220px;
   line-height: 1.7;
   font-size: 16px;
+  background-color: #ffffff !important;
+  color: #111 !important;
 }
 
-/* Header styles */
 .ql-editor h1,
 .ql-editor h2,
 .ql-editor h3 {
   font-family: "Playfair Display", serif;
-  color: #d4af37 !important;
+  color: #0a174e !important;
 }
 
-/* Links */
 .ql-editor a {
-  color: #d4af37 !important;
+  color: #0a174e !important;
   text-decoration: underline;
 }
 
-/* Blockquotes */
 .ql-editor blockquote {
-  border-left: 3px solid #d4af37 !important;
+  border-left: 3px solid #fca311 !important;
   padding-left: 1rem;
-  color: #e6e6e6;
+  color: #222;
 }
 
-/* Lists */
 .ql-editor ul,
 .ql-editor ol {
   margin-left: 1.5rem;
 }
 
-/* Toolbar styling */
-.ql-toolbar {
-  background: #0b1635 !important;
-  border: 1px solid #bfa76f !important;
-  border-bottom: none !important;
-}
-
-.ql-toolbar button svg {
-  color: #d4af37 !important;
-}
-
-.ql-toolbar button.ql-active svg {
-  color: #ffffff !important;
-}
-
-.ql-container.ql-snow {
-  border-top: none !important;
-}
-
-/* Make images inside editor responsive */
 .ql-editor img {
   max-width: 100%;
   height: auto;
   border-radius: 4px;
 }
-
-/* -----------------------------------------------------------
-   🔧 QUILL EDITOR TEXT COLOR OVERRIDE
-   Ensures black text, white background, blue links for readability
------------------------------------------------------------ */
-/* Quill Editor Text Color Override */
-.ql-editor {
-  color: #000 !important; /* Force black text */
-}
-
-.ql-editor p,
-.ql-editor span,
-.ql-editor li {
-  color: #000 !important;
-}
-
-/* Remove inherited background colours */
-.ql-container,
-.ql-editor {
-  background: #ffffff !important;
-}
-
-/* Remove Oxford blue link colours if inherited */
-.ql-editor a {
-  color: #1a0dab !important;
-}
-
-/* Optional: Add smooth lift hover */
-.radlett-card:hover {
-  transform: translateY(-4px);
-}
-
-/* Optional: Apply consistent padding for card bodies */
-.radlett-card-content {
-  @apply p-6;
-}
-
-/* -----------------------------------------------------
-   📝 Quill Editor Styling
-   ----------------------------------------------------- */
-
-/* Quill toolbar background override */
-.ql-toolbar.ql-snow {
-  background-color: #ffffff !important;
-  border: 1px solid #d1d5db !important; /* stronger border */
-}
-
-/* Quill editor container border matches toolbar */
-.ql-container.ql-snow {
-  border: 1px solid #d1d5db !important;
-}
-
-/* Quill editor content area */
-.ql-editor {
-  background-color: #ffffff !important;
-  color: #111 !important;
-}
-
 /* -----------------------------------------------------
    📦 Content Callout Boxes (Admin Snippets)
    ----------------------------------------------------- */

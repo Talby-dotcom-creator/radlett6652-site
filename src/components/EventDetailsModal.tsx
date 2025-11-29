@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { LodgeEvent } from "../types";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface EventDetailsModalProps {
   isOpen: boolean;
@@ -148,7 +149,9 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
             <div className="mt-4">
               <div
                 className="prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: event.description ?? "" }}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(event.description ?? ""),
+                }}
               />
             </div>
           )}

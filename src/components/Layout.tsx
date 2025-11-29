@@ -2,6 +2,7 @@
 import React, { ReactNode } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
+import ScrollToTopButton from "./ScrollToTopButton";
 
 /**
  * Layout.tsx
@@ -40,6 +41,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Footer - Always visible */}
       {/* ======================== */}
       <Footer />
+
+      {/* Global scroll-to-top control */}
+      <ScrollToTopButton />
     </div>
   );
 };

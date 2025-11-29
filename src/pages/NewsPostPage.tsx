@@ -6,6 +6,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import HeroSection from "../components/HeroSection";
 import { CMSBlogPost } from "../types";
 import { optimizedApi } from "../lib/optimizedApi"; // ✅ must have braces
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const NewsPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -93,7 +94,7 @@ const NewsPostPage: React.FC = () => {
           <article
             className="prose prose-lg max-w-none text-neutral-800"
             dangerouslySetInnerHTML={{
-              __html: post.content ?? post.summary ?? "",
+              __html: sanitizeHtml(post.content ?? post.summary ?? ""),
             }}
           />
         </div>

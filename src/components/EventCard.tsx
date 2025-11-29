@@ -2,6 +2,7 @@ import React from "react";
 import { CalendarDays, MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LodgeEvent } from "../types";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface EventCardProps {
   event: LodgeEvent;
@@ -44,7 +45,9 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         {event.description && (
           <div
             className="prose prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: event.description ?? "" }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(event.description ?? ""),
+            }}
           />
         )}
         <Link

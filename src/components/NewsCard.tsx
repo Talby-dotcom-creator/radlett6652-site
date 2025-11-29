@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { CMSBlogPost } from "../types";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface NewsCardProps {
   news: CMSBlogPost;
@@ -33,7 +34,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ news, onOpen }) => {
         {news.summary && (
           <div
             className="prose prose-invert max-w-none line-clamp-4"
-            dangerouslySetInnerHTML={{ __html: news.summary ?? "" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(news.summary ?? "") }}
           />
         )}
         {onOpen ? (

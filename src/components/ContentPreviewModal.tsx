@@ -1,7 +1,7 @@
 // src/components/ContentPreviewModal.tsx
 import React from "react";
 import { X } from "lucide-react";
-import DOMPurify from "dompurify";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface ContentPreviewModalProps {
   isOpen: boolean;
@@ -60,7 +60,7 @@ const ContentPreviewModal: React.FC<ContentPreviewModalProps> = ({
         {/* Rich Text Content */}
         <div
           className="prose prose-invert max-w-none leading-relaxed text-[#EAEAEA]"
-          dangerouslySetInnerHTML={{ __html: cleanHtml }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(cleanHtml) }}
         />
 
         <div className="mt-6 text-center">
