@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import {
@@ -95,6 +95,26 @@ function EventsPageInner() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
+  const moonConfigs = useMemo(() => {
+    if (prefersReducedMotion) return [];
+    const rng = createRng("events-moons");
+    return Array.from({ length: 12 }).map(() => ({
+      left: `${Math.round(rng() * 100)}%`,
+      top: `${Math.round(rng() * 100)}%`,
+      duration: 4 + rng() * 3,
+      delay: rng() * 5,
+    }));
+  }, [prefersReducedMotion]);
+  const particleConfigs = useMemo(() => {
+    if (prefersReducedMotion) return [];
+    const rng = createRng("events-particles");
+    return Array.from({ length: 20 }).map(() => ({
+      left: `${Math.round(rng() * 100)}%`,
+      top: `${Math.round(rng() * 100)}%`,
+      duration: 3 + rng() * 4,
+      delay: rng() * 5,
+    }));
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     fetchEvents();
@@ -241,15 +261,7 @@ function EventsPageInner() {
 
         {/* Floating Moon Phases (Masonic tradition) */}
         <div className="absolute inset-0 pointer-events-none">
-          {React.useMemo(() => {
-            const rng = createRng("events-moons");
-            return Array.from({ length: 12 }).map(() => ({
-              left: `${Math.round(rng() * 100)}%`,
-              top: `${Math.round(rng() * 100)}%`,
-              duration: 4 + rng() * 3,
-              delay: rng() * 5,
-            }));
-          }, []).map((config, i) => (
+          {moonConfigs.map((config, i) => (
             <motion.div
               key={i}
               className="absolute"
@@ -280,15 +292,7 @@ function EventsPageInner() {
 
         {/* Candlelight Particles */}
         <div className="absolute inset-0 pointer-events-none">
-          {React.useMemo(() => {
-            const rng = createRng("events-particles");
-            return Array.from({ length: 20 }).map(() => ({
-              left: `${Math.round(rng() * 100)}%`,
-              top: `${Math.round(rng() * 100)}%`,
-              duration: 3 + rng() * 4,
-              delay: rng() * 5,
-            }));
-          }, []).map((config, i) => (
+          {particleConfigs.map((config, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
