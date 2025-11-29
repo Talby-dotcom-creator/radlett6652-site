@@ -1,14 +1,7 @@
 // src/components/Footer.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Mail,
-  MapPin,
-  Building2,
-} from "lucide-react";
+import { Building2, Facebook, Instagram, Mail, MapPin, Twitter } from "lucide-react";
 import { cmsApi } from "../lib/cmsApi";
 import { SiteSetting } from "../types";
 
@@ -60,17 +53,13 @@ const Footer: React.FC = () => {
                 }}
               />
               <div className="hidden md:flex flex-col">
-                <h2 className="text-xl font-bold text-yellow-500">
-                  {lodgeName}
-                </h2>
-                <p className="text-sm text-neutral-400">
-                  Freemasonry in Hertfordshire
-                </p>
+                <h2 className="text-xl font-bold text-yellow-500">{lodgeName}</h2>
+                <p className="text-sm text-neutral-400">Freemasonry in Hertfordshire</p>
               </div>
             </div>
             <p className="text-sm text-neutral-400 mb-4 leading-relaxed">
-              A Freemasons’ lodge under the United Grand Lodge of England,
-              dedicated to integrity, friendship, and charity.
+              A Freemasons' lodge under the United Grand Lodge of England, dedicated to
+              integrity, friendship, and charity.
             </p>
             <div className="flex space-x-4">
               <a
@@ -99,9 +88,7 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-yellow-500">
-              Quick Links
-            </h3>
+            <h3 className="text-lg font-semibold mb-4 text-yellow-500">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="hover:text-yellow-400">
@@ -143,9 +130,7 @@ const Footer: React.FC = () => {
 
           {/* Resources */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-yellow-500">
-              Resources
-            </h3>
+            <h3 className="text-lg font-semibold mb-4 text-yellow-500">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
@@ -182,9 +167,7 @@ const Footer: React.FC = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-yellow-500">
-              Contact Us
-            </h3>
+            <h3 className="text-lg font-semibold mb-4 text-yellow-500">Contact Us</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start">
                 <MapPin size={18} className="mr-2 text-yellow-500" />
@@ -204,11 +187,13 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-yellow-600/20 pt-6 text-center text-sm text-neutral-400">
-          <p>
-            © {currentYear} {lodgeName}. All rights reserved.
+          <p>© {currentYear} {lodgeName}. All rights reserved.</p>
+          <p className="mt-2">
+            Official site of {lodgeName}. Not an official publication of UGLE or the
+            Provincial Grand Lodge of Hertfordshire.
           </p>
           <p className="mt-2">
-            Under the Constitution of the United Grand Lodge of England
+            Under the Constitution of the United Grand Lodge of England.
           </p>
         </div>
       </div>
