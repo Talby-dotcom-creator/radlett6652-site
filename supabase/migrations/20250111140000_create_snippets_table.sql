@@ -71,7 +71,8 @@ CREATE POLICY "Admins can delete snippets"
     )
   );
 
--- Create updated_at trigger
+-- Create updated_at trigger (idempotent)
+DROP TRIGGER IF EXISTS update_snippets_updated_at ON public.snippets;
 CREATE TRIGGER update_snippets_updated_at
   BEFORE UPDATE ON public.snippets
   FOR EACH ROW

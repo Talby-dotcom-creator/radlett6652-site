@@ -203,9 +203,7 @@ const HomePage: React.FC = () => {
               Charity Raised
             </h3>
             <p className="text-neutral-300 text-sm">
-              <span>£52M+ From UGLE</span>
-              <br />
-              <span>We're moving £50,000 annually.</span>
+              <span>£52M+ From UGLE annually</span>
             </p>
           </div>
         </div>
@@ -274,7 +272,12 @@ const HomePage: React.FC = () => {
               transition={
                 prefersReducedMotion
                   ? { duration: 0 }
-                  : { duration: config.duration, repeat: Infinity, delay: config.delay, ease: "easeInOut" }
+                  : {
+                      duration: config.duration,
+                      repeat: Infinity,
+                      delay: config.delay,
+                      ease: "easeInOut",
+                    }
               }
             >
               <Calendar className="w-20 h-20 text-amber-400" />
