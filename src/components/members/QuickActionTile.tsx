@@ -6,12 +6,14 @@ interface QuickActionTileProps {
   title: string;
   subtitle?: string;
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
-const QuickActionTile: React.FC<QuickActionTileProps> = ({ to, title, subtitle, Icon }) => {
+const QuickActionTile: React.FC<QuickActionTileProps> = ({ to, title, subtitle, Icon, onClick }) => {
   return (
     <Link
       to={to}
+      onClick={onClick}
       className="group relative overflow-hidden rounded-xl border border-[#BFA76F] bg-[#BFA76F]/15 p-4 hover:bg-[#BFA76F]/20 transition shadow-md hover:shadow-lg text-[#0B1831]"
     >
       <div className="flex items-center justify-between">

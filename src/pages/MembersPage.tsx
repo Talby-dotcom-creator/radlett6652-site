@@ -393,8 +393,10 @@ export default function MembersPage() {
                           <span className="text-sm text-[#0B1831]">{cat.label}</span>
                         </span>
                         <span
-                          className={`text-xs px-2 py-0.5 rounded border border-[#BFA76F] ${
-                            isSel ? "bg-[#BFA76F]/40" : "bg-[#BFA76F]/25"
+                          className={`text-xs px-2 py-0.5 rounded border border-[#BFA76F] font-semibold ${
+                            isSel
+                              ? "bg-[#0B1831] text-white"
+                              : "bg-[#0B1831]/80 text-white"
                           }`}
                         >
                           {count}
@@ -427,11 +429,12 @@ export default function MembersPage() {
                   Icon={Users}
                 />
                 <QuickActionTile
-                  to="#loi-diary"
+                  to="/members#loi-diary"
                   title="LOI Diary"
                   subtitle="Lodge of Instruction calendar"
                   Icon={Calendar}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     const el = document.getElementById("loi-diary");
                     if (el) el.scrollIntoView({ behavior: "smooth" });
                   }}
@@ -450,7 +453,7 @@ export default function MembersPage() {
               <div className="aspect-[4/3] min-h-[400px] bg-neutral-50">
                 <iframe
                   title="LOI Diary"
-                  src="blob:https://094k8rjf9e8b0vtb76eqrndjeo71q7nzzmyweoscr2piuhjai8-h833788197.scf.usercontent.goog/1d10b8b0-fe85-40e8-8af1-d734ed09e1d3"
+                  src="https://loi-calendar.netlify.app/"
                   width="100%"
                   height="800"
                   style={{
