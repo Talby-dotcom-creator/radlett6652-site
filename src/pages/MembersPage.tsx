@@ -95,6 +95,7 @@ export default function MembersPage() {
 
   const [selected, setSelected] = useState<string[]>([]); // no default selection
   const [query, setQuery] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
   const [page, setPage] = useState(1);
   const [showRecent, setShowRecent] = useState(false);
 
@@ -303,6 +304,7 @@ export default function MembersPage() {
   const clearAll = () => {
     setSelected([]);
     setShowRecent(false);
+    setShowCalendar(false);
     setQuery("");
     setPage(1);
   };
@@ -365,6 +367,15 @@ export default function MembersPage() {
                     Clear all
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar((v) => !v)}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded border border-[#BFA76F] bg-white text-[#0B1831] hover:bg-[#BFA76F]/10 focus:outline-none focus:ring-2 focus:ring-[#BFA76F] text-sm font-semibold"
+                  aria-pressed={showCalendar}
+                >
+                  <Calendar className="w-4 h-4" />
+                  {showCalendar ? "Hide Calendar" : "Calendar"}
+                </button>
               </div>
 
               <ul className="space-y-2">
@@ -428,50 +439,12 @@ export default function MembersPage() {
                   subtitle="Find and connect"
                   Icon={Users}
                 />
-                <QuickActionTile
-                  to="/members#loi-diary"
-                  title="LOI Diary"
-                  subtitle="Lodge of Instruction calendar"
-                  Icon={Calendar}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById("loi-diary");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                />
-              </div>
-            </section>
-
-            {/* LOI Diary embed */}
-            <section
-              id="loi-diary"
-              className="mb-6 bg-white border border-[#BFA76F] rounded-lg overflow-hidden scroll-mt-28"
-            >
-              <div className="p-4 border-b border-[#BFA76F] bg-[#BFA76F]/10 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-[#0B1831]">LOI Diary</h3>
-                  <p className="text-sm text-neutral-700">Lodge of Instruction calendar</p>
-                </div>
-              </div>
-              <div className="bg-neutral-50 w-full h-[900px]">
-                <iframe
-                  title="LOI Diary"
-                  src="https://loi-calendar.netlify.app/"
-                  width="100%"
-                  height="100%"
-                  style={{
-                    border: "none",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                  }}
-                  allowFullScreen
-                />
               </div>
             </section>
 
             <div className="bg-white border border-[#BFA76F] rounded-lg">
-              <div className="p-4 border-b border-[#BFA76F] bg-[#BFA76F]/10 flex items-center gap-3">
-                <div className="relative flex-1">
+              <div className="p-4 border-b border-[#BFA76F] bg-[#BFA76F]/10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="relative flex-1 min-w-[240px]">
                   <Search className="w-4 h-4 text-[#0B1831] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     value={query}
@@ -481,7 +454,41 @@ export default function MembersPage() {
                     className="w-full pl-9 pr-3 py-2 text-sm rounded border border-[#BFA76F] focus:outline-none focus:ring-2 focus:ring-[#BFA76F]"
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar((v) => !v)}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded border border-[#BFA76F] bg-white text-[#0B1831] hover:bg-[#BFA76F]/10 focus:outline-none focus:ring-2 focus:ring-[#BFA76F] text-sm font-semibold"
+                  aria-pressed={showCalendar}
+                >
+                  <Calendar className="w-4 h-4" />
+                  {showCalendar ? "Hide Calendar" : "Calendar"}
+                </button>
               </div>
+
+              {showCalendar && (
+                <div className="px-4 pb-4">
+                  <div className="bg-neutral-50 border border-[#BFA76F] rounded-lg overflow-hidden">
+                    <div className="p-3 border-b border-[#BFA76F] bg-[#BFA76F]/10">
+                      <div className="text-sm font-semibold text-[#0B1831]">Calendar</div>
+                      <div className="text-xs text-neutral-700">Lodge of Instruction diary</div>
+                    </div>
+                    <div className="w-full h-[850px]">
+                      <iframe
+                        title="LOI Diary"
+                        src="https://loi-calendar.netlify.app/"
+                        width="100%"
+                        height="100%"
+                        style={{
+                          border: "none",
+                          borderRadius: "12px",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        }}
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Selected category chips and results count */}
               <div className="px-4 pt-3 pb-2 flex items-center justify-between flex-wrap gap-3" aria-live="polite">
