@@ -14,7 +14,7 @@ const AuthCallbackPage = () => {
         const { data: session } = await supabase.auth.getSession();
 
         if (session?.session) {
-          navigate("/onboarding"); // or /members if already activated
+          navigate("/members");
         } else {
           navigate("/login");
         }

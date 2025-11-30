@@ -33,23 +33,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // No profile yet: send to onboarding to capture details
-  if (!profile) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  // Pending or inactive profiles go to pending page
-  if (profile.status !== "active") {
+  // Allow through even if profile is missing; only block explicitly inactive
+  if (profile && profile.status !== "active") {
     return <Navigate to="/pending" replace />;
   }
 
-  // Missing name? Force onboarding to complete the profile
-  if (!profile.full_name || !profile.full_name.trim()) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
   // Role check (admins can access member routes)
-  if (requiredRole && profile.role !== requiredRole) {
+  if (requiredRole && profile && profile.role !== requiredRole) {
     if (requiredRole === "member" && profile.role === "admin") {
       // allow
     } else {

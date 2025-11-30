@@ -10,8 +10,6 @@ interface AuthFormProps {
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
-  // ...existing code...
-  // supabase client is now a singleton imported above
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -44,18 +42,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setFormError(null); // Clear any previous form errors
-
-    console.log("🚀 AuthForm: Starting form submission");
-    console.log("📧 AuthForm: Mode:", mode);
-    console.log("📧 AuthForm: Email:", email);
-    console.log("📧 AuthForm: Full name:", fullName);
+    setFormError(null);
 
     try {
-      console.log(`Attempting to ${mode} with email:`, email);
-
       if (mode === "signin") {
-        console.log("🔑 AuthForm: Attempting sign in...");
         const { data, error: authError } =
           await supabase.auth.signInWithPassword({
             email: email.trim(),
@@ -63,29 +53,31 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           });
 
         if (authError) {
-          console.error("Sign in error:", authError);
-          setFormError(authError.message); // Set form-specific error
-          error(authError.message); // Show toast error
+          setFormError(authError.message);
+          error(authError.message);
           throw authError;
         }
 
         if (data.user) {
-          console.log("Sign in successful:", data.user.email);
+          let profileRole: "admin" | "member" | null = null;
 
           if (isInviteFlow) {
             try {
+              const existingProfile = await api.getMemberProfile(data.user.id);
+              profileRole =
+                existingProfile?.role === "admin" ? "admin" : "member";
+
               const resolvedName =
                 fullName ||
                 (data.user.user_metadata?.full_name as string | undefined) ||
                 data.user.email ||
                 "";
 
-              // Try to update; if missing, create an active profile
               await api
                 .updateMemberProfile(data.user.id, {
                   status: "active",
                   full_name: resolvedName,
-                  role: "member",
+                  role: profileRole || "member",
                 })
                 .catch(async () => {
                   await api.createMemberProfile(data.user.id, resolvedName);
@@ -93,42 +85,42 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             } catch (profileErr) {
               console.warn("Invite flow: could not auto-activate profile", profileErr);
             }
+          } else {
+            try {
+              const existingProfile = await api.getMemberProfile(data.user.id);
+              profileRole =
+                existingProfile?.role === "admin" ? "admin" : "member";
+            } catch {
+              profileRole = null;
+            }
           }
 
-          success("✅ Welcome back! Successfully signed in.");
+          success("Welcome back! Successfully signed in.");
 
-          // Give the auth context time to update and route invite flows to onboarding
           setTimeout(() => {
             if (onSuccess) onSuccess();
-            if (isInviteFlow) {
-              window.location.href = "/onboarding";
-            } else {
-              // Force a page reload to ensure clean state
-              window.location.reload();
+            const isAdmin = profileRole === "admin";
+            if (isAdmin) {
+              window.location.href = "/admin";
+              return;
             }
-          }, 500);
+
+            window.location.href = "/members";
+          }, 300);
         } else {
           throw new Error("No user returned from sign in");
         }
       } else {
-        console.log("📝 AuthForm: Starting signup process...");
-
-        // Validate inputs for signup
+        // SIGNUP
         if (!fullName.trim()) {
-          console.error("❌ AuthForm: Full name validation failed");
           throw new Error("Full name is required");
         }
         if (!email.trim()) {
-          console.error("❌ AuthForm: Email validation failed");
           throw new Error("Email is required");
         }
         if (password.length < 6) {
-          console.error("❌ AuthForm: Password validation failed");
           throw new Error("Password must be at least 6 characters");
         }
-
-        console.log("✅ AuthForm: Input validation passed");
-        console.log("Creating new account for:", email);
 
         const { data, error: authError } = await supabase.auth.signUp(
           {
@@ -140,67 +132,35 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           }
         );
 
-        console.log("📤 AuthForm: Supabase signup response received");
-        console.log("📤 AuthForm: Data:", data);
-        console.log("📤 AuthForm: Error:", authError);
-
         if (authError) {
-          console.error("Signup error:", authError);
-          setFormError(authError.message); // Set form-specific error
-          error(authError.message); // Show toast error
+          setFormError(authError.message);
+          error(authError.message);
           throw authError;
         }
 
-        console.log("Sign up response:", data);
-
         if (data.user) {
-          console.log(
-            "✅ AuthForm: User created successfully:",
-            data.user.email
-          );
-          console.log("User created successfully:", data.user.email);
-
-          // inside AuthContext.tsx
           try {
-            // Try update first (if profile exists), else create, and force active
-            try {
-              await api.updateMemberProfile(data.user.id, {
-                full_name: fullName,
-                status: "active",
-                role: "member",
-              });
-            } catch {
-              await api.createMemberProfile(data.user.id, fullName);
-            }
-            success("Account created and activated. Welcome!");
-            navigate("/members");
-          } catch (profileError) {
-            console.warn(
-              "⚠️ AuthForm: Could not create member profile:",
-              profileError
-            );
-            success("Account created! Redirecting you to the Members area.");
-            navigate("/members");
+            await api.updateMemberProfile(data.user.id, {
+              full_name: fullName,
+              status: "active",
+              role: "member",
+            });
+          } catch {
+            await api.createMemberProfile(data.user.id, fullName);
           }
+          success("Account created and activated. Welcome!");
+          navigate("/members");
         } else {
-          console.warn("⚠️ AuthForm: No user returned from signup");
-          console.warn("No user returned from signup");
           success(
             "Account creation initiated. Please check your email if confirmation is required."
           );
         }
       }
-    } catch (err) {
-      console.error("💥 AuthForm: Caught error in handleSubmit:", err);
-      console.error("Auth error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred";
-      console.error("💥 AuthForm: Setting form error:", errorMessage);
-      setFormError(errorMessage); // Set form-specific error
-      console.error("💥 AuthForm: Calling error toast:", errorMessage);
-      error(errorMessage); // Show toast error
+    } catch (err: any) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setFormError(errorMessage);
+      error(errorMessage);
     } finally {
-      console.log("🏁 AuthForm: Setting loading to false");
       setLoading(false);
     }
   };
@@ -217,22 +177,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         {mode === "signup" && (
           <div>
             <label
-              htmlFor="fullName\"
+              htmlFor="fullName"
               className="block text-sm font-medium text-primary-600"
             >
               Full Name *
             </label>
-          <input
-            id="fullName"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required={mode === "signup"}
-            placeholder="Enter your full name"
-            className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
-          />
-        </div>
-      )}
+            <input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required={mode === "signup"}
+              placeholder="Enter your full name"
+              className="mt-1 block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-500 focus:border-secondary-500 focus:ring-secondary-500"
+            />
+          </div>
+        )}
 
         <div>
           <label
@@ -257,7 +217,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             htmlFor="password"
             className="block text-sm font-medium text-primary-600"
           >
-            Password *{" "}
+            Password{" "}
             {mode === "signup" && (
               <span className="text-sm text-neutral-500">
                 (min 6 characters)
@@ -303,7 +263,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             type="button"
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
-              // Clear form when switching modes except email
               setPassword("");
               setFullName("");
             }}
@@ -320,4 +279,3 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 };
 
 export default AuthForm;
-

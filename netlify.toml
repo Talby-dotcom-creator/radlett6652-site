@@ -11,6 +11,12 @@
   to = "/index.html"
   status = 200
 
+# Force old onboarding links to members
+[[redirects]]
+  from = "/onboarding"
+  to = "/members"
+  status = 301
+
 # Headers for security and performance
 [[headers]]
   for = "/*"

@@ -7,7 +7,6 @@ import ScrollToTop from "./components/ScrollToTop";
 // Public pages
 import HomePage from "./pages/HomePage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
-import OnboardingPage from "./pages/OnboardingPage";
 import WelcomePage from "./pages/WelcomePage";
 import AboutPage from "./pages/AboutPage";
 import JoinPage from "./pages/JoinPage";
@@ -115,7 +114,7 @@ const App: React.FC = () => {
                 />
 
                 <Route path="/welcome" element={<WelcomePage />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/onboarding" element={<Navigate to="/members" replace />} />
                 <Route path="/welcome" element={<WelcomePage />} />
                 {/* Fallback redirect for unknown public routes */}
                 <Route path="*" element={<Navigate to="/" replace />} />

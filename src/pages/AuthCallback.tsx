@@ -21,7 +21,7 @@ export default function AuthCallback() {
         console.error("Auth callback error:", error);
         navigate("/login");
       } else {
-        navigate("/onboarding");
+        navigate("/members");
       }
     };
 

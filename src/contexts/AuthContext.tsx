@@ -33,85 +33,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
   const navigate = useNavigate();
 
-  // ---------------------------------------------------------------------------
-  // 🔍 Load member profile from Supabase
-  // ---------------------------------------------------------------------------
-  const loadProfile = async (user: User) => {
+  const loadProfile = async (current: User) => {
     try {
-      console.log("🔍 loadProfile() running for:", user.email);
-      let prof = await api.getMemberProfile(user.id);
+      let prof = await api.getMemberProfile(current.id);
 
-      // Backfill missing names to avoid blank directory entries
-      if (
-        prof &&
-        (!prof.full_name || !prof.full_name.trim()) &&
-        user.email
-      ) {
-        const fallbackName = user.email.split("@")[0] || "Member";
+      // Backfill missing name with email prefix to avoid blanks
+      if (prof && (!prof.full_name || !prof.full_name.trim()) && current.email) {
+        const fallbackName = current.email.split("@")[0] || "Member";
         try {
-          await api.updateMemberProfile(user.id, {
+          await api.updateMemberProfile(current.id, {
             full_name: fallbackName,
             status: prof.status ?? "active",
           });
           prof = { ...prof, full_name: fallbackName, status: "active" };
-        } catch (backfillErr) {
-          console.warn("⚠️ Could not backfill full_name:", backfillErr);
+        } catch (err) {
+          console.warn("Could not backfill full_name:", err);
         }
       }
 
-      if (prof) {
-        console.log("✅ Profile loaded:", prof.full_name, prof.role, prof.status);
-        setProfile(prof);
-      } else {
-        console.warn("⚠️ No profile found for user:", user.id);
-        setProfile(null);
-      }
+      setProfile(prof ?? null);
     } catch (err: any) {
-      console.error("💥 Error loading profile:", err.message);
+      console.error("Error loading profile:", err.message);
       setProfile(null);
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // 🧠 Initialize session once on mount
-  // ---------------------------------------------------------------------------
   useEffect(() => {
-    console.log("🧠 AuthContext useEffect mounted");
     let isMounted = true;
-
     const getInitialSession = async () => {
       try {
-        console.log("🚀 Starting getInitialSession()");
         const {
           data: { session },
           error,
         } = await supabase.auth.getSession();
-
         if (error) throw error;
-
         if (!isMounted) return;
 
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          // ✅ Detect temporary password state
           const pwReset = !!currentUser?.app_metadata?.provider_token;
           setNeedsPasswordReset(pwReset);
-
-          // 🚦 Redirect to onboarding if invite_pending
-          if (currentUser.user_metadata?.invite_pending) {
-            navigate("/onboarding");
-          }
-
-          // ✅ Load the profile asynchronously
           setTimeout(() => loadProfile(currentUser), 0);
         } else {
           setProfile(null);
           setNeedsPasswordReset(false);
         }
       } catch (err: any) {
-        console.error("❌ Error in getInitialSession:", err.message);
+        console.error("Error in getInitialSession:", err.message);
         setUser(null);
         setProfile(null);
         setNeedsPasswordReset(false);
@@ -122,14 +92,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     getInitialSession();
 
-    // -------------------------------------------------------------------------
-    // 🔄 Subscribe to auth state changes
-    // -------------------------------------------------------------------------
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("🔄 onAuthStateChange event:", event, session?.user?.email);
-
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
@@ -147,47 +112,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => {
-      console.log("🧹 Cleaning up AuthContext");
       isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // 🚪 Sign out logic
-  // ---------------------------------------------------------------------------
   const signOut = async () => {
-    console.log("🚪 Signing out...");
     try {
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
       setNeedsPasswordReset(false);
-      console.log("✅ Signed out successfully");
     } catch (err: any) {
-      console.error("❌ Error signing out:", err.message);
+      console.error("Error signing out:", err.message);
     }
   };
 
-  // Allow manual profile refresh from callers (used in some admin/dev pages)
   const refreshProfile = async () => {
     if (user) {
       await loadProfile(user);
     }
   };
-
-  // Force a reload cycle (sets loading and re-fetches profile if possible)
-  const forceRefresh = () => {
-    setLoading(true);
-    if (user) {
-      loadProfile(user).finally(() => setLoading(false));
-    } else {
-      setProfile(null);
-      setLoading(false);
-    }
-  };
-
-  const isAdmin = profile?.role === "admin";
 
   return (
     <AuthContext.Provider
@@ -195,11 +140,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         profile,
         loading,
-        isAdmin,
+        isAdmin: profile?.role === "admin",
         needsPasswordReset,
         signOut,
         refreshProfile,
-        forceRefresh,
+        forceRefresh: refreshProfile,
       }}
     >
       {children}
@@ -208,3 +153,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useAuth = () => useContext(AuthContext);
+
