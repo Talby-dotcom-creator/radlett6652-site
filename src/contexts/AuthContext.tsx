@@ -62,11 +62,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (prof) {
         console.log("✅ Profile loaded:", prof.full_name, prof.role, prof.status);
         setProfile(prof);
-
-        // If the profile is missing a name, push to onboarding to complete it
-        if ((!prof.full_name || !prof.full_name.trim()) && window.location.pathname !== "/onboarding") {
-          navigate("/onboarding", { replace: true });
-        }
       } else {
         console.warn("⚠️ No profile found for user:", user.id);
         setProfile(null);
