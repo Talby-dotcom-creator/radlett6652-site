@@ -75,7 +75,8 @@ export const api = {
 
   async createMemberProfile(
     userId: string,
-    fullName: string
+    fullName: string,
+    role: "member" | "admin" = "member"
   ): Promise<MemberProfile> {
     const insertObj: Omit<MemberProfile, "id"> = {
       user_id: userId,
@@ -84,7 +85,7 @@ export const api = {
       join_date: new Date().toISOString() || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      role: "member" as "member" | "admin",
+      role: role === "admin" ? "admin" : "member",
       contact_email: null,
       contact_phone: null,
       email_verified: null,

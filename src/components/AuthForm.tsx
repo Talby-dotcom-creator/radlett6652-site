@@ -80,7 +80,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                   role: profileRole || "member",
                 })
                 .catch(async () => {
-                  await api.createMemberProfile(data.user.id, resolvedName);
+              const adminEmails = [
+                "admin@radlettfreemasons.org.uk",
+                "radlettlodge6652@gmail.com",
+                "paultalbot@fastmail.co.uk",
+              ];
+              const asAdmin = adminEmails.includes(
+                (data.user.email ?? "").toLowerCase()
+              );
+              await api.createMemberProfile(
+                data.user.id,
+                resolvedName,
+                asAdmin ? "admin" : "member"
+              );
                 });
             } catch (profileErr) {
               console.warn("Invite flow: could not auto-activate profile", profileErr);
@@ -140,10 +152,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
         if (data.user) {
           try {
+            const adminEmails = [
+              "admin@radlettfreemasons.org.uk",
+              "radlettlodge6652@gmail.com",
+              "paultalbot@fastmail.co.uk",
+            ];
+            const asAdmin = adminEmails.includes(
+              (data.user.email ?? "").toLowerCase()
+            );
             await api.updateMemberProfile(data.user.id, {
               full_name: fullName,
               status: "active",
-              role: "member",
+              role: asAdmin ? "admin" : "member",
             });
           } catch {
             await api.createMemberProfile(data.user.id, fullName);
