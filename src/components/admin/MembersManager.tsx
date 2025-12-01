@@ -36,23 +36,23 @@ const EditMemberModal: React.FC<EditModalProps> = ({ profile, onClose, onSave })
       <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
         <h3 className="text-xl font-semibold text-primary-600 mb-4">Edit Member</h3>
 
-        <div className="space-y-4">
+        <div className="space-y-4 text-neutral-900">
           <div>
-            <label className="block text-sm font-medium">Full Name</label>
+            <label className="block text-sm font-medium text-black">Full Name</label>
             <input
               type="text"
               value={form.full_name || ""}
               onChange={(e) => update("full_name", e.target.value)}
-              className="w-full border px-3 py-2 rounded"
+              className="w-full border px-3 py-2 rounded text-black bg-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Role</label>
+            <label className="block text-sm font-medium text-black">Role</label>
             <select
               value={form.role || "member"}
               onChange={(e) => update("role", e.target.value)}
-              className="w-full border px-3 py-2 rounded"
+              className="w-full border px-3 py-2 rounded text-black bg-white"
             >
               <option value="member">Member</option>
               <option value="admin">Admin</option>
@@ -60,21 +60,21 @@ const EditMemberModal: React.FC<EditModalProps> = ({ profile, onClose, onSave })
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Position (optional)</label>
+            <label className="block text-sm font-medium text-black">Position (optional)</label>
             <input
               type="text"
               value={form.position || ""}
               onChange={(e) => update("position", e.target.value)}
-              className="w-full border px-3 py-2 rounded"
+              className="w-full border px-3 py-2 rounded text-black bg-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Notes (private admin-only)</label>
+            <label className="block text-sm font-medium text-black">Notes (private admin-only)</label>
             <textarea
               value={form.notes || ""}
               onChange={(e) => update("notes", e.target.value)}
-              className="w-full border px-3 py-2 rounded"
+              className="w-full border px-3 py-2 rounded text-black bg-white"
               rows={4}
             />
           </div>
