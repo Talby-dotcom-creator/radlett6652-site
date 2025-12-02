@@ -99,6 +99,7 @@ const HomePage: React.FC = () => {
         title="Radlett Lodge No. 6652 - Freemasons | Brotherhood, Charity & Tradition"
         description="Welcome to Radlett Lodge No. 6652, a Masonic Lodge in Hertfordshire under the United Grand Lodge of England. Discover our history, values, and how to join."
         keywords="Radlett Lodge 6652, Freemasonry, Hertfordshire, United Grand Lodge England, Masonic Lodge, Brotherhood, Charity, Tradition, Join Freemasons"
+        canonical="https://radlettfreemasons.org.uk/"
       />
 
       {/* 🏛 HERO */}

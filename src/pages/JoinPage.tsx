@@ -9,6 +9,7 @@ import FaqItem from "../components/FaqItem";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { cmsApi } from "../lib/cmsApi";
 import { FAQItem } from "../types";
+import SEOHead from "../components/SEOHead";
 
 const JoinPage: React.FC = () => {
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
@@ -46,9 +47,9 @@ const JoinPage: React.FC = () => {
     question: cmsFAQ.question,
     answer: cmsFAQ.answer,
   });
-
   return (
     <>
+      <SEOHead title="Join Radlett Freemasons | Become a Member" description="Discover how to join Radlett Freemasons Lodge No. 6652, see requirements, next steps, and how we welcome new members." canonical="https://radlettfreemasons.org.uk/join" />
       {/* DARK HERO SECTION */}
       <section className="relative min-h-[70vh] bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 overflow-hidden">
         {/* Animated Background Elements */}

@@ -8,6 +8,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
 import { CMSOfficer } from "../types";
 import { createRng } from "../utils/deterministic";
+import SEOHead from "../components/SEOHead";
 import {
   Sparkles,
   Users,
@@ -91,6 +92,7 @@ const AboutPage: React.FC = () => {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
+      <SEOHead title="About Radlett Freemasons Lodge No. 6652" description="Learn the history, values, officers, and community of Radlett Lodge No. 6652 in Hertfordshire." canonical="https://radlettfreemasons.org.uk/about" />
       {/* Premium Dark Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950" />
 
@@ -1143,3 +1145,7 @@ const AboutPage: React.FC = () => {
 };
 
 export default AboutPage;
+
+
+
+

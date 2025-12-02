@@ -184,10 +184,11 @@ function PillarsPageInner() {
 
   return (
     <>
-      {/* ✅ SEO Meta Block */}
+      {/* SEO Meta Block */}
       <SEOHead
-        title="The Pillars – Radlett Lodge No. 6652"
+        title="The Pillars | Radlett Lodge No. 6652"
         description="Insights, reflections, and stories from members of Radlett Lodge No. 6652, exploring the values, history, and community of Freemasonry."
+        canonical="https://radlettfreemasons.org.uk/pillars"
       />
 
       {/* Animated Background */}

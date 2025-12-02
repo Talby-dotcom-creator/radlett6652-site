@@ -8,6 +8,7 @@ import type { CMSBlogPost } from "../types";
 import ContentPreviewModal from "../components/ContentPreviewModal";
 import { Link } from "react-router-dom";
 import { createRng } from "../utils/deterministic";
+import SEOHead from "../components/SEOHead";
 
 // Copy used when no live snippet is available
 const FALLBACK_HERO_TEXT =
@@ -197,7 +198,12 @@ const SnippetsPage: React.FC = () => {
 
   return (
     <>
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 overflow-hidden">
+      <SEOHead
+        title="Weekly Snippets | Radlett Freemasons"
+        description="Weekly reflections and snippets from Radlett Freemasons Lodge No. 6652. Explore recent and upcoming messages."
+        canonical="https://radlettfreemasons.org.uk/snippets"
+      />
+      <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 overflow-hidden">
       {/* Background texture */}
       <div className="absolute inset-0 opacity-10">
         <div
