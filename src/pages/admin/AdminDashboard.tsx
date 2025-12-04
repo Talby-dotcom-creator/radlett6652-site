@@ -17,6 +17,10 @@ import {
   Image,
   Clock,
   Settings,
+  ClipboardList,
+  CheckSquare,
+  X,
+  Plus,
 } from "lucide-react";
 
 // -----------------------------------------------------
@@ -52,6 +56,7 @@ const DashboardButton: React.FC<DashboardButtonProps> = ({
 // -----------------------------------------------------
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  type TodoItem = { id: string; text: string; done: boolean };
 
   // All dashboard count states
   const [eventCount, setEventCount] = useState(0);
@@ -65,6 +70,55 @@ const AdminDashboard: React.FC = () => {
   const [documentCount, setDocumentCount] = useState(0);
   const [minutesCount, setMinutesCount] = useState(0);
   const [mediaCount, setMediaCount] = useState(0);
+  const [showTodo, setShowTodo] = useState(false);
+  const [todoItems, setTodoItems] = useState<TodoItem[]>([]);
+  const [newTodo, setNewTodo] = useState("");
+
+  // Simple local to-do storage for admins
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("admin.todo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setTodoItems(parsed);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("admin.todo", JSON.stringify(todoItems));
+    } catch {
+      /* ignore */
+    }
+  }, [todoItems]);
+
+  const addTodo = () => {
+    const text = newTodo.trim();
+    if (!text) return;
+    const id =
+      (typeof crypto !== "undefined" && (crypto as any).randomUUID?.()) ||
+      `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setTodoItems((prev) => [
+      { id, text, done: false },
+      ...prev,
+    ]);
+    setNewTodo("");
+  };
+
+  const toggleTodo = (id: string) => {
+    setTodoItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, done: !item.done } : item
+      )
+    );
+  };
+
+  const removeTodo = (id: string) => {
+    setTodoItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
   // -----------------------------------------------------
   // Load counts from Supabase (all tables)
@@ -199,6 +253,24 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="p-6">
+      {/* Top bar with quick To-Do access */}
+      <section className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-primary-800">Admin Dashboard</h1>
+          <p className="text-sm text-neutral-600">
+            Quick links and an admin-only to-do list to track website tasks.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowTodo(true)}
+          className="inline-flex items-center gap-2 rounded-lg border border-[#BFA76F]/60 bg-white px-4 py-2 text-sm font-semibold text-[#0B1831] shadow-sm hover:bg-[#BFA76F]/10 focus:outline-none focus:ring-2 focus:ring-[#BFA76F]"
+        >
+          <ClipboardList className="w-4 h-4" />
+          Admin To-Do
+        </button>
+      </section>
+
       {/* -------------------------------------------------
            CONTENT SECTION
       ------------------------------------------------- */}
@@ -337,6 +409,89 @@ const AdminDashboard: React.FC = () => {
           />
         </div>
       </section>
+
+      {showTodo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-[#BFA76F]/40">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-[#BFA76F]" />
+                <div>
+                  <h3 className="text-lg font-semibold text-[#0B1831]">Admin To-Do</h3>
+                  <p className="text-xs text-neutral-600">Private to this browser (local)</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTodo(false)}
+                className="p-2 rounded-full hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#BFA76F]"
+                aria-label="Close to-do"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4">
+              <div className="flex gap-2">
+                <input
+                  value={newTodo}
+                  onChange={(e) => setNewTodo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") addTodo();
+                  }}
+                  placeholder="Add a task for the website..."
+                  className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#BFA76F]"
+                />
+                <button
+                  type="button"
+                  onClick={addTodo}
+                  className="inline-flex items-center justify-center gap-1 rounded-lg bg-[#BFA76F] px-3 py-2 text-sm font-semibold text-white shadow hover:bg-[#a18f5b]"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add
+                </button>
+              </div>
+
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                {todoItems.length === 0 && (
+                  <p className="text-sm text-neutral-600">
+                    Nothing yet. Add tasks you want to track here.
+                  </p>
+                )}
+                {todoItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 bg-neutral-50"
+                  >
+                    <button
+                      onClick={() => toggleTodo(item.id)}
+                      className={`p-1 rounded-md border ${
+                        item.done
+                          ? "bg-green-50 border-green-300 text-green-700"
+                          : "border-neutral-300 text-neutral-600"
+                      } hover:bg-neutral-100`}
+                      aria-label={item.done ? "Mark as not done" : "Mark as done"}
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                    </button>
+                    <div className="flex-1 text-sm">
+                      <span className={item.done ? "line-through text-neutral-500" : ""}>
+                        {item.text}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeTodo(item.id)}
+                      className="p-1 rounded-md text-neutral-500 hover:text-red-600 hover:bg-red-50"
+                      aria-label="Delete task"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
