@@ -204,12 +204,14 @@ const HomePage: React.FC = () => {
               Charity Raised
             </h3>
             <p className="text-neutral-300 text-sm">
-              <span>£52M+ From UGLE annually</span>
+              <span>GBP 53M annually*</span>
             </p>
           </div>
         </div>
+        <p className="text-center text-neutral-300 text-xs mt-3">
+          * Freemasonry raises GBP 52M+ a year though it's Masonic charitable foundation
+        </p>
       </section>
-
       <SectionBreather variant="minimal" />
 
       {/* 1. Welcome - Introduction to who we are */}

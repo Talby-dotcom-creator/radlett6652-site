@@ -31,6 +31,8 @@ import {
   BookOpen,
   Columns3,
   FolderOpen,
+  CheckSquare,
+  X,
 } from "lucide-react";
 import SnippetsManager from "../components/admin/SnippetsManager";
 
@@ -64,6 +66,13 @@ type TabType =
   | "pages"
   | "media"
   | "members";
+
+type TodoItem = {
+  id: string;
+  text: string;
+  completedDate?: string | null;
+  createdAt: string;
+};
 
 // Demo data for when database is not connected
 const demoEvents: LodgeEvent[] = [
@@ -298,6 +307,10 @@ const CMSAdminPage: React.FC = () => {
     []
   );
   const [selectedFAQs, setSelectedFAQs] = useState<string[]>([]);
+  const [showTodoPanel, setShowTodoPanel] = useState(false);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [newTodoText, setNewTodoText] = useState("");
+  const [newTodoCompletedDate, setNewTodoCompletedDate] = useState("");
 
   // Preview states
   const [showPreview, setShowPreview] = useState(false);
@@ -423,6 +436,48 @@ const CMSAdminPage: React.FC = () => {
   useEffect(() => {
     loadResources();
   }, [loadResources]);
+
+  // ===========================================================================
+  // TO-DO PANEL HANDLERS
+  // ===========================================================================
+  const handleAddTodo = useCallback(() => {
+    const text = newTodoText.trim();
+    if (!text) return;
+
+    const completedDate = newTodoCompletedDate
+      ? new Date(newTodoCompletedDate).toISOString()
+      : undefined;
+
+    setTodos((prev) => [
+      {
+        id: `todo-${Date.now()}`,
+        text,
+        completedDate,
+        createdAt: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+
+    setNewTodoText("");
+    setNewTodoCompletedDate("");
+  }, [newTodoCompletedDate, newTodoText]);
+
+  const handleMarkTodoComplete = useCallback((id: string) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id
+          ? {
+              ...todo,
+              completedDate: todo.completedDate || new Date().toISOString(),
+            }
+          : todo
+      )
+    );
+  }, []);
+
+  const handleDeleteTodo = useCallback((id: string) => {
+    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+  }, []);
 
   // Load counts for all dashboard navigation buttons
   const loadCounts = useCallback(async () => {
@@ -1181,6 +1236,12 @@ const CMSAdminPage: React.FC = () => {
             return (
               <>
                 <DashboardButton
+                  icon={<CheckSquare className="w-4 h-4" />}
+                  label="To-Do"
+                  onClick={() => setShowTodoPanel(true)}
+                  isActive={showTodoPanel}
+                />
+                <DashboardButton
                   icon={<Calendar className="w-4 h-4" />}
                   label={`Events (${counts.events})`}
                   onClick={() => setActiveTab("events")}
@@ -1265,6 +1326,121 @@ const CMSAdminPage: React.FC = () => {
             );
           })()}
         </div>
+
+        {/* To-Do Notes */}
+        {showTodoPanel && (
+          <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-lg font-heading font-semibold text-primary-700">
+                  Admin To-Do Notes
+                </h2>
+                <p className="text-sm text-neutral-600">
+                  Jot quick tasks and mark them complete with a date.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowTodoPanel(false)}
+                  className="flex items-center gap-1"
+                >
+                  <X className="w-4 h-4" />
+                  Close
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end mb-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-sm text-neutral-700 block mb-1">
+                    Note
+                  </label>
+                  <input
+                    type="text"
+                    value={newTodoText}
+                    onChange={(e) => setNewTodoText(e.target.value)}
+                    placeholder="E.g. Upload minutes PDF, schedule news post..."
+                    className="w-full border border-neutral-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-neutral-700 block mb-1">
+                    Completed date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={newTodoCompletedDate}
+                    onChange={(e) => setNewTodoCompletedDate(e.target.value)}
+                    className="w-full border border-neutral-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
+                  />
+                </div>
+              </div>
+              <div className="flex md:justify-end">
+                <Button
+                  onClick={handleAddTodo}
+                  className="flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  Add To-Do
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {todos.length === 0 ? (
+                <p className="text-sm text-neutral-600">
+                  No to-do items yet. Add your first note above.
+                </p>
+              ) : (
+                todos.map((todo) => (
+                  <div
+                    key={todo.id}
+                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white border border-neutral-200 rounded-md p-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-neutral-800 font-medium">
+                        {todo.text}
+                      </div>
+                      <div className="text-xs text-neutral-600 flex gap-3">
+                        <span>
+                          Created: {formatDateUK(todo.createdAt || "")}
+                        </span>
+                        <span>
+                          Completed:{" "}
+                          {todo.completedDate
+                            ? formatDateUK(todo.completedDate)
+                            : "Pending"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {!todo.completedDate && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMarkTodoComplete(todo.id)}
+                        >
+                          Mark Complete (today)
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:border-red-300"
+                        onClick={() => handleDeleteTodo(todo.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Members Tab */}
         {activeTab === "members" && (
