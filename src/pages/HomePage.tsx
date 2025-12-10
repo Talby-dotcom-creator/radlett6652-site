@@ -204,7 +204,7 @@ const HomePage: React.FC = () => {
               Charity Raised
             </h3>
             <p className="text-neutral-300 text-sm">
-              <span>GBP 53M annually*</span>
+              <span>GBP 52+M annually*</span>
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import SectionHeading from "../components/SectionHeading";
 import ContactForm from "../components/ContactForm";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 const ContactPage: React.FC = () => {
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -39,6 +40,7 @@ const ContactPage: React.FC = () => {
   const contactEmail = settings.contact_email || "";
   const contactPhone = settings.contact_phone || "";
   const sanitizedPhone = contactPhone ? contactPhone.replace(/\s+/g, "") : "";
+  const recaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
   return (
     <>
@@ -129,7 +131,16 @@ const ContactPage: React.FC = () => {
                 <h3 className="font-heading font-semibold text-xl text-primary-600 mb-4">
                   Contact Form
                 </h3>
-                <ContactForm />
+                <GoogleReCaptchaProvider
+                  reCaptchaKey={recaptchaKey || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+                  scriptProps={{
+                    async: true,
+                    defer: true,
+                    appendTo: "head",
+                  }}
+                >
+                  <ContactForm />
+                </GoogleReCaptchaProvider>
               </div>
 
               {/* Static Map Section */}
