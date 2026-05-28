@@ -75,24 +75,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
               await api
                 .updateMemberProfile(data.user.id, {
-                  status: "active",
                   full_name: resolvedName,
-                  role: profileRole || "member",
                 })
                 .catch(async () => {
-              const adminEmails = [
-                "admin@radlettfreemasons.org.uk",
-                "radlettlodge6652@gmail.com",
-                "paultalbot@fastmail.co.uk",
-              ];
-              const asAdmin = adminEmails.includes(
-                (data.user.email ?? "").toLowerCase()
-              );
-              await api.createMemberProfile(
-                data.user.id,
-                resolvedName,
-                asAdmin ? "admin" : "member"
-              );
+                  await api.createMemberProfile(data.user.id, resolvedName);
                 });
             } catch (profileErr) {
               console.warn("Invite flow: could not auto-activate profile", profileErr);
@@ -134,15 +120,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           throw new Error("Password must be at least 6 characters");
         }
 
-        const { data, error: authError } = await supabase.auth.signUp(
-          {
-            email: email.trim(),
-            password,
-          },
-          {
+        const { data, error: authError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
             emailRedirectTo: `${window.location.origin}/login?mode=signin&from=signup-email`,
-          }
-        );
+            data: {
+              full_name: fullName.trim(),
+            },
+          },
+        });
 
         if (authError) {
           setFormError(authError.message);
@@ -150,29 +137,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           throw authError;
         }
 
-        if (data.user) {
+        if (data.user && data.session) {
           try {
-            const adminEmails = [
-              "admin@radlettfreemasons.org.uk",
-              "radlettlodge6652@gmail.com",
-              "paultalbot@fastmail.co.uk",
-            ];
-            const asAdmin = adminEmails.includes(
-              (data.user.email ?? "").toLowerCase()
-            );
             await api.updateMemberProfile(data.user.id, {
-              full_name: fullName,
-              status: "active",
-              role: asAdmin ? "admin" : "member",
+              full_name: fullName.trim(),
             });
           } catch {
-            await api.createMemberProfile(data.user.id, fullName);
+            await api.createMemberProfile(data.user.id, fullName.trim());
           }
-          success("Account created and activated. Welcome!");
-          navigate("/members");
+          success("Account created. Your membership is pending approval.");
+          navigate("/pending");
         } else {
           success(
-            "Account creation initiated. Please check your email if confirmation is required."
+            "Account creation initiated. Please check your email, then sign in to complete your pending member profile."
           );
         }
       }

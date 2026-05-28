@@ -1,6 +1,5 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { MemberProfile } from "../types";
@@ -27,23 +26,14 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const adminEmails = [
-    "admin@radlettfreemasons.org.uk",
-    "radlettlodge6652@gmail.com",
-    "paultalbot@fastmail.co.uk",
-  ];
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
-  const navigate = useNavigate();
 
   const loadProfile = async (current: User) => {
     try {
       let prof = await api.getMemberProfile(current.id);
-      const desiredRole = adminEmails.includes((current.email ?? "").toLowerCase())
-        ? "admin"
-        : "member";
 
       // Backfill missing name with email prefix to avoid blanks
       if (prof && (!prof.full_name || !prof.full_name.trim()) && current.email) {
@@ -64,18 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const fallbackName =
           current.email?.split("@")[0] || current.user_metadata?.full_name || "Member";
         try {
-          prof = await api.createMemberProfile(current.id, fallbackName, desiredRole);
+          prof = await api.createMemberProfile(current.id, fallbackName);
         } catch (createErr) {
           console.warn("Could not create profile on load:", createErr);
-        }
-      } else if (desiredRole === "admin" && prof.role !== "admin") {
-        try {
-          prof = await api.updateMemberProfile(current.id, {
-            role: "admin",
-            status: "active",
-          });
-        } catch (updateErr) {
-          console.warn("Could not promote profile to admin:", updateErr);
         }
       }
 

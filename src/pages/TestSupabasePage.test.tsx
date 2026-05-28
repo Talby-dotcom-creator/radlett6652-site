@@ -1,4 +1,8 @@
-jest.mock("../lib/supabase");
+jest.mock("../lib/supabase", () => ({
+  supabase: {
+    from: jest.fn(),
+  },
+}));
 import "@testing-library/jest-dom";
 import { supabase } from "../lib/supabase";
 import { render, screen, waitFor } from "@testing-library/react";

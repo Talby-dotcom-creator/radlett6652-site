@@ -1,11 +1,10 @@
 // src/components/ContactForm.tsx
 import React, { useState } from "react";
-import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import Button from "./Button";
 
-const ContactFormInner: React.FC = () => {
-  // Toggle this to true while testing, false in production
-  const debugMode = true;
+const ContactForm: React.FC = () => {
+  const debugMode = false;
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState({
@@ -43,21 +42,14 @@ const ContactFormInner: React.FC = () => {
       return;
     }
 
-    // reCAPTCHA verification
-    if (!executeRecaptcha) {
-      console.log("Execute recaptcha not yet available");
-      setFormStatus("error");
-      setErrorMessage("Security verification not ready. Please try again.");
-      return;
-    }
-
     setFormStatus("submitting");
     setErrorMessage("");
     setDebugResponse(null);
 
     try {
-      // Get reCAPTCHA token
-      const token = await executeRecaptcha("contact_form");
+      const token = executeRecaptcha
+        ? await executeRecaptcha("contact_form")
+        : undefined;
 
       const response = await fetch(
         "https://neoquuejwgcqueqlcbwj.supabase.co/functions/v1/send-contact-email",
@@ -66,7 +58,7 @@ const ContactFormInner: React.FC = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...formData,
-            recaptchaToken: token, // Add reCAPTCHA token
+            recaptchaToken: token,
           }),
         }
       );
@@ -241,12 +233,12 @@ const ContactFormInner: React.FC = () => {
 
         {formStatus === "success" && (
           <div className="text-green-600 font-medium animate-fadeIn">
-            ✓ Your message has been sent successfully!
+            Your message has been sent successfully.
           </div>
         )}
 
         {formStatus === "error" && (
-          <div className="text-red-600 font-medium animate-fadeIn">✗ {errorMessage}</div>
+          <div className="text-red-600 font-medium animate-fadeIn">{errorMessage}</div>
         )}
       </div>
 
@@ -257,15 +249,6 @@ const ContactFormInner: React.FC = () => {
         </pre>
       )}
     </form>
-  );
-};
-
-const ContactForm: React.FC = () => {
-  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
-      <ContactFormInner />
-    </GoogleReCaptchaProvider>
   );
 };
 

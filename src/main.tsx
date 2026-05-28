@@ -34,8 +34,9 @@ if (import.meta.env.DEV) {
   };
 }
 
-// 🧩 Expose Supabase for console debugging
-(window as any).supabase = supabase;
+if (import.meta.env.DEV) {
+  (window as any).supabase = supabase;
+}
 
 // ✅ Proper rendering with BrowserRouter
 createRoot(document.getElementById("root")!).render(

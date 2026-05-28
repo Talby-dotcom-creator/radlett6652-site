@@ -1,10 +1,9 @@
-// src/pages/SnippetDetailPage.tsx
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
-import type { CMSBlogPost } from "../types";
+import { Link, useParams } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
-import SnippetsManager from "../components/admin/SnippetsManager";
+import { optimizedApi } from "../lib/optimizedApi";
+import type { CMSBlogPost } from "../types";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const SnippetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,17 +16,19 @@ const SnippetDetailPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        if (!id) return;
 
-        // ✅ getBlogPosts fetches all posts — so we filter locally
-        const data = await optimizedApi.getBlogPosts();
-        const found =
-          Array.isArray(data) && data.length > 0
-            ? data.find((p) => p.id === id)
-            : null;
+        if (!id) {
+          setArticle(null);
+          return;
+        }
+
+        const data = await optimizedApi.getSnippets();
+        const found = Array.isArray(data)
+          ? data.find((snippet) => snippet.id === id)
+          : null;
         setArticle(found ?? null);
       } catch (err) {
-        console.error("❌ Failed to load snippet:", err);
+        console.error("Failed to load snippet:", err);
         setError("Could not load snippet.");
       } finally {
         setLoading(false);
@@ -47,13 +48,13 @@ const SnippetDetailPage: React.FC = () => {
         to="/snippets"
         className="text-secondary-600 hover:text-secondary-800 mb-4 inline-block"
       >
-        ← Back
+        Back
       </Link>
       <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
 
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: article.content ?? "" }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content ?? "") }}
       />
     </div>
   );

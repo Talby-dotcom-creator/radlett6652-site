@@ -1,7 +1,7 @@
 import type { Handler } from "@netlify/functions";
 import { createClient } from "@supabase/supabase-js";
 
-type Action = "listUsers" | "invite" | "resetPassword";
+type Action = "listUsers" | "invite" | "resetPassword" | "updateMember";
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
@@ -161,6 +161,49 @@ const handler: Handler = async (event) => {
       const { data, error } = await adminClient.auth.resetPasswordForEmail(email, { redirectTo });
       if (error) throw error;
       return { statusCode: 200, body: JSON.stringify({ data }) };
+    }
+
+    if (action === "updateMember") {
+      const id = body.id as string | undefined;
+      if (!id) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Member profile id is required" }),
+        };
+      }
+
+      const allowedStatuses = new Set(["active", "pending", "inactive", "retired", "suspended"]);
+      const updates: Record<string, unknown> = {};
+
+      if (typeof body.full_name === "string") updates.full_name = body.full_name.trim();
+      if (typeof body.position === "string") updates.position = body.position.trim() || null;
+      if (typeof body.contact_phone === "string") {
+        updates.contact_phone = body.contact_phone.trim() || null;
+      }
+      if (typeof body.profile_photo_url === "string") {
+        updates.profile_photo_url = body.profile_photo_url.trim() || null;
+      }
+      if (body.role === "admin" || body.role === "member") updates.role = body.role;
+      if (typeof body.status === "string" && allowedStatuses.has(body.status)) {
+        updates.status = body.status;
+      }
+
+      if (!Object.keys(updates).length) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "No valid member updates supplied" }),
+        };
+      }
+
+      const { data, error } = await adminClient
+        .from("member_profiles")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+
+      return { statusCode: 200, body: JSON.stringify({ profile: data }) };
     }
 
     return {

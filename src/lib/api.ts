@@ -76,16 +76,16 @@ export const api = {
   async createMemberProfile(
     userId: string,
     fullName: string,
-    role: "member" | "admin" = "member"
+    _role: "member" | "admin" = "member"
   ): Promise<MemberProfile> {
     const insertObj: Omit<MemberProfile, "id"> = {
       user_id: userId,
       full_name: fullName,
-      status: "active",
+      status: "pending",
       join_date: new Date().toISOString() || undefined,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      role: role === "admin" ? "admin" : "member",
+      role: "member",
       contact_email: null,
       contact_phone: null,
       email_verified: null,
@@ -98,7 +98,8 @@ export const api = {
         typeof insertObj.join_date === "string"
           ? insertObj.join_date
           : undefined,
-      role: insertObj.role === "admin" ? "admin" : "member",
+      role: "member",
+      status: "pending",
     };
     const { data, error } = await supabase
       .from("member_profiles")
@@ -118,7 +119,7 @@ export const api = {
           : undefined,
       position: null,
       role: "member",
-      status: "active",
+      status: "pending",
       notes: null,
       email_verified: null,
       grand_lodge_rank: null,
@@ -140,10 +141,8 @@ export const api = {
     ) {
       delete updateObj.join_date;
     }
-    // Ensure role is only 'member' or 'admin'
-    if (updateObj.role !== "member" && updateObj.role !== "admin") {
-      updateObj.role = "member";
-    }
+    delete updateObj.role;
+    delete updateObj.status;
     const { data, error } = await supabase
       .from("member_profiles")
       .update(updateObj as any)
@@ -171,11 +170,8 @@ export const api = {
           : undefined,
       position:
         typeof updateObj.position === "string" ? updateObj.position : null,
-      role: updateObj.role === "admin" ? "admin" : "member",
-      status:
-        updateObj.status === "pending" || updateObj.status === "inactive"
-          ? updateObj.status
-          : "active",
+      role: "member",
+      status: "pending",
       notes: typeof updateObj.notes === "string" ? updateObj.notes : null,
       email_verified:
         typeof updateObj.email_verified === "boolean"

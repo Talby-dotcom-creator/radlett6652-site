@@ -6,10 +6,21 @@ import Button from "./Button";
 import MediaManager from "./cms/MediaManager";
 import { FileText, X } from "lucide-react";
 
+type MinutesFormData = {
+  title: string;
+  meeting_date: string;
+  content: string;
+  document_url?: string;
+};
+
+type MinutesInitialData = Omit<Partial<MeetingMinutes>, "file_url"> & {
+  file_url?: string | null;
+};
+
 interface MinutesFormProps {
-  onSubmit: (data: Omit<MeetingMinutes, "id" | "created_at" | "updated_at">) => Promise<void>;
+  onSubmit: (data: MinutesFormData) => Promise<void>;
   onCancel: () => void;
-  initialData?: Partial<MeetingMinutes>;
+  initialData?: MinutesInitialData;
 }
 
 const MinutesForm: React.FC<MinutesFormProps> = ({ onSubmit, onCancel, initialData }) => {

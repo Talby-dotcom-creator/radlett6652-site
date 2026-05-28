@@ -33,8 +33,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Allow through even if profile is missing; only block explicitly inactive
-  if (profile && profile.status !== "active") {
+  // Authenticated users must have an active profile before entering protected areas.
+  if (!profile || profile.status !== "active") {
     return <Navigate to="/pending" replace />;
   }
 

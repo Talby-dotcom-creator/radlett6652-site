@@ -2,10 +2,9 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { uploadMedia } from "../../lib/supabaseUpload";
 import type { Database } from "../../types/supabase";
-import { Pencil, Mail, RefreshCcw, UserMinus, UserPlus, Shield } from "lucide-react";
+import { Pencil, Mail, RefreshCcw, UserMinus, UserPlus } from "lucide-react";
 import Button from "../Button";
 import LoadingSpinner from "../LoadingSpinner";
-import { setupAdminProfile } from "../../utils/setupAdmin";
 
 type MemberProfile = Database["public"]["Tables"]["member_profiles"]["Row"] & {
   // Derived from auth users list; not stored on member_profiles
@@ -22,7 +21,6 @@ const MembersAdminSection: React.FC = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [actionBusy, setActionBusy] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviting, setInviting] = useState(false);
@@ -135,15 +133,14 @@ const MembersAdminSection: React.FC = () => {
   // ---------------------------------------------------------
   const toggleActive = async (m: MemberProfile) => {
     const nextStatus = m.status === "active" ? "inactive" : "active";
-    const { error } = await supabase
-      .from("member_profiles")
-      .update({ status: nextStatus })
-      .eq("id", m.id);
-
-    if (error) {
-      alert("Failed updating active state");
-    } else {
+    try {
+      await callAdminFn("updateMember", {
+        id: m.id,
+        status: nextStatus,
+      });
       loadMembers();
+    } catch (err: any) {
+      alert("Failed updating active state: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -178,25 +175,22 @@ const MembersAdminSection: React.FC = () => {
 
     setSaving(true);
 
-    const { error } = await supabase
-      .from("member_profiles")
-      .update({
+    try {
+      await callAdminFn("updateMember", {
+        id: editingMember.id,
         full_name,
         position,
         role,
         contact_phone: phone,
         status,
         profile_photo_url: profile_photo_url || null,
-      })
-      .eq("id", editingMember.id);
-
-    setSaving(false);
-
-    if (error) {
-      alert("Failed to save changes");
-    } else {
+      });
       setEditingMember(null);
       loadMembers();
+    } catch (err: any) {
+      alert("Failed to save changes: " + (err?.message || "Unknown error"));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -217,26 +211,6 @@ const MembersAdminSection: React.FC = () => {
         Members ({members.length})
       </h2>
       <div className="flex flex-wrap gap-3 mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={async () => {
-            try {
-              setActionBusy(true);
-              await setupAdminProfile();
-              alert("Admin profile refreshed");
-              loadMembers();
-            } catch (err: any) {
-              alert(err?.message || "Failed to refresh admin profile");
-            } finally {
-              setActionBusy(false);
-            }
-          }}
-          disabled={actionBusy}
-        >
-          <Shield size={14} className="mr-2" />
-          {actionBusy ? "Updating…" : "Refresh my admin profile"}
-        </Button>
         <Button variant="outline" size="sm" onClick={() => loadMembers()} disabled={loading}>
           Reload list
         </Button>

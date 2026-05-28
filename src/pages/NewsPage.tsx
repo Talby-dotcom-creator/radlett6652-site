@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { optimizedApi } from "../lib/optimizedApi";
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const NewsPage: React.FC = () => {
   const [articles, setArticles] = useState<CMSBlogPost[]>([]);
@@ -525,8 +526,9 @@ const NewsPage: React.FC = () => {
                 <div
                   className="prose prose-lg prose-invert max-w-none prose-headings:text-amber-300 prose-p:text-amber-100/80 prose-a:text-amber-400 prose-strong:text-amber-200 prose-img:rounded-lg prose-img:shadow-md"
                   dangerouslySetInnerHTML={{
-                    __html:
-                      selectedArticle.content ?? selectedArticle.summary ?? "",
+                    __html: sanitizeHtml(
+                      selectedArticle.content ?? selectedArticle.summary ?? ""
+                    ),
                   }}
                 />
               </div>

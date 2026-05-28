@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import Button from "../Button";
-import { Pencil, Trash2, Mail, RefreshCw } from "lucide-react";
+import { Pencil, Mail, RefreshCw } from "lucide-react";
 
 interface MemberProfile {
   id: string;
@@ -9,10 +9,10 @@ interface MemberProfile {
   full_name: string;
   role: string;
   position: string | null;
-  email: string | null;
+  email?: string | null;
   contact_email: string | null;
   status: string | null;
-  is_active: boolean | null;
+  is_active?: boolean | null;
   notes: string | null;
   created_at: string | null;
   last_login: string | null;
@@ -100,19 +100,40 @@ const EditMemberModal: React.FC<EditModalProps> = ({ profile, onClose, onSave })
 
 const MembersManager: React.FC = () => {
   const [members, setMembers] = useState<MemberProfile[]>([]);
-  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<MemberProfile | null>(null);
 
-  const loadMembers = async () => {
-    setLoading(true);
+  const callAdminFn = async (action: string, payload: Record<string, unknown> = {}) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error("No active session");
+    }
 
+    const res = await fetch("/.netlify/functions/admin-members", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ action, ...payload }),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.error || `Request failed (${res.status})`);
+    }
+
+    return res.json();
+  };
+
+  const loadMembers = async () => {
     const { data, error } = await supabase
       .from("member_profiles")
       .select("*")
       .order("full_name", { ascending: true });
 
     if (!error && data) setMembers(data as MemberProfile[]);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -121,24 +142,38 @@ const MembersManager: React.FC = () => {
 
   const resendInvite = async (email: string) => {
     const redirectTo = `${window.location.origin}/login?mode=signin&from=invite`;
-    const { error } = await supabase.auth.admin.inviteUserByEmail(email, { redirectTo });
-    if (error) alert("Failed to resend invite");
-    else alert("Invite sent!");
+    try {
+      await callAdminFn("invite", { email, redirectTo });
+      alert("Invite sent!");
+    } catch (err: any) {
+      alert("Failed to resend invite: " + (err?.message || "Unknown error"));
+    }
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) alert("Reset failed");
-    else alert("Password reset email sent");
+    try {
+      await callAdminFn("resetPassword", {
+        email,
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      alert("Password reset email sent");
+    } catch (err: any) {
+      alert("Reset failed: " + (err?.message || "Unknown error"));
+    }
   };
 
   const saveMember = async (updates: Partial<MemberProfile>) => {
     if (!editing) return;
 
-    const { error } = await supabase.from("member_profiles").update(updates).eq("id", editing.id);
-
-    if (error) alert("Failed to update member");
-    else await loadMembers();
+    try {
+      await callAdminFn("updateMember", {
+        id: editing.id,
+        ...updates,
+      });
+      await loadMembers();
+    } catch (err: any) {
+      alert("Failed to update member: " + (err?.message || "Unknown error"));
+    }
   };
 
   return (

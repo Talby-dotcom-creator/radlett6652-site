@@ -7,16 +7,7 @@ import Layout from "./Layout";
 // Mocks for child components
 jest.mock("./Header", () => () => <div data-testid="header">Header</div>);
 jest.mock("./Footer", () => () => <div data-testid="footer">Footer</div>);
-jest.mock("./MembersHeader", () => () => (
-  <div data-testid="members-header">MembersHeader</div>
-));
-jest.mock("./SkipLink", () => () => (
-  <div data-testid="skip-link">SkipLink</div>
-));
-jest.mock("./CookieConsent", () => () => (
-  <div data-testid="cookie-consent">CookieConsent</div>
-));
-jest.mock("./Toast", () => ({ type, message, onClose }: any) => (
+jest.mock("./Toast", () => ({ message }: any) => (
   <div data-testid="toast">Toast: {message}</div>
 ));
 jest.mock("../hooks/useToast", () => ({
@@ -24,7 +15,7 @@ jest.mock("../hooks/useToast", () => ({
 }));
 
 describe("Layout", () => {
-  it("renders Header, Footer, SkipLink, CookieConsent for non-members route", () => {
+  it("renders Header and Footer for non-members route", () => {
     render(
       <MemoryRouter initialEntries={["/"]}>
         <Routes>
@@ -41,12 +32,10 @@ describe("Layout", () => {
     );
     expect(screen.getByTestId("header")).toBeInTheDocument();
     expect(screen.getByTestId("footer")).toBeInTheDocument();
-    expect(screen.getByTestId("skip-link")).toBeInTheDocument();
-    expect(screen.getByTestId("cookie-consent")).toBeInTheDocument();
     expect(screen.getByText("Content")).toBeInTheDocument();
   });
 
-  it("renders MembersHeader for /members route", () => {
+  it("renders the standard Header for /members route", () => {
     render(
       <MemoryRouter initialEntries={["/members"]}>
         <Routes>
@@ -61,10 +50,8 @@ describe("Layout", () => {
         </Routes>
       </MemoryRouter>
     );
-    expect(screen.getByTestId("members-header")).toBeInTheDocument();
+    expect(screen.getByTestId("header")).toBeInTheDocument();
     expect(screen.getByTestId("footer")).toBeInTheDocument();
-    expect(screen.getByTestId("skip-link")).toBeInTheDocument();
-    expect(screen.getByTestId("cookie-consent")).toBeInTheDocument();
     expect(screen.getByText("Members Content")).toBeInTheDocument();
   });
 

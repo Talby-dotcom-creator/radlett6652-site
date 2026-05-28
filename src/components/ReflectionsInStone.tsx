@@ -1,5 +1,6 @@
 // src/components/ReflectionsInStone.tsx
 import React, { useEffect, useRef, useState } from "react";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 type Props = {
   /** path to your wall image in /public (no logo baked in) */
@@ -96,7 +97,7 @@ const ReflectionsInStone: React.FC<Props> = ({
             <div
               className="prose prose-invert max-w-none leading-loose md:leading-loose text-[1.05rem] md:text-[1.125rem]"
               // Weekly text goes here (double-spaced look via leading-loose)
-              dangerouslySetInnerHTML={{ __html: snippetHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(snippetHtml) }}
             />
           ) : (
             <p className="text-stone-100/90 leading-loose">

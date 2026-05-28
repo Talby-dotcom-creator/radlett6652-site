@@ -1,6 +1,5 @@
 // src/lib/optimizedApi.ts
 import { supabase } from "./supabase";
-import type { Database } from "../types/supabase";
 import {
   CMSBlogPost,
   LodgeEvent,
@@ -10,7 +9,6 @@ import {
   MeetingMinutes,
   MemberProfile,
   PageContent,
-  FAQItem,
   SiteSetting,
 } from "../types";
 
@@ -21,37 +19,6 @@ const handleError = (error: any, context: string) => {
   console.error(`[error] ${context}:`, error.message || error);
   throw new Error(`${context} failed: ${error.message || "Unknown error"}`);
 };
-
-/**
- * Resolve whether the DB uses the table name `snippets` or `snippet`.
- * This is defensive: some environments or older migrations may have the
- * singular table name. We try the plural first then fall back to singular.
- */
-async function resolveSnippetsTable(): Promise<"snippets" | "snippet"> {
-  try {
-    // cast to any to avoid strict typed .from() overloads at compile-time
-    const { error } = await supabase
-      .from("snippets" as any)
-      .select("id")
-      .limit(1);
-    if (!error) return "snippets";
-  } catch (e) {
-    // ignore and try singular
-  }
-
-  try {
-    const { error } = await supabase
-      .from("snippet" as any)
-      .select("id")
-      .limit(1);
-    if (!error) return "snippet";
-  } catch (e) {
-    // ignore and fall through
-  }
-
-  // default to plural (this matches the generated types and most code)
-  return "snippets";
-}
 
 /* ------------------------------------------------------
  * Unified Optimized API Layer (Cleaned & Consolidated)
@@ -631,6 +598,46 @@ export const optimizedApi: any = {
       console.error('[profiles] getAllMembers exception:', err);
       return [];
     }
+  },
+
+  async createMemberProfile(userId: string, fullName: string): Promise<MemberProfile> {
+    const { data, error } = await supabase
+      .from("member_profiles")
+      .insert([
+        {
+          user_id: userId,
+          full_name: fullName,
+          role: "member",
+          status: "pending",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) handleError(error, "createMemberProfile");
+    return data as unknown as MemberProfile;
+  },
+
+  async updateMemberProfile(
+    userId: string,
+    updates: Partial<MemberProfile>
+  ): Promise<MemberProfile> {
+    const safeUpdates = { ...updates } as Record<string, unknown>;
+    delete safeUpdates.role;
+    delete safeUpdates.status;
+    delete safeUpdates.user_id;
+
+    const { data, error } = await supabase
+      .from("member_profiles")
+      .update(safeUpdates)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) handleError(error, "updateMemberProfile");
+    return data as unknown as MemberProfile;
   },
 
   /* ---------------- PAGE CONTENT (CMS version) ---------------- */

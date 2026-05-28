@@ -12,6 +12,7 @@ import MediaManager from "../components/MediaManager";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Toast from "../components/Toast";
 import { useToast } from "../hooks/useToast";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 import {
   Plus,
   Calendar,
@@ -1724,7 +1725,7 @@ const CMSAdminPage: React.FC = () => {
                           <div
                             className="prose prose-invert max-w-none"
                             dangerouslySetInnerHTML={{
-                              __html: event.description ?? "",
+                              __html: sanitizeHtml(event.description ?? ""),
                             }}
                           />
                         </div>

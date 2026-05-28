@@ -3,6 +3,12 @@ import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ContactForm from "./ContactForm";
 
+jest.mock("react-google-recaptcha-v3", () => ({
+  useGoogleReCaptcha: () => ({
+    executeRecaptcha: jest.fn().mockResolvedValue("test-recaptcha-token"),
+  }),
+}));
+
 // Mock fetch globally
 beforeAll(() => {
   global.fetch = jest.fn();

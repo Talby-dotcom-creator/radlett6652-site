@@ -18,6 +18,7 @@ import PillarsPage from "./pages/PillarsPage";
 import PillarsArchivePage from "./pages/PillarsArchivePage";
 import PillarPostDetail from "./pages/PillarPostDetail";
 import SnippetsPage from "./pages/SnippetsPage";
+import SnippetDetailPage from "./pages/SnippetDetailPage";
 import SnippetArchivePage from "./pages/archives/SnippetArchivePage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
@@ -76,6 +77,7 @@ const App: React.FC = () => {
                 <Route path="/pillars/:slug" element={<Navigate to="/blog" replace />} />
                 <Route path="/snippets" element={<SnippetsPage />} />
                 <Route path="/snippets/archive" element={<SnippetArchivePage />} />
+                <Route path="/snippets/:id" element={<SnippetDetailPage />} />
                 <Route path="/faq" element={<Navigate to="/join#faq" replace />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/terms" element={<TermsPage />} />
