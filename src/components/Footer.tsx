@@ -61,6 +61,20 @@ const Footer: React.FC = () => {
               A Freemasons' lodge under the United Grand Lodge of England, dedicated to
               integrity, friendship, and charity.
             </p>
+            <div className="mb-5 inline-flex items-center gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-2">
+              <img
+                src="/charter-mark-logo-for-lodges.png"
+                alt="UGLE Charter Mark"
+                className="h-14 w-14 rounded-sm object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <span className="text-xs font-medium text-neutral-300">
+                UGLE Charter Mark
+              </span>
+            </div>
             <div className="flex space-x-4">
               <a
                 href={facebookUrl}
