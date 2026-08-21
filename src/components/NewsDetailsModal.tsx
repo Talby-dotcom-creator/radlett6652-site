@@ -1,6 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import { CMSBlogPost } from "../types";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface NewsDetailsModalProps {
   news: CMSBlogPost | null;
@@ -51,7 +52,7 @@ const NewsDetailsModal: React.FC<NewsDetailsModalProps> = ({
 
           <div
             className="prose prose-neutral max-w-none text-neutral-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: news.content ?? "" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(news.content) }}
           />
 
           <div className="mt-8 text-center">

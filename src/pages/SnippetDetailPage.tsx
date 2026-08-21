@@ -5,6 +5,7 @@ import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SnippetsManager from "../components/admin/SnippetsManager";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const SnippetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +54,7 @@ const SnippetDetailPage: React.FC = () => {
 
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: article.content ?? "" }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
       />
     </div>
   );

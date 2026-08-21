@@ -3,6 +3,7 @@ import HeroSection from "../../components/HeroSection";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { optimizedApi } from "../../lib/optimizedApi";
 import { CMSBlogPost } from "../../types";
+import { sanitizeHtml } from "../../utils/sanitizeHtml";
 
 const SnippetsPage: React.FC = () => {
   const [snippets, setSnippets] = useState<CMSBlogPost[]>([]);
@@ -49,7 +50,7 @@ const SnippetsPage: React.FC = () => {
                   </h3>
                   <div
                     className="text-neutral-700 leading-relaxed prose"
-                    dangerouslySetInnerHTML={{ __html: snippet.content ?? "" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(snippet.content) }}
                   />
                 </article>
               ))}

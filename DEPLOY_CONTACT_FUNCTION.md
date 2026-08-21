@@ -16,10 +16,9 @@ supabase functions deploy send-contact-email --project-ref neoquuejwgcqueqlcbwj
 
 The function needs these secrets in Supabase:
 
-```bash
-# Set Resend API Key
-supabase secrets set RESEND_API_KEY=re_JpsQErMt_9dMnJyj8WmCRfVhpLVdodC7E --project-ref neoquuejwgcqueqlcbwj
+Configure `RESEND_API_KEY` through the Supabase dashboard or your secure CI secret store. Never place its value in source control or shell history.
 
+```bash
 # Set email sender (verified domain in Resend)
 supabase secrets set EMAIL_SENDER_ADDRESS=contact@radlettfreemasons.org.uk --project-ref neoquuejwgcqueqlcbwj
 
@@ -73,7 +72,7 @@ If emails don't arrive:
 ### Check Resend API Key
 
 - Login to https://resend.com
-- Verify API key is active: `re_JpsQErMt_9dMnJyj8WmCRfVhpLVdodC7E`
+- Verify the configured `RESEND_API_KEY` is active in the Resend dashboard without copying it into logs or documentation.
 - Check domain verification status for `radlettfreemasons.org.uk`
 
 ### Check Function Logs

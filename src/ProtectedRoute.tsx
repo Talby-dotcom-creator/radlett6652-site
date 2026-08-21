@@ -30,32 +30,28 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // 🚫 No user session
   if (!user) {
-    console.warn("🔒 No user session — redirecting to /login");
+    if (import.meta.env.DEV) console.warn("No user session; redirecting to login");
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   // ⚠️ Profile missing or inactive
   if (!profile || profile.status !== "active") {
-    console.warn(
-      `⚠️ Inactive profile (${profile?.status}) — redirecting to /pending`
-    );
+    if (import.meta.env.DEV) console.warn("Inactive profile; redirecting to pending");
     return <Navigate to="/pending" replace />;
   }
 
   // 🚫 Role mismatch, but admins can access member routes
   if (requiredRole && profile.role !== requiredRole) {
     if (requiredRole === "member" && profile.role === "admin") {
-      console.log("👑 Admin override: accessing member route");
+      if (import.meta.env.DEV) console.log("Admin accessing member route");
     } else {
-      console.warn(
-        `🚫 Access denied — required: ${requiredRole}, user: ${profile.role}`
-      );
+      if (import.meta.env.DEV) console.warn("Role check denied route access");
       return <Navigate to="/members" replace />;
     }
   }
 
   // ✅ Access granted
-  console.log(`✅ Access granted for ${profile.full_name} (${profile.role})`);
+  if (import.meta.env.DEV) console.log("Protected route access granted");
 
   return (
     <>

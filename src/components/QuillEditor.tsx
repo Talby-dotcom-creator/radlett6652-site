@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useMemo, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import MediaManagerModal from "./media/MediaManagerModal";
+import { supabase } from "../lib/supabase";
 
 interface QuillEditorProps {
   value: string;
@@ -29,6 +30,25 @@ const QUICK_SNIPPETS = [
       '<div class="info-box"><p>This block highlights supportive context.</p></div>',
   },
 ];
+
+const generateImageAltText = async (imageUrl: string): Promise<string> => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) throw new Error("Authentication required");
+
+  const response = await fetch("/.netlify/functions/generate-alt-text", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ image_url: imageUrl }),
+  });
+  if (!response.ok) throw new Error("Alt-text generation failed");
+  const data = (await response.json()) as { alt?: string };
+  if (!data.alt) throw new Error("Alt-text response was empty");
+  return data.alt;
+};
 
 const getSelectedImage = (quill: any): HTMLImageElement | null => {
   const range = quill?.getSelection?.();
@@ -76,12 +96,7 @@ const QuillEditor: React.FC<QuillEditorProps> = ({
     if (!img) return alert("Select an image first.");
 
     try {
-      const res = await fetch("/.netlify/functions/generate-alt-text", {
-        method: "POST",
-        body: JSON.stringify({ image_url: img.src }),
-      });
-      const data = await res.json();
-      if (data.alt) img.setAttribute("alt", data.alt);
+      img.setAttribute("alt", await generateImageAltText(img.src));
     } catch (err) {
       console.error(err);
       alert("Could not generate alt text.");
@@ -142,12 +157,7 @@ const QuillEditor: React.FC<QuillEditorProps> = ({
 
     for (const img of images) {
       try {
-        const res = await fetch("/.netlify/functions/generate-alt-text", {
-          method: "POST",
-          body: JSON.stringify({ image_url: img.src }),
-        });
-        const data = await res.json();
-        if (data.alt) img.setAttribute("alt", data.alt);
+        img.setAttribute("alt", await generateImageAltText(img.src));
       } catch (err) {
         console.error("Bulk alt text failed", err);
       }

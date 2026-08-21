@@ -2,6 +2,7 @@ import React from "react";
 import { X, ExternalLink, Copy } from "lucide-react";
 import Button from "../Button";
 import { useToast } from "../../hooks/useToast";
+import { sanitizeHtml } from "../../utils/sanitizeHtml";
 
 interface ContentPreviewProps {
   isOpen: boolean;
@@ -98,7 +99,7 @@ const ContentPreview: React.FC<ContentPreviewProps> = ({
               <p className="text-neutral-600 mb-3">{content.summary}</p>
               <div
                 className="prose max-w-none"
-                dangerouslySetInnerHTML={{ __html: content.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.content) }}
               />
             </div>
           </div>

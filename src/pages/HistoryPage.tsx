@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import LoadingSpinner from "../components/LoadingSpinner";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const HistoryPage: React.FC = () => {
   const [content, setContent] = useState<string | null>(null);
@@ -44,7 +45,7 @@ const HistoryPage: React.FC = () => {
       {content ? (
         <article
           className="prose lg:prose-lg mx-auto text-neutral-800 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
         />
       ) : (
         <p className="text-center text-neutral-600">No content available.</p>

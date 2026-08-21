@@ -51,8 +51,7 @@ Write-Host ""
 # Step 4: Set secrets
 Write-Host "Step 4: Setting environment secrets..." -ForegroundColor Yellow
 
-Write-Host "  Setting RESEND_API_KEY..." -ForegroundColor Gray
-supabase secrets set RESEND_API_KEY=re_JpsQErMt_9dMnJyj8WmCRfVhpLVdodC7E --project-ref neoquuejwgcqueqlcbwj
+Write-Host "  RESEND_API_KEY must be configured through the Supabase dashboard or secure CI environment." -ForegroundColor Gray
 
 Write-Host "  Setting EMAIL_SENDER_ADDRESS..." -ForegroundColor Gray
 supabase secrets set EMAIL_SENDER_ADDRESS=contact@radlettfreemasons.org.uk --project-ref neoquuejwgcqueqlcbwj

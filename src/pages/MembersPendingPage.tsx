@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { cmsApi } from "../lib/cmsApi";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Clock, AlertTriangle, Mail, Phone } from "lucide-react";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const MembersPendingPage: React.FC = () => {
   const { user, profile } = useAuth();
@@ -111,7 +112,7 @@ const MembersPendingPage: React.FC = () => {
 
                 <div
                   className="prose max-w-none text-neutral-600"
-                  dangerouslySetInnerHTML={{ __html: pendingText }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(pendingText) }}
                 />
               </div>
 

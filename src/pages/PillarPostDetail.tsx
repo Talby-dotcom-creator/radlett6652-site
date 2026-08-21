@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import { optimizedApi } from "../lib/optimizedApi";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 import type { CMSBlogPost } from "../types";
 
@@ -111,7 +112,7 @@ const PillarPostDetail: React.FC = () => {
                      prose-blockquote:text-stone-700
                      leading-relaxed"
           dangerouslySetInnerHTML={{
-            __html: post.content ?? post.summary ?? "",
+            __html: sanitizeHtml(post.content ?? post.summary),
           }}
         />
 
