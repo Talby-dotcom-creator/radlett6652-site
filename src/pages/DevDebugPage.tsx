@@ -3,14 +3,13 @@ import { useAuth } from "../contexts/AuthContext";
 import Button from "../components/Button";
 
 const DevDebugPage: React.FC = () => {
-  // Render nothing in production
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  if (typeof import.meta === "undefined" || !import.meta.env?.DEV) return null;
-
   const { user, profile, refreshProfile, forceRefresh } = useAuth();
   const [promoteLoading, setPromoteLoading] = useState(false);
   const [promoteResult, setPromoteResult] = useState<string | null>(null);
+  const isDev = typeof import.meta !== "undefined" && import.meta.env?.DEV;
+
+  // Keep hook ordering stable even if this component is accidentally rendered in production.
+  if (!isDev) return null;
 
   const promoteToActive = async () => {
     if (!profile) return setPromoteResult("No profile to promote");

@@ -1,4 +1,3 @@
-jest.mock("../lib/supabase");
 import "@testing-library/jest-dom";
 import { supabase } from "../lib/supabase";
 import { render, screen, waitFor } from "@testing-library/react";

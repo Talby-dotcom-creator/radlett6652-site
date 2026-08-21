@@ -27,3 +27,10 @@ jest.mock("@supabase/supabase-js", () => ({
     }),
   }),
 }));
+
+jest.mock("react-google-recaptcha-v3", () => ({
+  GoogleReCaptchaProvider: ({ children }) => children,
+  useGoogleReCaptcha: () => ({
+    executeRecaptcha: jest.fn().mockResolvedValue("test-recaptcha-token"),
+  }),
+}));

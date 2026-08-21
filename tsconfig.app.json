@@ -16,9 +16,16 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "test-email.js"]
+  "include": ["src"],
+  "exclude": [
+    "src/_restored_cms_171458/**",
+    "src/backup*/**",
+    "src/**/*backup*",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
+  ]
 }

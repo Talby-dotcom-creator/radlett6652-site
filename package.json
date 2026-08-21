@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@netlify/functions": "^5.1.0",
