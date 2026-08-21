@@ -43,9 +43,11 @@ const Footer: React.FC = () => {
   const lodgeAddress =
     settings.lodge_address ||
     "Radlett Masonic Centre, Rose Walk, Radlett, Hertfordshire WD7 7JS";
-  const facebookUrl = settings.facebook_url || "#";
-  const twitterUrl = settings.twitter_url || "#";
-  const instagramUrl = settings.instagram_url || "#";
+  const socialLinks = [
+    { name: "Facebook", url: settings.facebook_url, Icon: Facebook },
+    { name: "Twitter", url: settings.twitter_url, Icon: Twitter },
+    { name: "Instagram", url: settings.instagram_url, Icon: Instagram },
+  ].filter(({ url }) => Boolean(url && url !== "#"));
 
   return (
     <footer className="bg-gradient-to-b from-[#0a1a2a] to-[#101d33] text-neutral-200 pt-12 pb-6 border-t border-yellow-600/20">
@@ -75,29 +77,22 @@ const Footer: React.FC = () => {
               A Freemasons’ lodge under the United Grand Lodge of England,
               dedicated to integrity, friendship, and charity.
             </p>
-            <div className="flex space-x-4">
-              <a
-                href={facebookUrl}
-                className="text-neutral-400 hover:text-yellow-500 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook size={20} />
-              </a>
-              <a
-                href={twitterUrl}
-                className="text-neutral-400 hover:text-yellow-500 transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter size={20} />
-              </a>
-              <a
-                href={instagramUrl}
-                className="text-neutral-400 hover:text-yellow-500 transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram size={20} />
-              </a>
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex space-x-4">
+                {socialLinks.map(({ name, url, Icon }) => (
+                  <a
+                    key={name}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-neutral-400 hover:text-yellow-500 transition-colors"
+                    aria-label={name}
+                  >
+                    <Icon size={20} />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}

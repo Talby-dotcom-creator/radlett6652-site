@@ -10,6 +10,11 @@ const MemberExperiences: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const normalizeQuote = (value?: string | null) =>
+    (value || "Freemasonry has given me a sense of purpose and belonging.")
+      .trim()
+      .replace(/^[\s"“”']+|[\s"“”']+$/g, "");
+
   useEffect(() => {
     const loadTestimonials = async () => {
       try {
@@ -198,13 +203,11 @@ const MemberExperiences: React.FC = () => {
 
                     {/* Quote Text */}
                     <div className="relative mb-6">
-                      <p className="text-slate-300 text-base leading-relaxed italic">
-                        "
-                        {t.quote ||
-                          t.content ||
-                          "Freemasonry has given me a sense of purpose and belonging."}
-                        "
-                      </p>
+                      <blockquote className="text-slate-300 text-base leading-relaxed italic">
+                        <span aria-hidden="true">“</span>
+                        {normalizeQuote(t.quote || t.content)}
+                        <span aria-hidden="true">”</span>
+                      </blockquote>
                     </div>
 
                     {/* Divider */}

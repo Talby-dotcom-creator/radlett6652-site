@@ -12,8 +12,13 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   title,
   description,
   keywords,
-  image = "https://radlettlodge.co.uk/og-preview.jpg",
+  image = "https://radlettfreemasons.org.uk/og-preview.png",
 }) => {
+  const pageUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : "https://radlettfreemasons.org.uk/";
+
   return (
     <Helmet>
       <title>{title}</title>
@@ -25,7 +30,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta property="og:title" content={title} />
       {description && <meta property="og:description" content={description} />}
       <meta property="og:image" content={image} />
-      <meta property="og:url" content="https://radlettlodge.co.uk" />
+      <meta property="og:url" content={pageUrl} />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
