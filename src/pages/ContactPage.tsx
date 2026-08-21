@@ -5,6 +5,7 @@ import SectionHeading from "../components/SectionHeading";
 import ContactForm from "../components/ContactForm";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { optimizedApi } from "../lib/optimizedApi";
+import SEOHead from "../components/SEOHead";
 
 const ContactPage: React.FC = () => {
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -42,6 +43,10 @@ const ContactPage: React.FC = () => {
 
   return (
     <>
+      <SEOHead
+        title="Contact Radlett Freemasons | Radlett Lodge No. 6652"
+        description="Contact Radlett Lodge No. 6652 about Freemasonry, membership, Lodge events, charity, or visiting the Lodge in Radlett, Hertfordshire."
+      />
       <HeroSection
         title="Contact Radlett Lodge"
         subtitle="Get in touch with us for inquiries about Freemasonry or joining our Lodge"

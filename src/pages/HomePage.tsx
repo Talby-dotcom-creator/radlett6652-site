@@ -163,7 +163,7 @@ const HomePage: React.FC = () => {
                 size="lg"
                 className="border-white text-white hover:bg-white hover:text-primary-700"
               >
-                Curious?
+                Interested in Freemasonry?
               </Button>
             </Link>
           </motion.div>

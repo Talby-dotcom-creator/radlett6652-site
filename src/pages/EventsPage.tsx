@@ -87,6 +87,7 @@ function EventsPageInner() {
   const [events, setEvents] = useState<Event[]>([]);
   const [featuredEvent, setFeaturedEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<EventView>("upcoming");
   const [filter, setFilter] = useState<EventFilter>("all");
   const [countdown, setCountdown] = useState<string>("");
@@ -127,6 +128,7 @@ function EventsPageInner() {
 
   async function fetchEvents() {
     setLoading(true);
+    setError(null);
     const now = new Date().toISOString();
 
     let query = supabase
@@ -150,6 +152,7 @@ function EventsPageInner() {
     const { data, error } = await query;
     if (error) {
       console.error("Error fetching events:", error);
+      setError("We could not load the events calendar. Please try again.");
     }
 
     if (data && data.length > 0) {
@@ -206,21 +209,6 @@ function EventsPageInner() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="relative"
-        >
-          <div className="w-16 h-16 border-4 border-amber-500/30 border-t-amber-500 rounded-full"></div>
-          <Calendar className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-amber-400" />
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
     <>
       <SEOHead
@@ -232,6 +220,35 @@ function EventsPageInner() {
         {/* Premium Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
 
+        {loading && (
+          <div className="relative z-20 min-h-screen flex flex-col items-center justify-center text-amber-100" role="status">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="relative"
+            >
+              <div className="w-16 h-16 border-4 border-amber-500/30 border-t-amber-500 rounded-full" />
+              <Calendar className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-amber-400" />
+            </motion.div>
+            <p className="mt-5">Loading the Lodge calendar…</p>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="relative z-20 min-h-screen flex flex-col items-center justify-center px-6 text-center" role="alert">
+            <p className="text-red-300 text-lg">{error}</p>
+            <button
+              type="button"
+              onClick={fetchEvents}
+              className="mt-5 rounded-full bg-amber-500 px-6 py-3 font-semibold text-slate-900 hover:bg-amber-400"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
         {/* Faded Calendar Background */}
         <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
           <Calendar className="w-[600px] h-[600px] text-amber-400" />
@@ -824,6 +841,8 @@ function EventsPageInner() {
             </motion.div>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* Event Details Modal */}

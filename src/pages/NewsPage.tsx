@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { optimizedApi } from "../lib/optimizedApi";
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SEOHead from "../components/SEOHead";
 
 const NewsPage: React.FC = () => {
   const [articles, setArticles] = useState<CMSBlogPost[]>([]);
@@ -43,20 +44,6 @@ const NewsPage: React.FC = () => {
     loadNews();
   }, []);
 
-  if (loading)
-    return (
-      <main className="flex justify-center items-center h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950">
-        <LoadingSpinner />
-      </main>
-    );
-
-  if (error)
-    return (
-      <main className="text-center py-20 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950">
-        <p className="text-red-400">{error}</p>
-      </main>
-    );
-
   // Split articles: first 6 visible, rest in archive
   const displayedArticles = articles.slice(0, 6);
   const archivedArticles = articles.slice(6);
@@ -64,7 +51,12 @@ const NewsPage: React.FC = () => {
   const regularArticles = displayedArticles.slice(1);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950">
+    <>
+      <SEOHead
+        title="Lodge News | Radlett Lodge No. 6652"
+        description="News, charitable work, events, and updates from Radlett Lodge No. 6652 in Hertfordshire."
+      />
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950">
       {/* DARK HERO SECTION */}
       <section className="relative min-h-[60vh] overflow-hidden">
         {/* Animated Background Elements */}
@@ -158,15 +150,35 @@ const NewsPage: React.FC = () => {
 
       <main className="flex-grow py-16 px-6 md:px-12 lg:px-20">
         <div className="max-w-7xl mx-auto">
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20 text-amber-100" role="status">
+              <LoadingSpinner />
+              <p className="mt-4">Loading the latest Lodge news…</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-20" role="alert">
+              <p className="text-red-300">{error}</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-5 rounded-md bg-amber-500 px-5 py-2 font-semibold text-slate-900 hover:bg-amber-400"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
           {/* No Articles State */}
-          {articles.length === 0 ? (
+          {!loading && !error && articles.length === 0 ? (
             <div className="text-center py-20">
               <Newspaper className="w-16 h-16 mx-auto mb-4 text-amber-400/30" />
               <p className="text-amber-100/60 text-lg">
                 No news articles available right now. Please check back soon!
               </p>
             </div>
-          ) : (
+          ) : !loading && !error ? (
             <>
               {/* FEATURED ARTICLE */}
               {featuredArticle && (
@@ -447,7 +459,7 @@ const NewsPage: React.FC = () => {
                 </div>
               </motion.div>
             </>
-          )}
+          ) : null}
         </div>
       </main>
 
@@ -522,7 +534,8 @@ const NewsPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </>
   );
 };
 

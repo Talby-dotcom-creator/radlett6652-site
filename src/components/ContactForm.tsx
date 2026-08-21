@@ -5,7 +5,7 @@ import Button from "./Button";
 
 const ContactForm: React.FC = () => {
   // Toggle this to true while testing, false in production
-  const debugMode = true;
+  const debugMode = false;
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [formData, setFormData] = useState({
@@ -113,7 +113,7 @@ const ContactForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form method="post" onSubmit={handleSubmit} className="space-y-6">
       {/* Honeypot field (hidden from users) */}
       <input
         type="text"
@@ -256,6 +256,14 @@ const ContactForm: React.FC = () => {
           information
         </label>
       </div>
+
+      <p className="text-sm text-neutral-600">
+        We use the details you provide only to respond to your enquiry. Read our{" "}
+        <a href="/privacy" className="underline hover:text-primary-700">
+          Privacy Policy
+        </a>
+        .
+      </p>
 
       {/* Submit + status */}
       <div className="flex items-center space-x-4">
