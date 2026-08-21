@@ -1,19 +1,15 @@
-import React from "react";
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ContactForm from "./ContactForm";
 
 // Mock fetch globally
+const fetchMock = jest.fn();
+
 beforeAll(() => {
-  global.fetch = jest.fn();
-});
-afterAll(() => {
-  // @ts-ignore
-  global.fetch.mockRestore && global.fetch.mockRestore();
+  global.fetch = fetchMock;
 });
 afterEach(() => {
-  // @ts-ignore
-  global.fetch.mockClear && global.fetch.mockClear();
+  fetchMock.mockReset();
 });
 
 describe("ContactForm", () => {
@@ -45,8 +41,7 @@ describe("ContactForm", () => {
   });
 
   it("submits form and shows success message", async () => {
-    // @ts-ignore
-    global.fetch.mockResolvedValue({
+    fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({ status: "ok", message: "sent" }),
     });
@@ -72,8 +67,8 @@ describe("ContactForm", () => {
   });
 
   it("shows error message on failed submit", async () => {
-    // @ts-ignore
-    global.fetch.mockResolvedValue({
+    const consoleError = jest.spyOn(console, "error").mockImplementation();
+    fetchMock.mockResolvedValue({
       ok: false,
       status: 500,
       text: async () => "Internal Server Error",
@@ -95,6 +90,8 @@ describe("ContactForm", () => {
     await waitFor(() =>
       expect(screen.getByText(/Server error/i)).toBeInTheDocument()
     );
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   it("honeypot field prevents submission for bots", async () => {
