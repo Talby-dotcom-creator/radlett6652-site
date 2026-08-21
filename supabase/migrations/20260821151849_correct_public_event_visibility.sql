@@ -19,6 +19,7 @@ create policy "Anonymous can view public upcoming events"
   using (
     is_public is true
     and is_past_event is not true
+    and event_date >= now()
   );
 
 comment on policy "Anonymous can view public upcoming events" on public.events is
