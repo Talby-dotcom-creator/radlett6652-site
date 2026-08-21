@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CMSBlogPost } from "../types";
 import { optimizedApi } from "../lib/optimizedApi";
 import { Flame, X } from "lucide-react";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const CandleReflection: React.FC = () => {
   const [snippet, setSnippet] = useState<CMSBlogPost | null>(null);
@@ -292,7 +293,7 @@ const CandleReflection: React.FC = () => {
                         <div
                           className="leading-relaxed text-amber-100/90 [&>p]:mb-4 [&>p]:text-lg"
                           dangerouslySetInnerHTML={{
-                            __html: snippet.content ?? "",
+                            __html: sanitizeHtml(snippet.content),
                           }}
                         />
                       </motion.div>

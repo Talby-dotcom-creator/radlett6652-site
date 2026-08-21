@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { cmsApi } from "../lib/cmsApi";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SEOHead from "../components/SEOHead";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const fallbackContent = `
   <p><strong>Last updated: 21 August 2026</strong></p>
@@ -71,7 +72,7 @@ const TermsPage: React.FC = () => {
         {content && (
           <div
             className="prose max-w-none text-neutral-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
           />
         )}
       </div>

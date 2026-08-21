@@ -38,26 +38,50 @@ if (import.meta.env.DEV) {
 // 🧩 Expose Supabase for console debugging
 (window as any).supabase = supabase;
 
-// ✅ Proper rendering with BrowserRouter
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <GoogleReCaptchaProvider
-      reCaptchaKey="6Le51QosAAAAAEBZSKZXIMTfzuBhMaV5e6B1vpJd"
-      scriptProps={{
-        async: true,
-        defer: true,
-        appendTo: "head",
-      }}
-    >
-      <BrowserRouter>
-        <ErrorBoundary>
-          <HelmetProvider>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </HelmetProvider>
-        </ErrorBoundary>
-      </BrowserRouter>
-    </GoogleReCaptchaProvider>
-  </StrictMode>
-);
+const root = createRoot(document.getElementById("root")!);
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY?.trim();
+
+if (!recaptchaSiteKey) {
+  console.error(
+    "Site configuration error: VITE_RECAPTCHA_SITE_KEY is not configured."
+  );
+  root.render(
+    <StrictMode>
+      <main role="alert" className="min-h-screen grid place-items-center p-6">
+        <div className="max-w-xl text-center">
+          <h1 className="text-2xl font-semibold text-neutral-900">
+            Site configuration error
+          </h1>
+          <p className="mt-3 text-neutral-700">
+            Security verification is unavailable. Please contact the site
+            administrator.
+          </p>
+        </div>
+      </main>
+    </StrictMode>
+  );
+} else {
+  // ✅ Proper rendering with BrowserRouter
+  root.render(
+    <StrictMode>
+      <GoogleReCaptchaProvider
+        reCaptchaKey={recaptchaSiteKey}
+        scriptProps={{
+          async: true,
+          defer: true,
+          appendTo: "head",
+        }}
+      >
+        <BrowserRouter>
+          <ErrorBoundary>
+            <HelmetProvider>
+              <AuthProvider>
+                <App />
+              </AuthProvider>
+            </HelmetProvider>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </GoogleReCaptchaProvider>
+    </StrictMode>
+  );
+}

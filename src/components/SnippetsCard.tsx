@@ -1,6 +1,7 @@
 // src/components/SnippetCard.tsx
 import React from "react";
 import { Link } from "react-router-dom";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface SnippetCardProps {
   snippet: {
@@ -30,7 +31,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
         {/* Preview (render HTML) */}
         <div
           className="prose prose-invert max-w-none mt-4"
-          dangerouslySetInnerHTML={{ __html: snippet.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(snippet.content) }}
         />
 
         {/* Tags */}

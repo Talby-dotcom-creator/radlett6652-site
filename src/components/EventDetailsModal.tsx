@@ -1,4 +1,5 @@
 import React from "react";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 import {
   X,
   Calendar,
@@ -146,7 +147,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
             <div className="mt-4">
               <div
                 className="prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: event.description ?? "" }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(event.description) }}
               />
             </div>
           )}

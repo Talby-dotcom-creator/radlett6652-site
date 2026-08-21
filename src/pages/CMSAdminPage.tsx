@@ -58,6 +58,7 @@ import ContentPreviewModal from "../components/ContentPreviewModal";
 import ContentScheduler from "../components/cms/ContentScheduler";
 import ResourceForm from "../components/ResourceForm";
 import { optimizedApi } from "../lib/optimizedApi";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 // Quick runtime marker to help debug lazy-loading in dev
 console.log("✅ CMSAdminPage loaded");
@@ -1704,7 +1705,7 @@ const CMSAdminPage: React.FC = () => {
                           <div
                             className="prose prose-invert max-w-none"
                             dangerouslySetInnerHTML={{
-                              __html: event.description ?? "",
+                              __html: sanitizeHtml(event.description),
                             }}
                           />
                         </div>

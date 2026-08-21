@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import { BookOpen, Sparkles, X, Calendar, User } from "lucide-react";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 interface Snippet {
   id: string;
@@ -372,7 +373,7 @@ export default function SnippetHighlight() {
                     >
                       <div
                         className="text-amber-100/90 leading-relaxed text-lg font-serif [&>p]:mb-6 [&>p]:first-letter:text-5xl [&>p]:first-letter:font-bold [&>p]:first-letter:text-amber-400 [&>p]:first-letter:mr-2 [&>p]:first-letter:float-left"
-                        dangerouslySetInnerHTML={{ __html: snippet.content }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(snippet.content) }}
                       />
                     </motion.div>
 

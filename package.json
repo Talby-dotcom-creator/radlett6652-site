@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@netlify/functions": "^5.1.0",
-    "@supabase/supabase-js": "^2.39.8",
+    "@supabase/supabase-js": "2.75.1",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-character-count": "^3.4.4",

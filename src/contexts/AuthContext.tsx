@@ -38,19 +38,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // ---------------------------------------------------------------------------
   const loadProfile = async (user: User) => {
     try {
-      console.log("🔍 loadProfile() running for:", user.email);
+      if (import.meta.env.DEV) console.log("Loading member profile");
       const prof = await api.getMemberProfile(user.id);
 
       if (prof) {
-        console.log(
-          "✅ Profile loaded:",
-          prof.full_name,
-          prof.role,
-          prof.status
-        );
+        if (import.meta.env.DEV) console.log("Member profile loaded");
         setProfile(prof);
       } else {
-        console.warn("⚠️ No profile found for user:", user.id);
+        if (import.meta.env.DEV) console.warn("No member profile found");
         setProfile(null);
       }
     } catch (err: any) {
@@ -63,12 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // 🧠 Initialize session once on mount
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    console.log("🧠 AuthContext useEffect mounted");
+    if (import.meta.env.DEV) console.log("Auth context mounted");
     let isMounted = true;
 
     const getInitialSession = async () => {
       try {
-        console.log("🚀 Starting getInitialSession()");
+        if (import.meta.env.DEV) console.log("Loading initial session");
         const {
           data: { session },
           error,
@@ -110,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("🔄 onAuthStateChange event:", event, session?.user?.email);
+      if (import.meta.env.DEV) console.log("Authentication state changed", event);
 
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -129,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     return () => {
-      console.log("🧹 Cleaning up AuthContext");
+      if (import.meta.env.DEV) console.log("Auth context cleanup");
       isMounted = false;
       subscription.unsubscribe();
     };
@@ -139,13 +134,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // 🚪 Sign out logic
   // ---------------------------------------------------------------------------
   const signOut = async () => {
-    console.log("🚪 Signing out...");
+    if (import.meta.env.DEV) console.log("Signing out");
     try {
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
       setNeedsPasswordReset(false);
-      console.log("✅ Signed out successfully");
+      if (import.meta.env.DEV) console.log("Signed out successfully");
     } catch (err: any) {
       console.error("❌ Error signing out:", err.message);
     }

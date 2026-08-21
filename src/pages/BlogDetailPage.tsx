@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { optimizedApi } from "../lib/optimizedApi"; // ✅ fixed import
 import type { CMSBlogPost } from "../types";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const BlogDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -93,7 +94,7 @@ const BlogDetailPage: React.FC = () => {
         {/* Content */}
         <div
           className="prose prose-lg max-w-none"
-          dangerouslySetInnerHTML={{ __html: article.content ?? "" }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
         />
       </div>
     </>
