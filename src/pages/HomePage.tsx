@@ -193,9 +193,22 @@ const HomePage: React.FC = () => {
           <div className="bg-primary-900/60 backdrop-blur-sm rounded-lg p-4 border border-secondary-500/30 text-center transform transition-all duration-300 hover:scale-105">
             <Heart className="w-6 h-6 text-secondary-400 mb-2" />
             <h3 className="font-heading font-semibold text-base text-neutral-100 mb-1">
-              Charity Raised
+              Charitable Giving
             </h3>
-            <p className="text-neutral-300 text-sm">£50,000+ annually</p>
+            <p className="text-neutral-300 text-sm">
+              Radlett Lodge supported 12 charities in 2025. Across England and
+              Wales, Freemasons donate approximately £52 million to charitable
+              causes each year. Source:{" "}
+              <a
+                href="https://www.ugle.org.uk/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-secondary-300 underline decoration-secondary-500/60 underline-offset-2 hover:text-secondary-200"
+              >
+                United Grand Lodge of England
+              </a>
+              .
+            </p>
           </div>
         </div>
       </section>
