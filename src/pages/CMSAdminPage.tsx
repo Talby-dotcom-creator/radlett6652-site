@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { cmsApi } from "../lib/cmsApi";
@@ -287,6 +287,7 @@ const CMSAdminPage: React.FC = () => {
   const [editingResource, setEditingResource] = useState<any | null>(null);
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [showContentScheduler, setShowContentScheduler] = useState(false);
+  const eventFormRef = useRef<HTMLDivElement>(null);
 
   // Editing states
   const [editingEvent, setEditingEvent] = useState<LodgeEvent | null>(null);
@@ -297,6 +298,20 @@ const CMSAdminPage: React.FC = () => {
   const [editingFAQ, setEditingFAQ] = useState<FAQItem | null>(null);
   const [editingPageContent, setEditingPageContent] =
     useState<PageContent | null>(null);
+
+  useEffect(() => {
+    if (!showEventForm) return;
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      eventFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      eventFormRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [showEventForm, editingEvent?.id]);
 
   // Selection states for bulk operations
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
@@ -1632,7 +1647,11 @@ const CMSAdminPage: React.FC = () => {
             />
 
             {showEventForm && (
-              <div className="bg-neutral-50 rounded-lg p-6 mb-8">
+              <div
+                ref={eventFormRef}
+                tabIndex={-1}
+                className="bg-neutral-50 rounded-lg p-6 mb-8 focus:outline-none"
+              >
                 <h3 className="text-lg font-semibold text-primary-600 mb-4">
                   {editingEvent ? "Edit Event" : "Add New Event"}
                 </h3>
