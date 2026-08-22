@@ -83,6 +83,9 @@ export interface LodgeDocument {
   category: string;
   file_url: string;
   document_date?: string | null; // The actual date of the document (for sorting)
+  meeting_date?: string | null;
+  meeting_number?: number | null;
+  storage_path?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
   // alternate/legacy field name seen across the codebase
@@ -98,6 +101,7 @@ export interface MeetingMinutes {
   // some places use `content` or `document_url`
   content?: string | null;
   document_url?: string | null;
+  meeting_number?: number | null;
 }
 
 export interface MemberProfile {
