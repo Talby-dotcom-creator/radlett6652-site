@@ -4,6 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { optimizedApi as api } from "../lib/optimizedApi";
 import { LodgeDocument, MemberProfile } from "../types";
+import {
+  formatDocumentDate,
+  getDocumentTimestamp,
+  getMeetingMetadata,
+} from "../utils/documentMetadata";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
 import VirtualizedList from "../components/VirtualizedList";
@@ -193,10 +198,7 @@ const MembersPage: React.FC = () => {
   };
 
   const getTimestamp = (d: LodgeDocument) => {
-    const source = ((d as any).document_date ??
-      d.created_at ??
-      (d as any).updated_at) as string | undefined;
-    return source ? new Date(source).getTime() : 0;
+    return getDocumentTimestamp(d);
   };
 
   /* ---------------- FILTER + PAGINATION ---------------- */
@@ -307,6 +309,7 @@ const MembersPage: React.FC = () => {
 
     const url =
       (doc as any).file_url || (doc as any).url || (doc as any).document_url;
+    const meetingMetadata = getMeetingMetadata(doc);
 
     return (
       <div style={style} className="px-4">
@@ -327,10 +330,8 @@ const MembersPage: React.FC = () => {
                 {categoryLabel}
               </span>
               <span className="text-xs text-neutral-500 ml-4">
-                Added{" "}
-                {doc.created_at
-                  ? new Date(doc.created_at as any).toLocaleDateString("en-GB")
-                  : "Unknown"}
+                {meetingMetadata ??
+                  `Added ${formatDocumentDate(doc.created_at)}`}
               </span>
             </div>
           </div>

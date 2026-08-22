@@ -146,6 +146,9 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           id: string;
+          meeting_date: string | null;
+          meeting_number: number | null;
+          storage_path: string | null;
           title: string;
           updated_at: string | null;
           url: string;
@@ -155,6 +158,9 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
+          meeting_date?: string | null;
+          meeting_number?: number | null;
+          storage_path?: string | null;
           title: string;
           updated_at?: string | null;
           url: string;
@@ -164,6 +170,9 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
+          meeting_date?: string | null;
+          meeting_number?: number | null;
+          storage_path?: string | null;
           title?: string;
           updated_at?: string | null;
           url?: string;

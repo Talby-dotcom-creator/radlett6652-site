@@ -655,11 +655,30 @@ export const optimizedApi: any = {
 
       if (error) handleError(error, "getLodgeDocuments");
 
-      return (data ?? []).map((doc: any) => ({
-        ...doc,
-        file_url: doc.file_url ?? doc.url ?? "",
-        category: this.normalizeDocCategory(doc.category),
-      }));
+      return await Promise.all(
+        (data ?? []).map(async (doc: any) => {
+          let fileUrl = doc.file_url ?? doc.url ?? "";
+
+          if (doc.storage_path) {
+            const { data: signed, error: signingError } = await supabase.storage
+              .from("member-documents")
+              .createSignedUrl(doc.storage_path, 60 * 60);
+
+            if (signingError) {
+              console.error("Failed to create a signed member document URL");
+              fileUrl = "";
+            } else {
+              fileUrl = signed?.signedUrl ?? "";
+            }
+          }
+
+          return {
+            ...doc,
+            file_url: fileUrl,
+            category: this.normalizeDocCategory(doc.category),
+          };
+        })
+      );
     } catch (err) {
       handleError(err, "getLodgeDocuments");
       return [];
