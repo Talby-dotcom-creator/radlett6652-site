@@ -6,7 +6,7 @@ const migration = readFileSync(
     process.cwd(),
     "supabase",
     "migrations",
-    "20260821151849_correct_public_event_visibility.sql"
+    "20260822095916_correct_public_event_visibility.sql"
   ),
   "utf8"
 );
