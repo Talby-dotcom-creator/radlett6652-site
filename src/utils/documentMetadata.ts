@@ -33,5 +33,12 @@ export const getMeetingMetadata = (
   if (doc.meeting_number != null) parts.push(`Meeting ${doc.meeting_number}`);
   if (doc.meeting_date) parts.push(formatDocumentDate(doc.meeting_date));
 
+  const category = doc.category?.toLowerCase().trim().replace(/[\s-]+/g, "_");
+  const isVirtualGpcMeeting =
+    category === "gpc_minutes" &&
+    /virtual meeting/i.test(`${doc.description ?? ""} ${doc.storage_path ?? ""}`);
+
+  if (isVirtualGpcMeeting) parts.push("Virtual Meeting");
+
   return parts.join(" — ");
 };
