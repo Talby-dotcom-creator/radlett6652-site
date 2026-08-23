@@ -92,6 +92,61 @@ describe("MembersPage documents", () => {
     consoleError.mockRestore();
   });
 
+  it("renders summonses newest first with meeting details and signed private links", async () => {
+    (optimizedApi.getLodgeDocuments as jest.Mock).mockResolvedValue([
+      {
+        id: "summons-369",
+        title: "February 2023 Summons",
+        category: "summons",
+        file_url: "https://private.test/signed-summons-369",
+        url: "https://example.supabase.co/storage/v1/object/public/member-documents/legacy.pdf",
+        meeting_date: "2023-02-11",
+        document_date: "2023-02-11",
+        meeting_number: 369,
+        storage_path: "summonses/Meeting 369 - 2023-02-11 - Summons.pdf",
+      },
+      {
+        id: "summons-385",
+        title: "April 2026 Summons",
+        category: "summons",
+        file_url: "https://private.test/signed-summons-385",
+        meeting_date: "2026-04-18",
+        document_date: "2026-04-18",
+        meeting_number: 385,
+        storage_path: "summonses/Meeting 385 - 2026-04-18 - Summons.pdf",
+      },
+    ]);
+
+    renderMembersPage();
+
+    const documentList = await screen.findByTestId("document-list");
+    const newer = within(documentList).getByRole("heading", {
+      name: "April 2026 Summons",
+    });
+    const older = within(documentList).getByRole("heading", {
+      name: "February 2023 Summons",
+    });
+    expect(
+      newer.compareDocumentPosition(older) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Meeting 369 — 11 February 2023")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Meeting 385 — 18 April 2026")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Summonses, 2 documents" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", {
+        name: "Open February 2023 Summons in a new tab",
+      })
+    ).toHaveAttribute("href", "https://private.test/signed-summons-369");
+    expect(
+      documentList.querySelector('a[href*="/storage/v1/object/public/"]')
+    ).not.toBeInTheDocument();
+    expect(optimizedApi.getLodgeDocuments).toHaveBeenCalledTimes(1);
+  });
+
   it("renders GPC dates without numbers and preserves Lodge meeting numbers", async () => {
     (optimizedApi.getLodgeDocuments as jest.Mock).mockResolvedValue([
       {
