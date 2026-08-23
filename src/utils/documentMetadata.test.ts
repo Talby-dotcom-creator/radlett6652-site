@@ -34,4 +34,20 @@ describe("member document metadata", () => {
   it("returns a safe fallback for an invalid date", () => {
     expect(formatDocumentDate("not-a-date")).toBe("Unknown");
   });
+
+  it("shows a GPC date and virtual-meeting note without a meeting number", () => {
+    expect(
+      getMeetingMetadata({
+        id: "gpc-2021-11",
+        title: "GPC Minutes",
+        description: "GPC minutes — virtual meeting, 25 November 2021",
+        category: "gpc_minutes",
+        file_url: "https://example.test/signed/gpc.pdf",
+        meeting_date: "2021-11-25",
+        meeting_number: null,
+        storage_path:
+          "GPC minutes/GPC Minutes - 2021-11-25 - Virtual Meeting.pdf",
+      })
+    ).toBe("25 November 2021 — Virtual Meeting");
+  });
 });

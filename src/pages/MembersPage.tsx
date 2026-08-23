@@ -313,7 +313,10 @@ const MembersPage: React.FC = () => {
 
     return (
       <div style={style} className="px-4">
-        <div className="bg-white rounded-lg border border-neutral-200 p-4 flex items-center justify-between hover:shadow-soft transition-shadow">
+        <div
+          className="bg-white rounded-lg border border-neutral-200 p-4 flex items-center justify-between hover:shadow-soft transition-shadow"
+          data-document-id={doc.id}
+        >
           <div className="flex-grow">
             <h3 className="font-medium text-primary-600">
               {doc.title || "Untitled document"}
@@ -344,6 +347,7 @@ const MembersPage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="p-2 text-neutral-500 hover:text-primary-600 transition-colors"
                 title="Open document"
+                aria-label={`Open ${doc.title || "document"} in a new tab`}
               >
                 <ExternalLink size={18} />
               </a>
@@ -359,8 +363,13 @@ const MembersPage: React.FC = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen pt-28 pb-20 bg-white">
-        <div className="container mx-auto px-4 md:px-6 text-center pt-12">
+        <div
+          className="container mx-auto px-4 md:px-6 text-center pt-12"
+          role="status"
+          aria-live="polite"
+        >
           <LoadingSpinner subtle />
+          <p className="mt-3 text-neutral-600">Checking membership...</p>
         </div>
       </div>
     );
@@ -369,8 +378,13 @@ const MembersPage: React.FC = () => {
   if (user && dataLoading) {
     return (
       <div className="min-h-screen pt-28 pb-20 bg-white">
-        <div className="container mx-auto px-4 md:px-6 text-center pt-12">
+        <div
+          className="container mx-auto px-4 md:px-6 text-center pt-12"
+          role="status"
+          aria-live="polite"
+        >
           <LoadingSpinner subtle />
+          <p className="mt-3 text-neutral-600">Loading member documents...</p>
         </div>
       </div>
     );
@@ -385,12 +399,17 @@ const MembersPage: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         {/* Error Notice */}
         {error && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div
+            className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+            role="alert"
+          >
             <div className="flex items-start">
-              <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <h3 className="font-medium text-yellow-800 mb-1">Notice</h3>
-                <p className="text-yellow-700">{error}</p>
+                <h3 className="font-medium text-red-800 mb-1">
+                  Unable to load documents
+                </h3>
+                <p className="text-red-700">{error}</p>
               </div>
             </div>
           </div>
@@ -432,9 +451,12 @@ const MembersPage: React.FC = () => {
                   const isSelected = selectedCategories.includes(category.key);
 
                   return (
-                    <label
+                    <button
+                      type="button"
                       key={category.key}
-                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
+                      aria-pressed={isSelected}
+                      aria-label={`${category.label}, ${count} documents`}
+                      className={`w-full flex items-center p-3 rounded-lg border cursor-pointer transition-all text-left focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 ${
                         isSelected
                           ? "border-secondary-500 bg-secondary-50"
                           : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
@@ -447,13 +469,8 @@ const MembersPage: React.FC = () => {
                         );
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => {}}
-                        className="sr-only"
-                      />
                       <div
+                        aria-hidden="true"
                         className={`w-4 h-4 rounded border-2 mr-3 flex items-center justify-center ${
                           isSelected
                             ? "border-secondary-500 bg-secondary-500"
@@ -486,7 +503,7 @@ const MembersPage: React.FC = () => {
                           ({count})
                         </span>
                       </div>
-                    </label>
+                    </button>
                   );
                 })}
               </div>
@@ -605,7 +622,19 @@ const MembersPage: React.FC = () => {
                 </div>
               )}
 
-              {selectedCategories.length === 0 ? (
+              {allDocuments.length === 0 ? (
+                <div className="text-center py-16" role="status">
+                  <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-12 h-12 text-neutral-300" />
+                  </div>
+                  <h3 className="text-lg font-medium text-neutral-600 mb-2">
+                    No Member Documents Available
+                  </h3>
+                  <p className="text-neutral-500 max-w-md mx-auto">
+                    Member documents will appear here when they are available.
+                  </p>
+                </div>
+              ) : selectedCategories.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText className="w-12 h-12 text-neutral-300" />
