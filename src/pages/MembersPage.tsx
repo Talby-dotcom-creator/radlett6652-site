@@ -39,7 +39,7 @@ import {
 const DOCUMENT_CATEGORIES = [
   { key: "grand_lodge", label: "Grand Lodge Communications", icon: FileText },
   { key: "provincial", label: "Provincial Communications", icon: FileText },
-  { key: "summons", label: "Summons", icon: ScrollText },
+  { key: "summons", label: "Summonses", icon: ScrollText },
   { key: "minutes", label: "Meeting Minutes", icon: Clock },
   { key: "gpc_minutes", label: "GPC Minutes", icon: Clock },
   { key: "lodge_instruction", label: "Lodge of Instruction", icon: BookOpen },

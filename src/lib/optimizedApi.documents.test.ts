@@ -9,7 +9,7 @@ jest.mock("./supabase", () => ({
 }));
 
 describe("optimizedApi member documents", () => {
-  it("reuses the documents query and signs private GPC storage paths", async () => {
+  it("reuses the documents query and signs private GPC and summons storage paths", async () => {
     const order = jest.fn().mockResolvedValue({
       data: [
         {
@@ -20,16 +20,30 @@ describe("optimizedApi member documents", () => {
           meeting_number: null,
           storage_path: "GPC minutes/GPC Minutes - 2025-07-12.pdf",
         },
+        {
+          id: "summons-385",
+          title: "Radlett Lodge Summons",
+          category: "summons",
+          meeting_date: "2026-04-18",
+          meeting_number: 385,
+          storage_path: "summonses/Meeting 385 - 2026-04-18 - Summons.pdf",
+        },
       ],
       error: null,
     });
     const select = jest.fn().mockReturnValue({ order });
     (supabase.from as jest.Mock).mockReturnValue({ select });
 
-    const createSignedUrl = jest.fn().mockResolvedValue({
-      data: { signedUrl: "https://private.test/signed-gpc.pdf" },
-      error: null,
-    });
+    const createSignedUrl = jest
+      .fn()
+      .mockResolvedValueOnce({
+        data: { signedUrl: "https://private.test/signed-gpc.pdf" },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { signedUrl: "https://private.test/signed-summons.pdf" },
+        error: null,
+      });
     (supabase.storage.from as jest.Mock).mockReturnValue({ createSignedUrl });
 
     const documents = await optimizedApi.getLodgeDocuments();
@@ -41,8 +55,15 @@ describe("optimizedApi member documents", () => {
       "GPC minutes/GPC Minutes - 2025-07-12.pdf",
       60 * 60
     );
+    expect(createSignedUrl).toHaveBeenCalledWith(
+      "summonses/Meeting 385 - 2026-04-18 - Summons.pdf",
+      60 * 60
+    );
     expect(documents[0].file_url).toBe(
       "https://private.test/signed-gpc.pdf"
+    );
+    expect(documents[1].file_url).toBe(
+      "https://private.test/signed-summons.pdf"
     );
   });
 });
